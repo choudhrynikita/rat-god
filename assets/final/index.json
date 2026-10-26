@@ -1,0 +1,3814 @@
+{
+ "version": 1,
+ "notes": [
+  "Sprites: pixel-native, scale with nearest-neighbour (integer). anchor=[x,y] fraction of frame = foot centre; foot_baseline_y in px. Characters face right; mirror for left. Gore anims use the BLOOD palette entries (670a1e,aa494d,3b041b,20060d,69303f,e84b5a): to tone gore down, palette-swap those colours."
+ ],
+ "assets": [
+  {
+   "id": "worker_eat",
+   "type": "anim",
+   "character": "worker",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/worker_eat.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_dig",
+   "type": "anim",
+   "character": "worker",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/worker_dig.png",
+   "size": [
+    104,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_haul",
+   "type": "anim",
+   "character": "worker",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/worker_haul.png",
+   "size": [
+    96,
+    48
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_groom",
+   "type": "anim",
+   "character": "worker",
+   "anim": "groom",
+   "status": "done",
+   "path": "sprites/worker_groom.png",
+   "size": [
+    64,
+    56
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_idle",
+   "type": "anim",
+   "character": "worker",
+   "anim": "idle",
+   "status": "done",
+   "path": "sprites/worker_idle.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_walk",
+   "type": "anim",
+   "character": "worker",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/worker_walk.png",
+   "size": [
+    72,
+    40
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_sleep",
+   "type": "anim",
+   "character": "worker",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/worker_sleep.png",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_die",
+   "type": "anim",
+   "character": "worker",
+   "anim": "die",
+   "status": "done",
+   "path": "sprites/worker_die.png",
+   "size": [
+    88,
+    56
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9464
+   ],
+   "foot_baseline_y": 53,
+   "sheet": "sheets/worker.json",
+   "issues": [
+    "bg colour shift 47"
+   ]
+  },
+  {
+   "id": "sheet_worker",
+   "type": "spritesheet",
+   "path": "sheets/worker.json",
+   "image": "sheets/worker.png",
+   "size": [
+    968,
+    1208
+   ],
+   "frames": 131,
+   "animations": [
+    "idle",
+    "walk",
+    "run",
+    "dig",
+    "haul",
+    "work_wheel",
+    "work_gnaw",
+    "eat",
+    "drink",
+    "sleep",
+    "groom",
+    "court",
+    "nurse",
+    "exhausted_collapse",
+    "sick_idle",
+    "starving_walk",
+    "fight",
+    "hurt",
+    "protest",
+    "vote",
+    "cheer",
+    "cower",
+    "die",
+    "die_violent"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "ui_law_button_normal",
+   "path": "ui/ui_law_button_normal.png",
+   "type": "ui_button_state",
+   "size": [
+    160,
+    56
+   ],
+   "frames": 1,
+   "fps": null,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "parent": "ui_law_button"
+  },
+  {
+   "id": "ui_law_button_hover",
+   "path": "ui/ui_law_button_hover.png",
+   "type": "ui_button_state",
+   "size": [
+    160,
+    56
+   ],
+   "frames": 1,
+   "fps": null,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "parent": "ui_law_button"
+  },
+  {
+   "id": "ui_law_button_pressed",
+   "path": "ui/ui_law_button_pressed.png",
+   "type": "ui_button_state",
+   "size": [
+    160,
+    56
+   ],
+   "frames": 1,
+   "fps": null,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "parent": "ui_law_button"
+  },
+  {
+   "id": "ui_law_button_disabled",
+   "path": "ui/ui_law_button_disabled.png",
+   "type": "ui_button_state",
+   "size": [
+    160,
+    56
+   ],
+   "frames": 1,
+   "fps": null,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "parent": "ui_law_button"
+  },
+  {
+   "id": "ui_law_button",
+   "path": "ui/ui_law_button_states.png",
+   "type": "ui_button",
+   "size": [
+    640,
+    56
+   ],
+   "frames": 4,
+   "fps": null,
+   "state_order": [
+    "normal",
+    "hover",
+    "pressed",
+    "disabled"
+   ],
+   "frame_size": [
+    160,
+    56
+   ],
+   "status": "done",
+   "notes": "States derived in code from one generated plate: hover = brightened, pressed = shifted down 2px and darkened, disabled = desaturated. No text baked in; draw the law name in code."
+  },
+  {
+   "id": "ui_law_board_frame",
+   "path": "ui/ui_law_board_frame.png",
+   "type": "ui_9slice",
+   "size": [
+    192,
+    192
+   ],
+   "frames": 1,
+   "fps": null,
+   "slice": {
+    "left": 40,
+    "top": 40,
+    "right": 40,
+    "bottom": 40
+   },
+   "slice_json": "ui/nine_slice.json",
+   "status": "done"
+  },
+  {
+   "id": "ui_dialogue_box",
+   "path": "ui/ui_dialogue_box.png",
+   "type": "ui_9slice",
+   "size": [
+    160,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "slice": {
+    "left": 12,
+    "top": 10,
+    "right": 12,
+    "bottom": 11
+   },
+   "slice_json": "ui/nine_slice.json",
+   "status": "done"
+  },
+  {
+   "id": "worker_run",
+   "type": "anim",
+   "character": "worker",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/worker_run.png",
+   "size": [
+    120,
+    40
+   ],
+   "frames": 6,
+   "fps": 14,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_work_wheel",
+   "type": "anim",
+   "character": "worker",
+   "anim": "work_wheel",
+   "status": "done",
+   "path": "sprites/worker_work_wheel.png",
+   "size": [
+    120,
+    40
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_work_gnaw",
+   "type": "anim",
+   "character": "worker",
+   "anim": "work_gnaw",
+   "status": "done",
+   "path": "sprites/worker_work_gnaw.png",
+   "size": [
+    80,
+    56
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_drink",
+   "type": "anim",
+   "character": "worker",
+   "anim": "drink",
+   "status": "done",
+   "path": "sprites/worker_drink.png",
+   "size": [
+    96,
+    48
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json",
+   "issues": [
+    "bg colour shift 53"
+   ]
+  },
+  {
+   "id": "worker_court",
+   "type": "anim",
+   "character": "worker",
+   "anim": "court",
+   "status": "done",
+   "path": "sprites/worker_court.png",
+   "size": [
+    112,
+    56
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_exhausted_collapse",
+   "type": "anim",
+   "character": "worker",
+   "anim": "exhausted_collapse",
+   "status": "done",
+   "path": "sprites/worker_exhausted_collapse.png",
+   "size": [
+    80,
+    40
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "bg_throne_hall",
+   "path": "backgrounds/bg_throne_hall.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "bg_plaza",
+   "path": "backgrounds/bg_plaza.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "prop_law_poster_fresh",
+   "path": "sprites/prop_law_poster_fresh.png",
+   "type": "prop",
+   "size": [
+    32,
+    40
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "parent": "prop_law_poster"
+  },
+  {
+   "id": "ui_king_plate_feast",
+   "path": "ui/ui_king_plate_feast.png",
+   "type": "ui",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "ui_king_plate_meal",
+   "path": "ui/ui_king_plate_meal.png",
+   "type": "ui",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "ui_king_plate_scraps",
+   "path": "ui/ui_king_plate_scraps.png",
+   "type": "ui",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "ui_king_plate_empty",
+   "path": "ui/ui_king_plate_empty.png",
+   "type": "ui",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "icon_food",
+   "path": "ui/icon_food.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_mood",
+   "path": "ui/icon_mood.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_loyalty",
+   "path": "ui/icon_loyalty.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "ui_king_plate",
+   "path": "ui/ui_king_plate.png",
+   "type": "ui_states",
+   "size": [
+    256,
+    48
+   ],
+   "frame_size": [
+    64,
+    48
+   ],
+   "frames": 4,
+   "state_order": [
+    "feast",
+    "meal",
+    "scraps",
+    "empty"
+   ],
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "worker_nurse",
+   "type": "anim",
+   "character": "worker",
+   "anim": "nurse",
+   "status": "done",
+   "path": "sprites/worker_nurse.png",
+   "size": [
+    72,
+    40
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_sick_idle",
+   "type": "anim",
+   "character": "worker",
+   "anim": "sick_idle",
+   "status": "done",
+   "path": "sprites/worker_sick_idle.png",
+   "size": [
+    80,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_starving_walk",
+   "type": "anim",
+   "character": "worker",
+   "anim": "starving_walk",
+   "status": "done",
+   "path": "sprites/worker_starving_walk.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_fight",
+   "type": "anim",
+   "character": "worker",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/worker_fight.png",
+   "size": [
+    88,
+    64
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.8438
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_hurt",
+   "type": "anim",
+   "character": "worker",
+   "anim": "hurt",
+   "status": "done",
+   "path": "sprites/worker_hurt.png",
+   "size": [
+    88,
+    40
+   ],
+   "frames": 3,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_protest",
+   "type": "anim",
+   "character": "worker",
+   "anim": "protest",
+   "status": "done",
+   "path": "sprites/worker_protest.png",
+   "size": [
+    80,
+    56
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_vote",
+   "type": "anim",
+   "character": "worker",
+   "anim": "vote",
+   "status": "done",
+   "path": "sprites/worker_vote.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_cheer",
+   "type": "anim",
+   "character": "worker",
+   "anim": "cheer",
+   "status": "done",
+   "path": "sprites/worker_cheer.png",
+   "size": [
+    120,
+    56
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_cower",
+   "type": "anim",
+   "character": "worker",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/worker_cower.png",
+   "size": [
+    120,
+    40
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "worker_die_violent",
+   "type": "anim",
+   "character": "worker",
+   "anim": "die_violent",
+   "status": "done",
+   "path": "sprites/worker_die_violent.png",
+   "size": [
+    120,
+    72
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.75
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/worker.json"
+  },
+  {
+   "id": "king_decree",
+   "type": "anim",
+   "character": "king",
+   "anim": "decree",
+   "status": "done",
+   "path": "sprites/king_decree.png",
+   "size": [
+    104,
+    64
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9062
+   ],
+   "foot_baseline_y": 58,
+   "sheet": "sheets/king.json",
+   "issues": [
+    "bg colour shift 52"
+   ]
+  },
+  {
+   "id": "king_feast",
+   "type": "anim",
+   "character": "king",
+   "anim": "feast",
+   "status": "done",
+   "path": "sprites/king_feast.png",
+   "size": [
+    104,
+    64
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9062
+   ],
+   "foot_baseline_y": 58,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_eat_scraps",
+   "type": "anim",
+   "character": "king",
+   "anim": "eat_scraps",
+   "status": "done",
+   "path": "sprites/king_eat_scraps.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_sleep",
+   "type": "anim",
+   "character": "king",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/king_sleep.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_starving",
+   "type": "anim",
+   "character": "king",
+   "anim": "starving",
+   "status": "done",
+   "path": "sprites/king_starving.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_sick",
+   "type": "anim",
+   "character": "king",
+   "anim": "sick",
+   "status": "done",
+   "path": "sprites/king_sick.png",
+   "size": [
+    72,
+    64
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9062
+   ],
+   "foot_baseline_y": 58,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_executed",
+   "type": "anim",
+   "character": "king",
+   "anim": "executed",
+   "status": "done",
+   "path": "sprites/king_executed.png",
+   "size": [
+    120,
+    56
+   ],
+   "frames": 10,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9107
+   ],
+   "foot_baseline_y": 51,
+   "sheet": "sheets/king.json",
+   "issues": [
+    "bg colour shift 87"
+   ]
+  },
+  {
+   "id": "king_crowned",
+   "type": "anim",
+   "character": "king",
+   "anim": "crowned",
+   "status": "done",
+   "path": "sprites/king_crowned.png",
+   "size": [
+    96,
+    64
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.8438
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_dig_founder",
+   "type": "anim",
+   "character": "king",
+   "anim": "dig_founder",
+   "status": "done",
+   "path": "sprites/king_dig_founder.png",
+   "size": [
+    104,
+    40
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_build_founder",
+   "type": "anim",
+   "character": "king",
+   "anim": "build_founder",
+   "status": "done",
+   "path": "sprites/king_build_founder.png",
+   "size": [
+    80,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "founder_idle",
+   "type": "anim",
+   "character": "founder",
+   "anim": "idle",
+   "status": "done",
+   "path": "sprites/founder_idle.png",
+   "size": [
+    72,
+    40
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/founder.json"
+  },
+  {
+   "id": "founder_walk",
+   "type": "anim",
+   "character": "founder",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/founder_walk.png",
+   "size": [
+    80,
+    40
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/founder.json"
+  },
+  {
+   "id": "herald_walk",
+   "type": "anim",
+   "character": "herald",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/herald_walk.png",
+   "size": [
+    64,
+    56
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/herald.json"
+  },
+  {
+   "id": "herald_announce",
+   "type": "anim",
+   "character": "herald",
+   "anim": "announce",
+   "status": "done",
+   "path": "sprites/herald_announce.png",
+   "size": [
+    72,
+    64
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.8438
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/herald.json"
+  },
+  {
+   "id": "sheet_founder",
+   "type": "spritesheet",
+   "path": "sheets/founder.json",
+   "image": "sheets/founder.png",
+   "size": [
+    648,
+    82
+   ],
+   "frames": 12,
+   "animations": [
+    "idle",
+    "walk"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_herald",
+   "type": "spritesheet",
+   "path": "sheets/herald.json",
+   "image": "sheets/herald.png",
+   "size": [
+    584,
+    179
+   ],
+   "frames": 22,
+   "animations": [
+    "walk",
+    "announce",
+    "paste_poster"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_king",
+   "type": "spritesheet",
+   "path": "sheets/king.json",
+   "image": "sheets/king.png",
+   "size": [
+    1210,
+    859
+   ],
+   "frames": 88,
+   "animations": [
+    "idle_throne",
+    "press_law",
+    "decree",
+    "feast",
+    "eat_scraps",
+    "sleep",
+    "starving",
+    "sick",
+    "die",
+    "executed",
+    "crowned",
+    "dig_founder",
+    "build_founder",
+    "frustrated",
+    "indulge"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "music_title",
+   "path": "audio/music_title.ogg",
+   "alt_paths": [
+    "audio/music_title.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 88.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_reign_calm",
+   "path": "audio/music_reign_calm.ogg",
+   "alt_paths": [
+    "audio/music_reign_calm.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 98.03,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_reign_tense",
+   "path": "audio/music_reign_tense.ogg",
+   "alt_paths": [
+    "audio/music_reign_tense.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 88.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_famine",
+   "path": "audio/music_famine.ogg",
+   "alt_paths": [
+    "audio/music_famine.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 88.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_riot",
+   "path": "audio/music_riot.ogg",
+   "alt_paths": [
+    "audio/music_riot.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 73.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_vote",
+   "path": "audio/music_vote.ogg",
+   "alt_paths": [
+    "audio/music_vote.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 73.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_execution",
+   "path": "audio/music_execution.ogg",
+   "alt_paths": [
+    "audio/music_execution.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 58.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "music_succession",
+   "path": "audio/music_succession.ogg",
+   "alt_paths": [
+    "audio/music_succession.mp3"
+   ],
+   "type": "audio_music",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 73.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "amb_sewer_drips",
+   "path": "audio/amb_sewer_drips.ogg",
+   "alt_paths": [
+    "audio/amb_sewer_drips.mp3"
+   ],
+   "type": "audio_ambience",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 58.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "amb_street_rain",
+   "path": "audio/amb_street_rain.ogg",
+   "alt_paths": [
+    "audio/amb_street_rain.mp3"
+   ],
+   "type": "audio_ambience",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 58.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "amb_machine_hum",
+   "path": "audio/amb_machine_hum.ogg",
+   "alt_paths": [
+    "audio/amb_machine_hum.mp3"
+   ],
+   "type": "audio_ambience",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 45.04,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "amb_crowd_murmur",
+   "path": "audio/amb_crowd_murmur.ogg",
+   "alt_paths": [
+    "audio/amb_crowd_murmur.mp3"
+   ],
+   "type": "audio_ambience",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 48.54,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "amb_silence_dread",
+   "path": "audio/amb_silence_dread.ogg",
+   "alt_paths": [
+    "audio/amb_silence_dread.mp3"
+   ],
+   "type": "audio_ambience",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 58.02,
+   "loop": true,
+   "status": "done"
+  },
+  {
+   "id": "pup_idle",
+   "type": "anim",
+   "character": "pup",
+   "anim": "idle",
+   "status": "done",
+   "path": "sprites/pup_idle.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/pup.json"
+  },
+  {
+   "id": "pup_walk",
+   "type": "anim",
+   "character": "pup",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/pup_walk.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/pup.json"
+  },
+  {
+   "id": "pup_suckle",
+   "type": "anim",
+   "character": "pup",
+   "anim": "suckle",
+   "status": "done",
+   "path": "sprites/pup_suckle.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/pup.json"
+  },
+  {
+   "id": "pup_play",
+   "type": "anim",
+   "character": "pup",
+   "anim": "play",
+   "status": "done",
+   "path": "sprites/pup_play.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/pup.json"
+  },
+  {
+   "id": "pup_die",
+   "type": "anim",
+   "character": "pup",
+   "anim": "die",
+   "status": "done",
+   "path": "sprites/pup_die.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/pup.json"
+  },
+  {
+   "id": "elder_walk_limp",
+   "type": "anim",
+   "character": "elder",
+   "anim": "walk_limp",
+   "status": "done",
+   "path": "sprites/elder_walk_limp.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/elder.json"
+  },
+  {
+   "id": "elder_idle_cough",
+   "type": "anim",
+   "character": "elder",
+   "anim": "idle_cough",
+   "status": "done",
+   "path": "sprites/elder_idle_cough.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/elder.json"
+  },
+  {
+   "id": "elder_teach",
+   "type": "anim",
+   "character": "elder",
+   "anim": "teach",
+   "status": "done",
+   "path": "sprites/elder_teach.png",
+   "size": [
+    72,
+    64
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.8438
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/elder.json"
+  },
+  {
+   "id": "king_idle_throne",
+   "type": "anim",
+   "character": "king",
+   "anim": "idle_throne",
+   "status": "done",
+   "path": "sprites/king_idle_throne.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_press_law",
+   "type": "anim",
+   "character": "king",
+   "anim": "press_law",
+   "status": "done",
+   "path": "sprites/king_press_law.png",
+   "size": [
+    120,
+    56
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "king_die",
+   "type": "anim",
+   "character": "king",
+   "anim": "die",
+   "status": "done",
+   "path": "sprites/king_die.png",
+   "size": [
+    104,
+    64
+   ],
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9062
+   ],
+   "foot_baseline_y": 58,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "enforcer_patrol",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "patrol",
+   "status": "done",
+   "path": "sprites/enforcer_patrol.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/enforcer.json"
+  },
+  {
+   "id": "enforcer_idle",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "idle",
+   "status": "done",
+   "path": "sprites/enforcer_idle.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/enforcer.json"
+  },
+  {
+   "id": "enforcer_beat",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "beat",
+   "status": "done",
+   "path": "sprites/enforcer_beat.png",
+   "size": [
+    88,
+    64
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.8438
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/enforcer.json"
+  },
+  {
+   "id": "enforcer_drag_body",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "drag_body",
+   "status": "done",
+   "path": "sprites/enforcer_drag_body.png",
+   "size": [
+    96,
+    48
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/enforcer.json"
+  },
+  {
+   "id": "outcast_idle",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "idle",
+   "status": "done",
+   "path": "sprites/outcast_idle.png",
+   "size": [
+    72,
+    48
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/outcast.json"
+  },
+  {
+   "id": "outcast_beg",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "beg",
+   "status": "done",
+   "path": "sprites/outcast_beg.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/outcast.json"
+  },
+  {
+   "id": "outcast_steal",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "steal",
+   "status": "done",
+   "path": "sprites/outcast_steal.png",
+   "size": [
+    112,
+    48
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/outcast.json"
+  },
+  {
+   "id": "cat_prowl",
+   "type": "anim",
+   "character": "cat",
+   "anim": "prowl",
+   "status": "done",
+   "path": "sprites/cat_prowl.png",
+   "size": [
+    152,
+    80
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.975
+   ],
+   "foot_baseline_y": 78,
+   "sheet": "sheets/cat.json"
+  },
+  {
+   "id": "cat_pounce",
+   "type": "anim",
+   "character": "cat",
+   "anim": "pounce",
+   "status": "done",
+   "path": "sprites/cat_pounce.png",
+   "size": [
+    168,
+    88
+   ],
+   "frames": 6,
+   "fps": 14,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9659
+   ],
+   "foot_baseline_y": 85,
+   "sheet": "sheets/cat.json"
+  },
+  {
+   "id": "cat_eat_kill",
+   "type": "anim",
+   "character": "cat",
+   "anim": "eat_kill",
+   "status": "done",
+   "path": "sprites/cat_eat_kill.png",
+   "size": [
+    176,
+    80
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.975
+   ],
+   "foot_baseline_y": 78,
+   "sheet": "sheets/cat.json"
+  },
+  {
+   "id": "cat_idle_tail",
+   "type": "anim",
+   "character": "cat",
+   "anim": "idle_tail",
+   "status": "done",
+   "path": "sprites/cat_idle_tail.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.8984
+   ],
+   "foot_baseline_y": 115,
+   "sheet": "sheets/cat.json"
+  },
+  {
+   "id": "exterminator_drone_hover",
+   "type": "anim",
+   "character": "exterminator_drone",
+   "anim": "hover",
+   "status": "done",
+   "path": "sprites/exterminator_drone_hover.png",
+   "size": [
+    64,
+    48
+   ],
+   "frames": 4,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9583
+   ],
+   "foot_baseline_y": 46,
+   "sheet": "sheets/exterminator_drone.json"
+  },
+  {
+   "id": "exterminator_drone_spray_gas",
+   "type": "anim",
+   "character": "exterminator_drone",
+   "anim": "spray_gas",
+   "status": "done",
+   "path": "sprites/exterminator_drone_spray_gas.png",
+   "size": [
+    120,
+    80
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.7
+   ],
+   "foot_baseline_y": 56,
+   "sheet": "sheets/exterminator_drone.json"
+  },
+  {
+   "id": "exterminator_drone_scan",
+   "type": "anim",
+   "character": "exterminator_drone",
+   "anim": "scan",
+   "status": "done",
+   "path": "sprites/exterminator_drone_scan.png",
+   "size": [
+    96,
+    64
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.7969
+   ],
+   "foot_baseline_y": 51,
+   "sheet": "sheets/exterminator_drone.json"
+  },
+  {
+   "id": "roach_swarm_crawl",
+   "type": "anim",
+   "character": "roach_swarm",
+   "anim": "crawl",
+   "status": "done",
+   "path": "sprites/roach_swarm_crawl.png",
+   "size": [
+    40,
+    24
+   ],
+   "frames": 4,
+   "fps": 14,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.875
+   ],
+   "foot_baseline_y": 21,
+   "sheet": "sheets/roach_swarm.json"
+  },
+  {
+   "id": "human_boot_stomp",
+   "type": "anim",
+   "character": "human_boot",
+   "anim": "stomp",
+   "status": "done",
+   "path": "sprites/human_boot_stomp.png",
+   "size": [
+    240,
+    136
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9485
+   ],
+   "foot_baseline_y": 129,
+   "sheet": "sheets/human_boot.json"
+  },
+  {
+   "id": "king_indulge",
+   "type": "anim",
+   "character": "king",
+   "anim": "indulge",
+   "status": "done",
+   "path": "sprites/king_indulge.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "herald_paste_poster",
+   "type": "anim",
+   "character": "herald",
+   "anim": "paste_poster",
+   "status": "done",
+   "path": "sprites/herald_paste_poster.png",
+   "size": [
+    72,
+    56
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": false,
+   "anchor": [
+    0.5,
+    0.9643
+   ],
+   "foot_baseline_y": 54,
+   "sheet": "sheets/herald.json",
+   "issues": [
+    "fg grows x3.6"
+   ]
+  },
+  {
+   "id": "sheet_cat",
+   "type": "spritesheet",
+   "path": "sheets/cat.json",
+   "image": "sheets/cat.png",
+   "size": [
+    1224,
+    380
+   ],
+   "frames": 24,
+   "animations": [
+    "prowl",
+    "pounce",
+    "eat_kill",
+    "idle_tail"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_elder",
+   "type": "spritesheet",
+   "path": "sheets/elder.json",
+   "image": "sheets/elder.png",
+   "size": [
+    584,
+    163
+   ],
+   "frames": 16,
+   "animations": [
+    "walk_limp",
+    "idle_cough",
+    "teach"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_enforcer",
+   "type": "spritesheet",
+   "path": "sheets/enforcer.json",
+   "image": "sheets/enforcer.png",
+   "size": [
+    776,
+    212
+   ],
+   "frames": 26,
+   "animations": [
+    "patrol",
+    "idle",
+    "beat",
+    "drag_body"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_exterminator_drone",
+   "type": "spritesheet",
+   "path": "sheets/exterminator_drone.json",
+   "image": "sheets/exterminator_drone.png",
+   "size": [
+    726,
+    195
+   ],
+   "frames": 14,
+   "animations": [
+    "hover",
+    "spray_gas",
+    "scan"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_human_boot",
+   "type": "spritesheet",
+   "path": "sheets/human_boot.json",
+   "image": "sheets/human_boot.png",
+   "size": [
+    1446,
+    137
+   ],
+   "frames": 6,
+   "animations": [
+    "stomp"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_outcast",
+   "type": "spritesheet",
+   "path": "sheets/outcast.json",
+   "image": "sheets/outcast.png",
+   "size": [
+    678,
+    155
+   ],
+   "frames": 14,
+   "animations": [
+    "idle",
+    "beg",
+    "steal"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_pup",
+   "type": "spritesheet",
+   "path": "sheets/pup.json",
+   "image": "sheets/pup.png",
+   "size": [
+    438,
+    245
+   ],
+   "frames": 24,
+   "animations": [
+    "idle",
+    "walk",
+    "suckle",
+    "play",
+    "die"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "sheet_roach_swarm",
+   "type": "spritesheet",
+   "path": "sheets/roach_swarm.json",
+   "image": "sheets/roach_swarm.png",
+   "size": [
+    164,
+    25
+   ],
+   "frames": 4,
+   "animations": [
+    "crawl"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "bg_surface_street",
+   "path": "backgrounds/bg_surface_street.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "bg_burrow_entrance",
+   "path": "backgrounds/bg_burrow_entrance.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "bg_granary",
+   "path": "backgrounds/bg_granary.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 3,
+   "note": "attempt 3 (Qwen Edit) removed the baked-in rat but also some clutter; alt_paths holds the richer attempt-1 version that still has a static rat painted in",
+   "alt_paths": [
+    "backgrounds/bg_granary_alt_with_rat.png"
+   ]
+  },
+  {
+   "id": "bg_nursery",
+   "path": "backgrounds/bg_nursery.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 3,
+   "note": "attempt 3 (Qwen Edit) removed the baked-in rat but also some clutter; alt_paths holds the richer attempt-1 version that still has a static rat painted in",
+   "alt_paths": [
+    "backgrounds/bg_nursery_alt_with_rat.png"
+   ]
+  },
+  {
+   "id": "bg_workshop",
+   "path": "backgrounds/bg_workshop.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "bg_barracks",
+   "path": "backgrounds/bg_barracks.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 3,
+   "note": "attempt 3 (Qwen Edit) removed the baked-in rat but also some clutter; alt_paths holds the richer attempt-1 version that still has a static rat painted in",
+   "alt_paths": [
+    "backgrounds/bg_barracks_alt_with_rat.png"
+   ]
+  },
+  {
+   "id": "bg_shrine",
+   "path": "backgrounds/bg_shrine.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 2,
+   "note": "attempt 2: regenerated without baked-in creatures"
+  },
+  {
+   "id": "bg_graveyard",
+   "path": "backgrounds/bg_graveyard.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 3,
+   "note": "attempt 3 (Qwen Edit) removed the baked-in rat but also some clutter; alt_paths holds the richer attempt-1 version that still has a static rat painted in",
+   "alt_paths": [
+    "backgrounds/bg_graveyard_alt_with_rat.png"
+   ]
+  },
+  {
+   "id": "bg_sleeping_warren",
+   "path": "backgrounds/bg_sleeping_warren.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "bg_outcast_slum",
+   "path": "backgrounds/bg_outcast_slum.png",
+   "type": "background",
+   "size": [
+    360,
+    220
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "parallax_city_far",
+   "path": "backgrounds/parallax_city_far.png",
+   "type": "parallax",
+   "size": [
+    360,
+    160
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "parallax_city_mid",
+   "path": "backgrounds/parallax_city_mid.png",
+   "type": "parallax",
+   "size": [
+    360,
+    200
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "tileset_burrow_0",
+   "path": "backgrounds/tileset_burrow_0.png",
+   "type": "tileset",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "parent": "tileset_burrow"
+  },
+  {
+   "id": "tileset_burrow_1",
+   "path": "backgrounds/tileset_burrow_1.png",
+   "type": "tileset",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "parent": "tileset_burrow"
+  },
+  {
+   "id": "tileset_burrow_2",
+   "path": "backgrounds/tileset_burrow_2.png",
+   "type": "tileset",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "parent": "tileset_burrow"
+  },
+  {
+   "id": "tileset_burrow_3",
+   "path": "backgrounds/tileset_burrow_3.png",
+   "type": "tileset",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "parent": "tileset_burrow"
+  },
+  {
+   "id": "tileset_burrow_4",
+   "path": "backgrounds/tileset_burrow_4.png",
+   "type": "tileset",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "parent": "tileset_burrow"
+  },
+  {
+   "id": "event_founding",
+   "path": "backgrounds/event_founding.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_first_law",
+   "path": "backgrounds/event_first_law.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_famine",
+   "path": "backgrounds/event_famine.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_plague",
+   "path": "backgrounds/event_plague.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_riot",
+   "path": "backgrounds/event_riot.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_vote",
+   "path": "backgrounds/event_vote.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_execution",
+   "path": "backgrounds/event_execution.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_king_dies_alone",
+   "path": "backgrounds/event_king_dies_alone.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_succession",
+   "path": "backgrounds/event_succession.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "attempt": 2,
+   "note": "attempt 2"
+  },
+  {
+   "id": "event_extermination",
+   "path": "backgrounds/event_extermination.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_flood",
+   "path": "backgrounds/event_flood.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_golden_age",
+   "path": "backgrounds/event_golden_age.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_collapse",
+   "path": "backgrounds/event_collapse.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "event_exodus",
+   "path": "backgrounds/event_exodus.png",
+   "type": "event_card",
+   "size": [
+    320,
+    180
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "title_key_art",
+   "path": "backgrounds/title_key_art.png",
+   "type": "key_art",
+   "size": [
+    360,
+    640
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "notes": "pixel-doubled: native 180x320 scaled x2 nearest"
+  },
+  {
+   "id": "share_card",
+   "path": "backgrounds/share_card.png",
+   "type": "share_card",
+   "size": [
+    1200,
+    632
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "notes": "pixel-doubled: native 300x158 scaled x4 nearest"
+  },
+  {
+   "id": "pwa_icon",
+   "path": "ui/pwa_icon.png",
+   "type": "icon_app",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "prop_bottle_cap_pile",
+   "path": "sprites/prop_bottle_cap_pile.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_wire_coil",
+   "path": "sprites/prop_wire_coil.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "attempt": 2,
+   "note": "attempt 2; box-filter downscale (block-mode lost the thin wire)"
+  },
+  {
+   "id": "prop_food_crumb",
+   "path": "sprites/prop_food_crumb.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_rotten_fruit",
+   "path": "sprites/prop_rotten_fruit.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_cheese_rind",
+   "path": "sprites/prop_cheese_rind.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_pebble",
+   "path": "sprites/prop_pebble.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_bone",
+   "path": "sprites/prop_bone.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_syringe",
+   "path": "sprites/prop_syringe.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_battery",
+   "path": "sprites/prop_battery.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_poster_scrap",
+   "path": "sprites/prop_poster_scrap.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_law_tablet",
+   "path": "sprites/prop_law_tablet.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_pebble_bowl",
+   "path": "sprites/prop_pebble_bowl.png",
+   "type": "prop",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_corpse_fresh",
+   "path": "sprites/prop_corpse_fresh.png",
+   "type": "prop",
+   "size": [
+    48,
+    32
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "note": "palette locked to worker fur + BLOOD"
+  },
+  {
+   "id": "prop_corpse_bloated",
+   "path": "sprites/prop_corpse_bloated.png",
+   "type": "prop",
+   "size": [
+    48,
+    32
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "note": "palette locked to worker fur + BLOOD"
+  },
+  {
+   "id": "prop_corpse_skeleton",
+   "path": "sprites/prop_corpse_skeleton.png",
+   "type": "prop",
+   "size": [
+    48,
+    32
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "id": "prop_kill_remains",
+   "path": "sprites/prop_kill_remains.png",
+   "type": "prop",
+   "size": [
+    48,
+    32
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "note": "palette locked to worker fur + BLOOD"
+  },
+  {
+   "id": "prop_law_poster_torn",
+   "path": "sprites/prop_law_poster_torn.png",
+   "type": "prop",
+   "size": [
+    32,
+    40
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "parent": "prop_law_poster"
+  },
+  {
+   "id": "icon_fertility",
+   "path": "ui/icon_fertility.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_health",
+   "path": "ui/icon_health.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_productivity",
+   "path": "ui/icon_productivity.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_population",
+   "path": "ui/icon_population.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_dead",
+   "path": "ui/icon_dead.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_discontent",
+   "path": "ui/icon_discontent.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_tithe",
+   "path": "ui/icon_tithe.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_vote",
+   "path": "ui/icon_vote.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "icon_skull",
+   "path": "ui/icon_skull.png",
+   "type": "icon",
+   "size": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  {
+   "id": "wordmark",
+   "path": "ui/wordmark.png",
+   "type": "wordmark",
+   "size": [
+    192,
+    64
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "font_glyphs_rat_script",
+   "path": "ui/font_glyphs_rat_script.png",
+   "type": "glyphs",
+   "size": [
+    64,
+    32
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done"
+  },
+  {
+   "id": "tileset_burrow",
+   "path": "backgrounds/tileset_burrow.png",
+   "type": "tileset",
+   "size": [
+    320,
+    64
+   ],
+   "tile": [
+    16,
+    16
+   ],
+   "frames": 1,
+   "fps": null,
+   "status": "done",
+   "notes": "5 materials side by side (64x64 each = 4x4 tiles of 16px): earth, brick, metal pipe, wet stone floor, concrete. Each 64x64 block is a texture cut into tiles; seams between blocks are not guaranteed to tile perfectly."
+  },
+  {
+   "id": "prop_law_poster",
+   "path": "sprites/prop_law_poster_fresh.png",
+   "alt_paths": [
+    "sprites/prop_law_poster_torn.png"
+   ],
+   "type": "prop",
+   "size": [
+    32,
+    40
+   ],
+   "frames": 1,
+   "fps": null,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "variants": [
+    "fresh",
+    "torn"
+   ]
+  },
+  {
+   "id": "king_walk",
+   "type": "anim",
+   "character": "king",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/king_walk.png",
+   "size": [
+    80,
+    40
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "foot_baseline_y": 38,
+   "sheet": "sheets/founder.json",
+   "note": "Founder phase only (pre-crown): same frames as founder_walk. After crowning the king never leaves the throne chamber, so no crowned walk exists by design (rev 3.1)."
+  },
+  {
+   "id": "portrait_king_talk",
+   "path": "portraits/portrait_king_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_king",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_king_starving_talk",
+   "path": "portraits/portrait_king_starving_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_king_starving",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_founder_talk",
+   "path": "portraits/portrait_founder_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_founder",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_worker_m_talk",
+   "path": "portraits/portrait_worker_m_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_worker_m",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_worker_f_talk",
+   "path": "portraits/portrait_worker_f_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 47"
+   ],
+   "manual_accept": "bg check marginal (shift 47 vs 45); frames visually verified clean",
+   "character": "portrait_worker_f",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_elder_talk",
+   "path": "portraits/portrait_elder_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_elder",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_enforcer_talk",
+   "path": "portraits/portrait_enforcer_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_enforcer",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_outcast_talk",
+   "path": "portraits/portrait_outcast_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_outcast",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_prophet_talk",
+   "path": "portraits/portrait_prophet_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_prophet",
+   "anim": "talk"
+  },
+  {
+   "id": "portrait_new_king_talk",
+   "path": "portraits/portrait_new_king_talk.png",
+   "type": "portrait_anim",
+   "size": [
+    96,
+    96
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    1.0
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "portrait_new_king",
+   "anim": "talk"
+  },
+  {
+   "id": "king_frustrated",
+   "type": "anim",
+   "character": "king",
+   "anim": "frustrated",
+   "status": "done",
+   "path": "sprites/king_frustrated.png",
+   "size": [
+    120,
+    44
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.9773
+   ],
+   "foot_baseline_y": 43,
+   "sheet": "sheets/king.json"
+  },
+  {
+   "id": "neon_sign_rat_glyph_loop",
+   "path": "fx/neon_sign_rat_glyph_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    32
+   ],
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 134",
+    "bg not flat 28"
+   ],
+   "character": "neon_sign_rat_glyph",
+   "anim": "loop",
+   "manual_accept": "bg check flagged glow/backing plate; frames visually verified at native size"
+  },
+  {
+   "id": "neon_arrow_loop",
+   "path": "fx/neon_arrow_loop.png",
+   "type": "fx_loop",
+   "size": [
+    48,
+    24
+   ],
+   "frames": 3,
+   "fps": 4,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 103"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "neon_arrow",
+   "anim": "loop"
+  },
+  {
+   "id": "pipe_drip_loop",
+   "path": "fx/pipe_drip_loop.png",
+   "type": "fx_loop",
+   "size": [
+    16,
+    32
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 111"
+   ],
+   "character": "pipe_drip",
+   "anim": "loop",
+   "manual_accept": "bg check flagged glow/backing plate; frames visually verified at native size"
+  },
+  {
+   "id": "steam_vent_loop",
+   "path": "fx/steam_vent_loop.png",
+   "type": "fx_loop",
+   "size": [
+    32,
+    48
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 105"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "steam_vent",
+   "anim": "loop"
+  },
+  {
+   "id": "fire_barrel_loop",
+   "path": "fx/fire_barrel_loop.png",
+   "type": "fx_loop",
+   "size": [
+    32,
+    40
+   ],
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 51"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "fire_barrel",
+   "anim": "loop"
+  },
+  {
+   "id": "lamp_flicker_loop",
+   "path": "fx/lamp_flicker_loop.png",
+   "type": "fx_loop",
+   "size": [
+    16,
+    24
+   ],
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "character": "lamp_flicker",
+   "anim": "loop"
+  },
+  {
+   "id": "flies_corpse_loop",
+   "path": "fx/flies_corpse_loop.png",
+   "type": "fx_loop",
+   "size": [
+    24,
+    16
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 78"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "flies_corpse",
+   "anim": "loop"
+  },
+  {
+   "id": "treadwheel_loop",
+   "path": "fx/treadwheel_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 145"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "treadwheel",
+   "anim": "loop"
+  },
+  {
+   "id": "sewage_flow_loop",
+   "path": "fx/sewage_flow_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    16
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 57"
+   ],
+   "character": "sewage_flow",
+   "anim": "loop",
+   "manual_accept": "bg check flagged glow/backing plate; frames visually verified at native size"
+  },
+  {
+   "id": "blood_pool_spread_loop",
+   "path": "fx/blood_pool_spread_loop.png",
+   "type": "fx_loop",
+   "size": [
+    32,
+    16
+   ],
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 51"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "blood_pool_spread",
+   "anim": "loop"
+  },
+  {
+   "id": "law_stamp_vfx_loop",
+   "path": "fx/law_stamp_vfx_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 6,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 87",
+    "bg not flat 24"
+   ],
+   "manual_accept": "bg check flagged glow/colour spill; frames visually verified clean at native size",
+   "character": "law_stamp_vfx",
+   "anim": "loop"
+  },
+  {
+   "id": "sfx_cat_hiss",
+   "path": "audio/sfx_cat_hiss.ogg",
+   "alt_paths": [
+    "audio/sfx_cat_hiss.mp3"
+   ],
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 1.45,
+   "loop": false,
+   "status": "done",
+   "note": "H3 t2v joint audio (cat clip), sliced 1.25-2.70 s; auto-sliced from spectrogram, not checked by ear (verify in game)"
+  },
+  {
+   "id": "sfx_scurry",
+   "path": "audio/sfx_scurry.ogg",
+   "alt_paths": [
+    "audio/sfx_scurry.mp3"
+   ],
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 4.4,
+   "loop": false,
+   "status": "done",
+   "note": "H3 t2v joint audio (rat clip): claw clicks, sliced 0.1-4.5 s; auto-sliced from spectrogram, not checked by ear (verify in game)"
+  },
+  {
+   "id": "sfx_law_stamp",
+   "path": "audio/sfx_law_stamp.ogg",
+   "alt_paths": [
+    "audio/sfx_law_stamp.mp3"
+   ],
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "duration_s": 0.36,
+   "loop": false,
+   "status": "done",
+   "note": "ace_step_1.5_xl_sft output was a rhythmic percussion loop; one hit sliced 0-0.36 s; auto-sliced from spectrogram, not checked by ear (verify in game)"
+  },
+  {
+   "id": "sfx_vote_pebble",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_king_eat",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_squeak",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_squeal_pain",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_dig",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_wheel_creak",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_neon_buzz",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_drip",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_drone_buzz",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_crowd_rage",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "sfx_death_rattle",
+   "path": null,
+   "type": "sfx",
+   "size": null,
+   "frames": null,
+   "fps": null,
+   "status": "failed",
+   "note": "Not produced: the 6-call Sogni SFX test (3 ace_step, 3 H3 joint-audio) gave only music-like tones or unlabelled clicks; per the rule, stopped and no other generator used. Game keeps procedural WebAudio."
+  },
+  {
+   "id": "gas_cloud_loop",
+   "path": "fx/gas_cloud_loop.png",
+   "type": "fx_loop",
+   "size": [
+    96,
+    48
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 83"
+   ],
+   "manual_accept": "attempt 2: clean isolated cloud; bg shift came from gas tint spilling into the key. The locked palette turns it ochre, not green"
+  },
+  {
+   "id": "plague_flea_cloud_loop",
+   "path": "fx/plague_flea_cloud_loop.png",
+   "type": "fx_loop",
+   "size": [
+    32,
+    32
+   ],
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 102"
+   ],
+   "manual_accept": "bg check flagged glow/backing plate; frames visually verified at native size"
+  },
+  {
+   "id": "rain_grate_loop",
+   "path": "fx/rain_grate_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    32
+   ],
+   "frames": 4,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "done",
+   "issues": [
+    "bg colour shift 999",
+    "bg not flat 47"
+   ],
+   "manual_accept": "bg check flagged glow/backing plate; frames visually verified at native size"
+  },
+  {
+   "id": "dust_motes_loop",
+   "path": "fx/dust_motes_loop.png",
+   "type": "fx_loop",
+   "size": [
+    64,
+    64
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.5
+   ],
+   "frame_layout": "horizontal strip",
+   "status": "retry",
+   "issues": [
+    "bg colour shift 97",
+    "bg not flat 31"
+   ]
+  }
+ ]
+}

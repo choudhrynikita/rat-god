@@ -1,0 +1,12 @@
+import { chromium, devices } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const ctx = await b.newContext({ ...devices['iPhone 13'] }); const p = await ctx.newPage();
+await p.goto('http://localhost:4173/?debug=1&seed=11'); await p.waitForTimeout(2000);
+await p.tap('#tNew'); await p.waitForTimeout(1000);
+await p.evaluate(() => window.__rg.send({ t: 'advance', ticks: 30 })); await p.waitForTimeout(600);
+console.log(await p.evaluate(() => { const s = window.__rg.last(); const w = window.__rg.world; return JSON.stringify({ kid: s.king.id, ids: [...s.ids], pos: [...w.rats.values()].map(v => [v.id, Math.round(v.x), Math.round(v.y), v.room]), cam: [w.cam.x, w.cam.y, w.cam.z, w.cam.minZ], ph: s.phase }); }));
+await p.evaluate(() => { window.__rg.hud.onEvent = ((orig) => (k, t) => { window.__ev = (window.__ev || []).concat([k + ':' + t]); orig(k, t); })(window.__rg.hud.onEvent); });
+await p.evaluate(() => window.__rg.send({ t: 'debug', cmd: { what: 'grow', n: 60 } })); await p.waitForTimeout(800);
+await p.evaluate(() => window.__rg.send({ t: 'advance', ticks: 120 })); await p.waitForTimeout(1500);
+console.log(await p.evaluate(() => (window.__ev || []).filter(e => /crown|died|exec/.test(e)).join('\n')));
+await b.close();

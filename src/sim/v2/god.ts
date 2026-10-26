@@ -1,0 +1,129 @@
+/** God acts. Grace is spent, the city answers, a ripple is opened. No sexual acts. */
+import type { GodCommand, GodPowerInfo, GodResult, GodTarget } from './contract';
+import { RF } from './contract';
+import { kill } from './rats';
+import { clamp, clamp01, emit, type Rat, type RippleS, type World } from './state';
+
+export const GOD_POWERS: GodPowerInfo[] = [
+  { power: 'smite', label: 'SMITE', group: 'destruction', cost: 30, target: ['rat'], params: [], blurb: 'Strike one rat down. Witnesses remember.', targetKind: 'rat' },
+  { power: 'bless', label: 'BLESS', group: 'elevation', cost: 18, target: ['rat'], params: ['gift'], blurb: 'Lay a gift on one rat.', targetKind: 'rat' },
+  { power: 'curse', label: 'CURSE', group: 'curse', cost: 18, target: ['rat'], params: ['curse'], blurb: 'A curse that sticks to a name.', targetKind: 'rat' },
+  { power: 'anoint_prophet', label: 'PROPHET', group: 'elevation', cost: 36, target: ['rat'], params: [], blurb: 'This rat hears you. Others may kneel, or hate them.', targetKind: 'rat' },
+  { power: 'punish_king', label: 'PUNISH', group: 'judgement', cost: 22, target: [], params: ['punishment'], blurb: 'Chastise the king. The city will take a side.', targetKind: 'king' },
+  { power: 'punish', label: 'CHASTISE', group: 'judgement', cost: 16, target: ['rat'], params: ['punishment'], blurb: 'Pain, humiliation, or a blighted store.', targetKind: 'rat' },
+  { power: 'whisper', label: 'WHISPER', group: 'influence', cost: 8, target: ['rat'], params: ['idea'], blurb: 'Plant an idea. It is still their idea.', targetKind: 'rat' },
+  { power: 'harvest', label: 'HARVEST', group: 'nature', cost: 16, target: [], params: [], blurb: 'Crumbs pour through the grate.', targetKind: 'none' },
+  { power: 'flood', label: 'FLOOD', group: 'nature', cost: 28, target: ['x', 'y'], params: ['magnitude'], blurb: 'Water finds the low tunnels.', targetKind: 'place' },
+  { power: 'earthquake', label: 'QUAKE', group: 'nature', cost: 40, target: [], params: ['magnitude'], blurb: 'The whole kingdom shakes.', targetKind: 'none' },
+  { power: 'storm', label: 'STORM', group: 'nature', cost: 12, target: [], params: [], blurb: 'A storm over the street.', targetKind: 'none' },
+  { power: 'plague', label: 'PLAGUE', group: 'nature', cost: 36, target: ['chamber'], params: [], blurb: 'A fever starts where you point.', targetKind: 'chamber' },
+  { power: 'miracle', label: 'MIRACLE', group: 'fate', cost: 40, target: ['chamber'], params: ['miracle'], blurb: 'Feed, heal, or calm.', targetKind: 'chamber' },
+  { power: 'foresee', label: 'FORESEE', group: 'knowledge', cost: 4, target: [], params: ['query'], blurb: 'A short look at what is already true.', targetKind: 'none' },
+  { power: 'sign', label: 'SIGN', group: 'presence', cost: 8, target: [], params: ['text'], blurb: 'A mark in the dirt. They argue about what it means.', targetKind: 'none' },
+];
+
+const COST = new Map(GOD_POWERS.map((p) => [p.power, p.cost]));
+
+export function actGod(w: World, cmd: GodCommand): GodResult {
+  const cost = COST.get(cmd.power) ?? 10;
+  if (!w.unbound && w.grace < cost) {
+    return { t: 'godResult', req: cmd.req, ok: false, reason: 'Not enough grace.', power: cmd.power, cost: 0, grace: w.grace, effects: [], witnesses: 0, events: [] };
+  }
+  const before = w.seq;
+  const rat = cmd.target.rat ? w.byId.get(cmd.target.rat) : undefined;
+  let text = 'You do nothing the city can see.';
+  let ok = true;
+  let reason: string | undefined;
+  const effects: string[] = [];
+  if (cmd.power === 'smite') {
+    if (!rat?.alive) { ok = false; reason = 'No living rat under your hand.'; }
+    else { kill(w, rat, 'smite'); text = `${rat.name} is struck down.`; effects.push(text); }
+  } else if (cmd.power === 'bless' && rat?.alive) {
+    rat.flags |= RF.blessed; rat.blessings.push(cmd.params?.gift ?? 'a quiet strength'); rat.health = clamp01(rat.health + 0.2);
+    text = `${rat.name} is blessed.`; effects.push(text);
+  } else if (cmd.power === 'curse' && rat?.alive) {
+    rat.flags |= RF.cursed; rat.curses.push(cmd.params?.curse ?? 'misfortune'); rat.health = clamp(rat.health - 0.15, 0.05, 1);
+    text = `${rat.name} is cursed.`; effects.push(text);
+  } else if (cmd.power === 'anoint_prophet' && rat?.alive) {
+    rat.flags |= RF.prophet; rat.role = 'priest'; rat.beliefs.god = 1; text = `${rat.name} hears a voice and calls it yours.`; effects.push(text);
+  } else if (cmd.power === 'punish_king' || (cmd.power === 'punish' && !rat)) {
+    const k = w.byId.get(w.kingId);
+    if (!k?.alive) { ok = false; reason = 'The throne is empty.'; }
+    else { punish(w, k, cmd.params?.punishment ?? 'pain'); text = `The king ${k.name} is punished.`; effects.push(text); }
+  } else if (cmd.power === 'punish' && rat?.alive) {
+    punish(w, rat, cmd.params?.punishment ?? 'pain'); text = `${rat.name} is chastised.`; effects.push(text);
+  } else if (cmd.power === 'whisper' && rat?.alive) {
+    const idea = cmd.params?.idea;
+    if (idea?.kind === 'belief') rat.beliefs[idea.axis] = clamp(rat.beliefs[idea.axis] + 0.35 * idea.dir, -1, 1);
+    else if (idea?.kind === 'desire' && idea.what === 'rebel') { rat.beliefs.crown = clamp(rat.beliefs.crown - 0.4, -1, 1); rat.grievance = clamp01(rat.grievance + 0.3); }
+    else rat.beliefs.god = clamp(rat.beliefs.god + 0.2, -1, 1);
+    text = `A thought settles in ${rat.name}.`; effects.push(text);
+  } else if (cmd.power === 'harvest') {
+    w.granary += 24; w.foodOnSurface += 16; text = 'Food spills through the grate.'; effects.push(text);
+    const g = w.chambers.find((c) => c.kind === 'granary'); if (g) g.stock = w.granary;
+  } else if (cmd.power === 'flood') {
+    const ch = nearestChamber(w, cmd.target); if (ch) { ch.flooded = clamp01(ch.flooded + 0.55); w.dirtyChambers.add(ch.id); }
+    w.env.rain = 1; w.env.weather = 'storm'; text = 'Water rises in the low places.'; effects.push(text);
+  } else if (cmd.power === 'earthquake') {
+    w.env.quake = clamp01(0.45 + (cmd.params?.magnitude ?? 0.5)); w.quakeT = w.tick; text = 'The ground heaves.'; effects.push(text);
+  } else if (cmd.power === 'storm') {
+    w.env.weather = 'storm'; w.env.intensity = 0.9; w.env.rain = 0.8; w.weatherLeft = 280; text = 'A storm breaks over the street.'; effects.push(text);
+  } else if (cmd.power === 'plague') {
+    const ch = w.chambers[cmd.target.chamber ?? -1] ?? nearestChamber(w, cmd.target);
+    let n = 0;
+    for (const r of w.rats) if (r.alive && ch && Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 4 && n < 6) { r.disease = 'fever'; r.flags |= RF.sick; n++; }
+    text = n ? `A fever takes ${n}.` : 'The fever finds no one.'; effects.push(text);
+  } else if (cmd.power === 'miracle') {
+    const kind = cmd.params?.miracle ?? 'heal';
+    if (kind === 'feed') { w.granary += 30; text = 'The stores fill.'; }
+    else if (kind === 'calm') { for (const r of w.rats) r.emo.anger *= 0.4; w.stats.unrest *= 0.5; text = 'The shouting stops.'; }
+    else { for (const r of w.rats) if (r.disease || r.injured > 0.2) { r.disease = null; r.injured = 0; r.flags &= ~RF.sick; } text = 'Wounds close.'; }
+    effects.push(text);
+  } else if (cmd.power === 'foresee') {
+    text = 'You look, and do not touch.';
+  } else if (cmd.power === 'sign') {
+    text = cmd.params?.text?.slice(0, 80) || 'A sign is scratched where many pass.'; effects.push(text);
+  } else if (!rat?.alive && (cmd.power === 'bless' || cmd.power === 'curse' || cmd.power === 'whisper' || cmd.power === 'anoint_prophet')) {
+    ok = false; reason = 'Choose a living rat.';
+  } else {
+    ok = false; reason = 'That power has no purchase yet.';
+  }
+  if (!ok) return { t: 'godResult', req: cmd.req, ok: false, reason, power: cmd.power, cost: 0, grace: w.grace, effects: [], witnesses: 0, events: [] };
+  if (!w.unbound) w.grace -= cost;
+  const witnesses = countWitnesses(w, rat);
+  const rp: RippleS = { id: ++w.nextRipple, power: cmd.power, tick: w.tick, text, target: rat?.id, open: true, chain: [], until: w.tick + 960 * 14, world: true };
+  w.ripples.push(rp); if (w.ripples.length > 24) w.ripples.shift();
+  w.ripCtx = [rp.id];
+  const ev = emit(w, cmd.power === 'punish_king' || cmd.power === 'punish' ? 'god_punish' : cmd.power === 'smite' ? 'smite' : 'god_act', text, cmd.power === 'smite' || cmd.power === 'punish_king' ? 2 : 1, { rats: rat ? [rat.id] : [], fx: cmd.power === 'smite' ? 'smite' : 'god', card: text.slice(0, 48) });
+  w.ripCtx = [];
+  w.chron.godActs.push({ tick: w.tick, power: cmd.power, text });
+  if (rat) { rat.beliefs.god = clamp(rat.beliefs.god + (cmd.power === 'smite' || cmd.power === 'curse' || cmd.power === 'punish' ? -0.15 : 0.2), -1, 1); rat.rip.push({ id: rp.id, d: 0, t: w.tick }); }
+  const events: number[] = [];
+  for (let s = before + 1; s <= w.seq; s++) events.push(s);
+  void ev;
+  const forecast = cmd.power === 'foresee' ? {
+    horizonDays: 3,
+    lines: [`${w.rats.filter((r) => r.alive).length} rats still breathe.`, `The king is ${w.byId.get(w.kingId)?.name ?? 'gone'}.`, `Granary holds ${w.granary.toFixed(0)}. Unrest ${(w.stats.unrest * 100).toFixed(0)}.`],
+    kingSurvives: !!w.byId.get(w.kingId)?.alive, popAfter: w.rats.filter((r) => r.alive).length, confidence: 0.4,
+  } : undefined;
+  return { t: 'godResult', req: cmd.req, ok: true, power: cmd.power, cost: w.unbound ? 0 : cost, grace: w.grace, effects, witnesses, events, forecast };
+}
+
+function punish(w: World, r: Rat, how: string) {
+  r.injured = Math.max(r.injured, 0.5); r.emo.fear = 1; r.emo.shame = clamp01(r.emo.shame + 0.5);
+  r.beliefs.god = clamp(r.beliefs.god - 0.25, -1, 1);
+  if (r.flags & RF.king) { w.stats.unrest = clamp01(w.stats.unrest + 0.12); w.stats.legitimacy = clamp01(w.stats.legitimacy - 0.08); w.godRejection = clamp01(w.godRejection + 0.05); }
+  r.mem.push({ tick: w.tick, text: `Something above punished me (${how}).`, val: -0.8, other: 0, kind: 'god_wrath', pinned: true, w: 0.9 });
+}
+
+function nearestChamber(w: World, t: GodTarget) {
+  if (t.chamber != null && w.chambers[t.chamber]) return w.chambers[t.chamber];
+  if (t.x == null || t.y == null) return w.chambers.find((c) => c.progress >= 0.999) ?? null;
+  let best = w.chambers[0], bd = Infinity;
+  for (const c of w.chambers) { const d = (c.cx - t.x) ** 2 + (c.cy - t.y) ** 2; if (d < bd) { bd = d; best = c; } }
+  return best ?? null;
+}
+function countWitnesses(w: World, r?: Rat) {
+  if (!r) return Math.min(12, w.rats.filter((x) => x.alive).length);
+  let n = 0; for (const o of w.rats) if (o.alive && o !== r && Math.hypot(o.x - r.x, o.y - r.y) < 18) n++; return n;
+}

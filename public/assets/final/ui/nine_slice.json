@@ -1,0 +1,17 @@
+{
+ "note": "PixiJS NineSliceSprite(texture, leftWidth, topHeight, rightWidth, bottomHeight). Values in native px; scale with nearest-neighbour.",
+ "panels": {
+  "ui_law_board_frame": {
+   "left": 40,
+   "top": 40,
+   "right": 40,
+   "bottom": 40
+  },
+  "ui_dialogue_box": {
+   "left": 12,
+   "top": 10,
+   "right": 12,
+   "bottom": 11
+  }
+ }
+}

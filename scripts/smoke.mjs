@@ -1,0 +1,13 @@
+import { chromium, devices } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const ctx = await b.newContext({ ...devices['iPhone 13'] });
+const p = await ctx.newPage();
+const errs = []; p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errs.push(m.type() + ': ' + m.text()); }); p.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
+await p.goto('http://localhost:4173/?debug=1&seed=7'); await p.waitForTimeout(2500);
+await p.screenshot({ path: 'reports/shots/smoke_title.png' });
+await p.click('#tNew'); await p.waitForTimeout(3000);
+await p.screenshot({ path: 'reports/shots/smoke_game.png' });
+await p.evaluate(() => window.__rg.send({ t: 'advance', ticks: 400 })); await p.waitForTimeout(1500);
+await p.screenshot({ path: 'reports/shots/smoke_game2.png' });
+console.log(errs.join('\n'));
+await b.close();

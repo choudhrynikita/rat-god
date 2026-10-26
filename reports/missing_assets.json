@@ -1,0 +1,1513 @@
+{
+ "finalDirFiles": 182,
+ "indexJson": true,
+ "total": 215,
+ "final": 203,
+ "rows": [
+  {
+   "id": "worker_eat",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_dig",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_haul",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_groom",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_idle",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_walk",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_sleep",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_die",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_worker",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_button_normal",
+   "category": "ui_button_state",
+   "kind": "ui_button_state",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_button_hover",
+   "category": "ui_button_state",
+   "kind": "ui_button_state",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_button_pressed",
+   "category": "ui_button_state",
+   "kind": "ui_button_state",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_button_disabled",
+   "category": "ui_button_state",
+   "kind": "ui_button_state",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_button",
+   "category": "ui_button",
+   "kind": "ui_button",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_law_board_frame",
+   "category": "ui_9slice",
+   "kind": "ui_9slice",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_dialogue_box",
+   "category": "ui_9slice",
+   "kind": "ui_9slice",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_run",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_work_wheel",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_work_gnaw",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_drink",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_court",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_exhausted_collapse",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_throne_hall",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_plaza",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_law_poster_fresh",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_king_plate_feast",
+   "category": "ui",
+   "kind": "ui",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_king_plate_meal",
+   "category": "ui",
+   "kind": "ui",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_king_plate_scraps",
+   "category": "ui",
+   "kind": "ui",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_king_plate_empty",
+   "category": "ui",
+   "kind": "ui",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_food",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_mood",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_loyalty",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "ui_king_plate",
+   "category": "ui_states",
+   "kind": "ui_states",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_nurse",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_sick_idle",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_starving_walk",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_fight",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_hurt",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_protest",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_vote",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_cheer",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_cower",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "worker_die_violent",
+   "category": "worker",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_decree",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_feast",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_eat_scraps",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_sleep",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_starving",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_sick",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_executed",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_crowned",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_dig_founder",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_build_founder",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "founder_idle",
+   "category": "founder",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "founder_walk",
+   "category": "founder",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "herald_walk",
+   "category": "herald",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "herald_announce",
+   "category": "herald",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_founder",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_herald",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_king",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_title",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_reign_calm",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_reign_tense",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_famine",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_riot",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_vote",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_execution",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "music_succession",
+   "category": "audio_music",
+   "kind": "audio_music",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "amb_sewer_drips",
+   "category": "audio_ambience",
+   "kind": "audio_ambience",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "amb_street_rain",
+   "category": "audio_ambience",
+   "kind": "audio_ambience",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "amb_machine_hum",
+   "category": "audio_ambience",
+   "kind": "audio_ambience",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "amb_crowd_murmur",
+   "category": "audio_ambience",
+   "kind": "audio_ambience",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "amb_silence_dread",
+   "category": "audio_ambience",
+   "kind": "audio_ambience",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pup_idle",
+   "category": "pup",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pup_walk",
+   "category": "pup",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pup_suckle",
+   "category": "pup",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pup_play",
+   "category": "pup",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pup_die",
+   "category": "pup",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "elder_walk_limp",
+   "category": "elder",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "elder_idle_cough",
+   "category": "elder",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "elder_teach",
+   "category": "elder",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_idle_throne",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_press_law",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_die",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "enforcer_patrol",
+   "category": "enforcer",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "enforcer_idle",
+   "category": "enforcer",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "enforcer_beat",
+   "category": "enforcer",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "enforcer_drag_body",
+   "category": "enforcer",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "outcast_idle",
+   "category": "outcast",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "outcast_beg",
+   "category": "outcast",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "outcast_steal",
+   "category": "outcast",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "cat_prowl",
+   "category": "cat",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "cat_pounce",
+   "category": "cat",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "cat_eat_kill",
+   "category": "cat",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "cat_idle_tail",
+   "category": "cat",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "exterminator_drone_hover",
+   "category": "exterminator_drone",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "exterminator_drone_spray_gas",
+   "category": "exterminator_drone",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "exterminator_drone_scan",
+   "category": "exterminator_drone",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "roach_swarm_crawl",
+   "category": "roach_swarm",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "human_boot_stomp",
+   "category": "human_boot",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_indulge",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "herald_paste_poster",
+   "category": "herald",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_cat",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_elder",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_enforcer",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_exterminator_drone",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_human_boot",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_outcast",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_pup",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sheet_roach_swarm",
+   "category": "spritesheet",
+   "kind": "spritesheet",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_surface_street",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_burrow_entrance",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_granary",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_nursery",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_workshop",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_barracks",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_shrine",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_graveyard",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_sleeping_warren",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "bg_outcast_slum",
+   "category": "background",
+   "kind": "background",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "parallax_city_far",
+   "category": "parallax",
+   "kind": "parallax",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "parallax_city_mid",
+   "category": "parallax",
+   "kind": "parallax",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow_0",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow_1",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow_2",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow_3",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow_4",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_founding",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_first_law",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_famine",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_plague",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_riot",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_vote",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_execution",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_king_dies_alone",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_succession",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_extermination",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_flood",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_golden_age",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_collapse",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "event_exodus",
+   "category": "event_card",
+   "kind": "event_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "title_key_art",
+   "category": "key_art",
+   "kind": "key_art",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "share_card",
+   "category": "share_card",
+   "kind": "share_card",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pwa_icon",
+   "category": "icon_app",
+   "kind": "icon_app",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_bottle_cap_pile",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_wire_coil",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_food_crumb",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_rotten_fruit",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_cheese_rind",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_pebble",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_bone",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_syringe",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_battery",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_poster_scrap",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_law_tablet",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_pebble_bowl",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_corpse_fresh",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_corpse_bloated",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_corpse_skeleton",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_kill_remains",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_law_poster_torn",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_fertility",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_health",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_productivity",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_population",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_dead",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_discontent",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_tithe",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_vote",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "icon_skull",
+   "category": "icon",
+   "kind": "icon",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "wordmark",
+   "category": "wordmark",
+   "kind": "wordmark",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "font_glyphs_rat_script",
+   "category": "glyphs",
+   "kind": "glyphs",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "tileset_burrow",
+   "category": "tileset",
+   "kind": "tileset",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "prop_law_poster",
+   "category": "prop",
+   "kind": "prop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_walk",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_king_talk",
+   "category": "portrait_king",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_king_starving_talk",
+   "category": "portrait_king_starving",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_founder_talk",
+   "category": "portrait_founder",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_worker_m_talk",
+   "category": "portrait_worker_m",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_worker_f_talk",
+   "category": "portrait_worker_f",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_elder_talk",
+   "category": "portrait_elder",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_enforcer_talk",
+   "category": "portrait_enforcer",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_outcast_talk",
+   "category": "portrait_outcast",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_prophet_talk",
+   "category": "portrait_prophet",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "portrait_new_king_talk",
+   "category": "portrait_new_king",
+   "kind": "portrait_anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "king_frustrated",
+   "category": "king",
+   "kind": "anim",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "neon_sign_rat_glyph_loop",
+   "category": "neon_sign_rat_glyph",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "neon_arrow_loop",
+   "category": "neon_arrow",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "pipe_drip_loop",
+   "category": "pipe_drip",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "steam_vent_loop",
+   "category": "steam_vent",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "fire_barrel_loop",
+   "category": "fire_barrel",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "lamp_flicker_loop",
+   "category": "lamp_flicker",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "flies_corpse_loop",
+   "category": "flies_corpse",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "treadwheel_loop",
+   "category": "treadwheel",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sewage_flow_loop",
+   "category": "sewage_flow",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "blood_pool_spread_loop",
+   "category": "blood_pool_spread",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "law_stamp_vfx_loop",
+   "category": "law_stamp_vfx",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sfx_cat_hiss",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sfx_scurry",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sfx_law_stamp",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "sfx_vote_pebble",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_king_eat",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_squeak",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_squeal_pain",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_dig",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_wheel_creak",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_neon_buzz",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_drip",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_drone_buzz",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_crowd_rage",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "sfx_death_rattle",
+   "category": "sfx",
+   "kind": "sfx",
+   "final": false,
+   "fallback": "procedural WebAudio"
+  },
+  {
+   "id": "gas_cloud_loop",
+   "category": "fx_loop",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "plague_flea_cloud_loop",
+   "category": "fx_loop",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "rain_grate_loop",
+   "category": "fx_loop",
+   "kind": "fx_loop",
+   "final": true,
+   "fallback": "final"
+  },
+  {
+   "id": "dust_motes_loop",
+   "category": "fx_loop",
+   "kind": "fx_loop",
+   "final": false,
+   "fallback": "not shown (cut)"
+  }
+ ]
+}
