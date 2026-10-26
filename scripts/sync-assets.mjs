@@ -1,8 +1,9 @@
 // Copies approved art into public/: Sogni final assets (if the asset agent has produced index.json)
 // and the approved pixel-test sprites as the first fallback. Writes reports/missing_assets.{json,md}.
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
-const ROOT = '/workspace/ratgod';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FINAL = join(ROOT, 'assets/final');
 const PT = join(ROOT, 'pixel_test/native');
 const out = 'public/assets';
