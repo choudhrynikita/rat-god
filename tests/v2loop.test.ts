@@ -24,4 +24,14 @@ describe('v2 loop', () => {
     expect(w.grace).toBeLessThan(120);
     expect(w.byId.get(king)?.emo.fear).toBeGreaterThan(0.5);
   });
+
+  it('keeps founding rats walking after the first tunnels open', () => {
+    const w = createWorld({ seed: 7, scenario: 'founding', founders: 10 });
+    stepWorld(w, 1600);
+    const mark = new Map(w.rats.filter((r) => r.alive).map((r) => [r.id, r.dist]));
+    stepWorld(w, 400);
+    const alive = w.rats.filter((r) => r.alive);
+    const moved = alive.filter((r) => r.dist - (mark.get(r.id) ?? 0) > 1).length;
+    expect(moved).toBeGreaterThan(alive.length * 0.6);
+  });
 });

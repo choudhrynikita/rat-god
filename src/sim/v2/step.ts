@@ -1,6 +1,6 @@
 /** One tick of the living city. Each system already exists; this only calls them in order. */
 import { Anim, DAY_TICKS, HOUR_TICKS, RF, type Season, type WeatherKind } from './contract';
-import { digEdge, frontierS, isOpen, planChamber } from './burrow';
+import { digEdge, isOpen, planChamber, reach } from './burrow';
 import { healDaily } from './combat';
 import { economyDaily } from './economy';
 import { familyDaily } from './family';
@@ -11,7 +11,7 @@ import { anyChamber, maybeExtras, spotIn } from './places';
 import { factionsDaily, partiesDaily } from './politics';
 import { bodySize, kill, newRat, prune, stageOf } from './rats';
 import { socialHourly } from './social';
-import { R, chance, clamp, clamp01, day, emit, pick, type World } from './state';
+import { R, chance, clamp01, day, emit, pick, type World } from './state';
 import { techDaily } from './tech';
 
 const failed = new Set<string>();
@@ -108,7 +108,7 @@ function think(w: World) {
   let budget = 5;
   for (const r of w.rats) {
     if (!r.alive || r.edge < 0) continue;
-    const moving = r.path.length > r.pathI;
+    const moving = r.path.length > r.pathI && r.speed > 0.02;
     if (!moving && r.speed < 0.08) {
       if (r.flags & RF.king) r.anim = Anim.Throne;
       else if (r.flags & RF.jailed) r.anim = Anim.Jailed;
@@ -123,22 +123,41 @@ function think(w: World) {
       r.anim = (r.flags & RF.priest) ? Anim.Pray : Anim.Idle; continue;
     }
     const e = openF[(r.id + w.tick) % openF.length];
-    const s = 0.3 + R(w) * Math.max(0.2, e.len - 0.6);
-    r.intent.kind = 'wander'; r.intent.since = w.tick; r.intent.until = w.tick + 120; r.intent.goalEdge = e.id; r.intent.goalS = s;
-    pathTo(w, r, { edge: e.id, s });
+    const [lo, hi] = reach(e); if (hi - lo < 0.4) { r.intent.until = w.tick + 8; continue; }
+    const s = lo + 0.2 + R(w) * Math.max(0.2, hi - lo - 0.4);
+    r.intent.kind = 'wander'; r.intent.since = w.tick; r.intent.goalEdge = e.id; r.intent.goalS = s;
+    if (pathTo(w, r, { edge: e.id, s })) r.intent.until = w.tick + 50;
+    else { r.intent.kind = 'idle'; r.intent.until = w.tick + 8; }
   }
 }
 
 function dig(w: World) {
   if (!w.digQueue.length || w.tick % 2 !== 0) return;
+  let guard = 0;
+  while (w.digQueue.length && guard++ < 8) {
+    const head = w.edges[w.digQueue[0]];
+    if (!head || isOpen(head) || (head as { dead?: boolean }).dead) { w.digQueue.shift(); continue; }
+    break;
+  }
   const e = w.edges[w.digQueue[0]];
   if (!e || isOpen(e)) return;
   digEdge(w, e, w.founding && w.founding.stage !== 'done' ? 2.4 : 0.85);
   if ((w.tick + e.id) % 16 !== 0) return;
-  const s = clamp(frontierS(e), 0, e.len);
-  const digger = w.rats.find((r) => r.alive && !(r.flags & (RF.king | RF.jailed)) && r.stageN >= 2);
-  if (!digger) return;
-  if (pathTo(w, digger, { edge: e.id, s: Math.max(0.2, s - 0.4) })) { digger.intent.kind = 'dig'; digger.anim = Anim.Dig; digger.intent.until = w.tick + 30; }
+  const adults = w.rats.filter((r) => r.alive && !(r.flags & (RF.king | RF.jailed)) && r.stageN >= 2);
+  if (!adults.length) return;
+  // rotate: the old find() always sent the same rat, and a path onto undug ground pinned them there
+  const digger = adults[(Math.floor(w.tick / 16) + e.id) % adults.length];
+  const mouth = e.from;
+  const stand = w.edges.find((ed) => ed.id !== e.id && isOpen(ed) && (ed.a === mouth || ed.b === mouth));
+  if (!stand) return;
+  const s = stand.a === mouth ? Math.min(stand.len, 0.6) : Math.max(0, stand.len - 0.6);
+  if (pathTo(w, digger, { edge: stand.id, s })) { digger.intent.kind = 'dig'; digger.anim = Anim.Dig; digger.intent.until = w.tick + 24; }
+}
+
+function planFounding(w: World, kind: 'cache' | 'midden' | 'throne', from: number | undefined, name: string, attempt: number) {
+  const nest = w.chambers.find((c) => c.kind === 'nest');
+  const near = nest ? { x: nest.cx + ((attempt % 7) - 3) * 14, y: nest.cy + 6 + (attempt % 5) * 5 } : undefined;
+  return planChamber(w, kind, { from: attempt > 4 ? undefined : from, near, name, fit: 'modest' });
 }
 
 /** Uncrowned start: nest, then a store, then a throne. The button is born only when that hall is empty. */
@@ -153,12 +172,14 @@ function foundingPulse(w: World) {
   const from = nest?.entryNode ?? w.entrances[0];
   if (f.stage === 'nest') {
     if (!done('nest') || from == null) return;
-    const ch = planChamber(w, 'cache', { from, name: 'THE FIRST CACHE' }) ?? planChamber(w, 'midden', { from, name: 'THE FIRST MIDDEN' });
-    if (ch) { f.stage = 'cache'; emit(w, 'dig_start', `${leader.name} sends them to chew a store.`, 1, { rats: [leader.id], chamber: ch.id, x: ch.cx, y: ch.cy }); }
+    const ch = planFounding(w, 'cache', from, 'THE FIRST CACHE', f.wait) ?? planFounding(w, 'midden', from, 'THE FIRST MIDDEN', f.wait);
+    if (ch) { f.stage = 'cache'; f.wait = 0; emit(w, 'dig_start', `${leader.name} sends them to chew a store.`, 1, { rats: [leader.id], chamber: ch.id, x: ch.cx, y: ch.cy }); }
+    else f.wait++;
   } else if (f.stage === 'cache') {
     if (!done('cache') && !done('midden') && !done('granary')) return;
-    const hall = planChamber(w, 'throne', { from, name: 'THE FIRST THRONE' });
-    if (hall) { f.stage = 'throne'; emit(w, 'dig_start', `They start a hall for ${leader.name}. The crown waits on the far wall.`, 1, { rats: [leader.id], chamber: hall.id, x: hall.cx, y: hall.cy }); }
+    const hall = planFounding(w, 'throne', from, 'THE FIRST THRONE', f.wait);
+    if (hall) { f.stage = 'throne'; f.wait = 0; emit(w, 'dig_start', `They start a hall for ${leader.name}. The crown waits on the far wall.`, 1, { rats: [leader.id], chamber: hall.id, x: hall.cx, y: hall.cy }); }
+    else f.wait++;
   } else if (f.stage === 'throne') {
     const hall = anyChamber(w, 'throne'); if (!hall) return;
     f.stage = 'clear'; f.wait = w.tick;
@@ -172,7 +193,7 @@ function foundingPulse(w: World) {
     for (const r of w.rats) {
       if (!r.alive || r.id === leader.id || r.edge !== floor) continue;
       others++;
-      if (nestSpot) pathTo(w, r, nestSpot);
+      if (nestSpot && !(r.path.length > r.pathI)) pathTo(w, r, nestSpot);
     }
     if (others > 0 && w.tick - f.wait < 160) return;
     crown(w, leader, 'the finished hall');

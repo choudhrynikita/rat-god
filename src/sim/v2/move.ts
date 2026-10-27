@@ -46,11 +46,12 @@ export function pathTo(w: World, r: Rat, g: Goal, flee = false): boolean {
   if (bestEnd < 0) return false;
   const rev: number[] = [he(g.edge, bestEnd === ge.b)];
   let n = bestEnd; let guard = 0;
-  while (guard++ < 10000) {
+  while (guard++ < 400) {
     const h = via[n]; if (h < 0) return false; const e = w.edges[heEdge(h)];
     rev.push(h); if (heEdge(h) === r.edge) break;
     n = heRev(h) ? e.b : e.a; // we arrived at n travelling along h; the start of h is the other node
   }
+  if (heEdge(rev[rev.length - 1]) !== r.edge) return false;
   r.path = rev.reverse(); r.pathI = 0; r.goalS = gs; return true;
 }
 /** nearest point on any open edge to (x,y) — for spawning */
@@ -77,13 +78,38 @@ export function cruise(w: World, r: Rat): number {
   return v;
 }
 
+/** ticks a path may sit without the body moving before it is thrown away */
+const STALL_TICKS = 12;
+const stallN = new Map<number, { s: number; n: number }>();
+const bodyTiles = (size: number) => Math.max(1.15, 2.15 * size);
+
+/** A path that cannot be walked is not a plan. Release it so think() may choose again. */
+function dropPath(w: World, r: Rat) {
+  r.path = []; r.pathI = 0; r.speed = 0;
+  if (r.intent.until > w.tick) r.intent.until = w.tick;
+  stallN.delete(r.id);
+}
+function noteStall(w: World, r: Rat, s0: number) {
+  if (!r.alive || !(r.path.length > r.pathI)) { stallN.delete(r.id); return; }
+  if (Math.abs(r.s - s0) < 0.02 && r.speed < 0.05) {
+    const n = (stallN.get(r.id)?.n ?? 0) + 1;
+    if (n >= STALL_TICKS) dropPath(w, r);
+    else stallN.set(r.id, { s: r.s, n });
+  } else stallN.set(r.id, { s: r.s, n: 0 });
+}
+
 /** Advance every rat's body. Crowd rules apply on narrow edges: followers queue, opposing rats squeeze past. */
 export function moveAll(w: World) {
   const buckets = new Map<number, Rat[]>();
-  for (const r of w.rats) { if (!r.alive || r.edge < 0) continue; let b = buckets.get(r.edge); if (!b) buckets.set(r.edge, (b = [])); b.push(r); }
+  for (const r of w.rats) {
+    if (!r.alive || r.edge < 0) { stallN.delete(r.id); continue; }
+    let b = buckets.get(r.edge); if (!b) buckets.set(r.edge, (b = [])); b.push(r);
+  }
   for (const [eid, list] of buckets) {
-    const e = w.edges[eid]; const lanes = Math.max(1, Math.floor(e.width / 1.4));
-    if (list.length > 1) list.sort((a, b) => a.s - b.s);
+    const e = w.edges[eid];
+    // a 2.2-tile chew is wide enough for two rats to pass; the old 1.4 divisor made every tunnel one file
+    const lanes = Math.max(1, Math.floor(e.width / 1.05));
+    if (list.length > 1) list.sort((a, b) => a.s - b.s || a.id - b.id);
     for (let i = 0; i < list.length; i++) {
       const r = list[i]; const lod = (r.flags & (1 << 21)) !== 0;
       if (lod && (w.tick + r.id) % 4 !== 0) continue;
@@ -93,51 +119,59 @@ export function moveAll(w: World) {
   }
 }
 function stepRat(w: World, r: Rat, e: NavEdge, list: Rat[], i: number, lanes: number, dt: number) {
+  const s0 = r.s;
   const moving = r.path.length > 0 && r.pathI < r.path.length;
-  let target = 0;
   if (moving) {
     const h = r.path[r.pathI]; const last = r.pathI === r.path.length - 1;
-    if (heEdge(h) !== r.edge) { r.path = []; r.speed = 0; return; }
+    if (heEdge(h) !== r.edge) { dropPath(w, r); noteStall(w, r, s0); return; }
     r.dir = heRev(h) ? -1 : 1;
     const endS = last ? r.goalS : (r.dir > 0 ? e.len : 0);
-    const remain = (endS - r.s) * r.dir;
-    let vmax = cruise(w, r);
-    if (last) vmax = Math.min(vmax, Math.max(0.15, remain * 0.6)); // ease in to the stop
-    // crowd: nearest rat ahead in the travel direction
-    const bodyLen = 5 * r.size; let squeeze = false; r.flags &= ~(1 << 22);
-    for (let j = r.dir > 0 ? i + 1 : i - 1; j >= 0 && j < list.length; j += r.dir) {
-      const o = list[j]; const gap = (o.s - r.s) * r.dir; if (gap > bodyLen * 1.6 + 2) break; if (o === r || !o.alive) continue;
-      const oppose = o.path.length > o.pathI && o.dir !== r.dir && o.speed > 0.05;
-      if (lanes >= 2 && Math.abs(o.lane - r.lane) > 0.9) continue; // different lane
-      if (oppose) { squeeze = true; continue; }
-      const need = 1.1 * bodyLen * 0.5 + 1.1 * 5 * o.size * 0.5;
-      if (gap < need + 0.4) {
-        if (lanes >= 2) { r.laneT = clamp(o.lane + (r.lane >= o.lane ? 1.2 : -1.2), -(e.width / 2 - 0.7), e.width / 2 - 0.7); }
-        else { vmax = Math.min(vmax, Math.max(0, (gap - need) * 0.5 + (o.dir === r.dir ? o.speed : 0))); r.flags |= 1 << 22; }
+    let remain = (endS - r.s) * r.dir;
+    // already past the stop, or close enough that another body owns the last paw-width
+    if (remain <= 0.15 && last) { r.s = clamp(endS, 0, e.len); dropPath(w, r); remain = 0; }
+    if (r.path.length > r.pathI) {
+      let vmax = cruise(w, r);
+      if (last) vmax = Math.min(vmax, Math.max(0.15, remain * 0.6));
+      const bodyLen = bodyTiles(r.size); let squeeze = false; r.flags &= ~(1 << 22);
+      for (let j = r.dir > 0 ? i + 1 : i - 1; j >= 0 && j < list.length; j += r.dir) {
+        const o = list[j]; const gap = (o.s - r.s) * r.dir; if (gap > bodyLen * 1.6 + 2) break; if (o === r || !o.alive) continue;
+        // a stopped oncoming rat is still oncoming — requiring speed > 0 locked every head-on jam forever
+        const oncoming = o.dir !== r.dir && o.path.length > o.pathI;
+        if (lanes >= 2 && Math.abs(o.lane - r.lane) > 0.9) continue;
+        if (oncoming) { squeeze = true; continue; }
+        if (gap < 0.08 && r.id > o.id) { r.s = clamp(r.s - r.dir * 0.1, 0, e.len); }
+        const need = 0.55 * bodyLen + 0.55 * bodyTiles(o.size);
+        if (gap < need + 0.35) {
+          if (lanes >= 2) { r.laneT = clamp(o.lane + (r.lane >= o.lane ? 1.2 : -1.2), -(e.width / 2 - 0.45), e.width / 2 - 0.45); }
+          else { vmax = Math.min(vmax, Math.max(0, (gap - need) * 0.5 + (o.dir === r.dir ? o.speed : 0))); r.flags |= 1 << 22; }
+        }
       }
-    }
-    if (squeeze && lanes < 2) { vmax = Math.min(vmax, SPEEDS.squeeze); r.laneT = 0.5; } else if (lanes < 2) r.laneT = 0;
-    target = vmax;
-    // acceleration-limited speed change
-    const acc = 0.25 * dt, dec = 0.5 * dt;
-    r.speed = r.speed < target ? Math.min(target, r.speed + acc) : Math.max(target, r.speed - dec);
-    let adv = r.speed * dt;
-    if (adv >= remain) {
-      adv = Math.max(0, remain);
-      if (last) { r.s = endS; r.path = []; r.speed = 0; }
+      if (squeeze && lanes < 2) { vmax = Math.min(vmax, SPEEDS.squeeze); r.laneT = 0.5; } else if (lanes < 2) r.laneT = 0;
+      // close enough to the goal, and the body ahead will not give up the spot: call it arrived
+      if (last && remain <= 0.8 && vmax < 0.05) { dropPath(w, r); }
       else {
-        // move onto the next edge, carrying the remainder
-        r.dist += adv; const nh = r.path[++r.pathI]; const ne = w.edges[heEdge(nh)];
-        r.edge = ne.id; r.s = heRev(nh) ? ne.len : 0; r.dir = heRev(nh) ? -1 : 1; adv = 0;
-        const [lo, hi] = reach(ne); if (r.s < lo - 1e-3 || r.s > hi + 1e-3) { r.edge = e.id; r.s = r.dir > 0 ? e.len : 0; r.path = []; r.speed = 0; }
+        const acc = 0.25 * dt, dec = 0.5 * dt;
+        r.speed = r.speed < vmax ? Math.min(vmax, r.speed + acc) : Math.max(vmax, r.speed - dec);
+        let adv = r.speed * dt;
+        if (adv >= remain && remain >= 0) {
+          adv = Math.max(0, remain);
+          if (last) { r.dist += adv; r.s = clamp(endS, 0, e.len); dropPath(w, r); adv = 0; }
+          else {
+            r.dist += adv; const nh = r.path[++r.pathI]; const ne = w.edges[heEdge(nh)];
+            const backEdge = e.id; const backS = r.dir > 0 ? e.len : 0;
+            r.edge = ne.id; r.s = heRev(nh) ? ne.len : 0; r.dir = heRev(nh) ? -1 : 1; adv = 0;
+            const [lo, hi] = reach(ne);
+            if (r.s < lo - 1e-3 || r.s > hi + 1e-3) { r.edge = backEdge; r.s = backS; dropPath(w, r); }
+          }
+        }
+        if (r.edge === e.id && r.path.length) { r.s = clamp(r.s + adv * r.dir, 0, e.len); r.dist += adv; }
+        const edNow = w.edges[r.edge]; const [lo, hi] = reach(edNow);
+        if (r.s < lo || r.s > hi) { r.s = clamp(r.s, lo, hi); dropPath(w, r); }
       }
     }
-    if (r.edge === e.id) { r.s = clamp(r.s + adv * r.dir, 0, e.len); r.dist += adv; }
-    // never stand in undug ground: clamp to the reachable interval
-    const ed = w.edges[r.edge]; const [lo, hi] = reach(ed); if (r.s < lo) { r.s = lo; r.speed = 0; } if (r.s > hi) { r.s = hi; r.speed = 0; }
   } else { r.speed = Math.max(0, r.speed - 0.5 * dt); r.flags &= ~(1 << 22); }
-  // lane smoothing
-  const ed = w.edges[r.edge]; const maxLane = Math.max(0, ed.width / 2 - 0.6);
+  noteStall(w, r, s0);
+  const ed = w.edges[r.edge]; const maxLane = Math.max(0, ed.width / 2 - 0.45);
   r.lane += clamp(clamp(r.laneT, -maxLane, maxLane) - r.lane, -0.12 * dt, 0.12 * dt);
   sampleEdge(ed, r.s, POSE);
   const hd = r.dir > 0 ? POSE.heading : POSE.heading + Math.PI;

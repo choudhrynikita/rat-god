@@ -154,16 +154,18 @@ function anchors(w: World): number[] {
   return out;
 }
 
-export interface PlanOpts { near?: { x: number; y: number }; from?: number; name?: string; owner?: number }
+export interface PlanOpts { near?: { x: number; y: number }; from?: number; name?: string; owner?: number; fit?: 'modest' /** founding hall: small enough to sit beside the first nest */ }
 /** Plan a new chamber of `kind` and the tunnel(s) to it. Returns the chamber (progress 0) or null if no site/route. */
 export function planChamber(w: World, kind: ChamberKind, o: PlanOpts = {}): Chamber | null {
   const T = w.T; const sp = KIND_SPEC[kind]; const anc = o.from != null ? [o.from] : anchors(w); if (!anc.length) return null;
-  const rx = sp.rx[0] + R(w) * (sp.rx[1] - sp.rx[0]), ry = sp.ry[0] + R(w) * (sp.ry[1] - sp.ry[0]);
+  let rx = sp.rx[0] + R(w) * (sp.rx[1] - sp.rx[0]), ry = sp.ry[0] + R(w) * (sp.ry[1] - sp.ry[0]);
+  let d0 = sp.depth[0], d1 = sp.depth[1];
+  if (o.fit === 'modest') { rx = Math.min(rx, 7); ry = Math.min(ry, 3.8); d0 = Math.min(d0, 14); d1 = Math.min(Math.max(d0 + 4, d1), 32); }
   let best: { x: number; y: number; sc: number; a: number } | null = null;
   const centre = o.near ?? (() => { let sx = 0, sy = 0, n = 0; for (const c of w.chambers) { sx += c.cx; sy += c.cy; n++; } return n ? { x: sx / n, y: sy / n } : { x: w.nodes[anc[0]].x, y: w.nodes[anc[0]].y + 20 }; })();
-  for (let k = 0; k < 70; k++) {
+  for (let k = 0; k < (o.fit === 'modest' ? 110 : 70); k++) {
     const x = clamp(centre.x + (R(w) - 0.5) * 140, rx + 4, T.W - rx - 4);
-    const sy = T.surfaceY[Math.floor(x)]; const y = sy + sp.depth[0] + R(w) * (sp.depth[1] - sp.depth[0]);
+    const sy = T.surfaceY[Math.floor(x)]; const y = sy + d0 + R(w) * (d1 - d0);
     if (y + ry > T.H - 12) continue;
     if (!siteOk(w, kind, x, y, rx, ry)) continue;
     let a = -1, ad = Infinity; for (const n of anc) { const d = Math.hypot(w.nodes[n].x - x, w.nodes[n].y - y); if (d < ad) { ad = d; a = n; } }
