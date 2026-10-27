@@ -29,7 +29,7 @@ const MAP: Record<number, string[]> = {
 };
 const COAT = [0xffffff, 0xc9c6cc, 0x8a8790, 0xffffff, 0xfff0d8, 0xe8d4b8, 0xfff6f6, 0xe6e0e0];
 const TIER = (r: number) => r;
-interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null;
+interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
   snapY: number; rot: number; facing: number; flip: number; clipId: string; fade: number; seen: number; t0: number; off: number; i: number; lastAnim: number }
 
@@ -62,7 +62,7 @@ export class Actors {
   private make(id: number, x: number, y: number): RV {
     const root = new Container(); const body = new Sprite(); const ghost = new Sprite(); const tool = new Sprite(); tool.visible = false; ghost.visible = false;
     root.addChild(ghost, body, tool); this.layer.addChild(root);
-    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1 };
+    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1 };
     this.rv.set(id, v); return v;
   }
   private character(flags: number, stage: number): string {
@@ -154,14 +154,33 @@ export class Actors {
         if (tool === 1) { L.tint = 0xffa040; L.scale.set(1.3 * fl); L.alpha = 0.9; } else if (tool === 6) { L.tint = 0xffc070; L.scale.set(1.7 * fl); L.alpha = 0.85; }
         else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.7 + Math.random() * 0.3); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
         L.position.set(v.x, v.snapY - 12); } else if (v.light) { v.light.destroy(); v.light = null; }
-      // selection ring (a small marker above the head)
-      if (v.id === this.selected) { if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.root.addChild(v.mark); } v.mark.position.set(0, -c.top * sc - 4 + Math.sin(now * 0.008) * 1.5); v.mark.rotation = -v.rot; }
-      else if (v.mark) { v.mark.destroy(); v.mark = null; }
+      // selection: gold ring at the feet, chevron over the head, body warmed
+      if (v.id === this.selected) {
+        if (!v.ring) { v.ring = new Sprite(ringTexture()); v.ring.anchor.set(0.5, 0.5); v.root.addChildAt(v.ring, 0); }
+        if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.mark.scale.set(2.4); v.root.addChild(v.mark); }
+        const pulse = 0.5 + Math.sin(now * 0.008) * 0.5;
+        v.ring.position.set(0, 1); v.ring.rotation = -v.rot; v.ring.scale.set(1.15 + pulse * 0.18); v.ring.alpha = 0.75 + pulse * 0.25;
+        v.mark.position.set(0, -c.top * sc - 8 + Math.sin(now * 0.008) * 2); v.mark.rotation = -v.rot;
+        v.body.tint = mixTint(tint, 0xf2b46a, 0.28 + pulse * 0.22);
+      } else {
+        if (v.mark) { v.mark.destroy(); v.mark = null; }
+        if (v.ring) { v.ring.destroy(); v.ring = null; }
+      }
     }
     this.updateHazards(now);
   }
-  /** nearest rat to a world point within r px */
-  pickAt(wx: number, wy: number, r: number): number { let best = -1, bd = r * r; for (const v of this.rv.values()) { if (!v.root.visible) continue; const dx = v.x - wx, dy = v.snapY - 14 - wy; const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = v.id; } } return best; }
+  /** nearest rat to a world point. r is a horizontal slack; the body is a column from the feet up. */
+  pickAt(wx: number, wy: number, r: number): number {
+    let best = -1, bd = r * r;
+    for (const v of this.rv.values()) {
+      if (!v.root.visible) continue;
+      const top = v.snapY - 46, bot = v.snapY + 6;
+      const cy = wy < top ? top : wy > bot ? bot : wy;
+      const d = (v.x - wx) * (v.x - wx) + (cy - wy) * (cy - wy);
+      if (d < bd) { bd = d; best = v.id; }
+    }
+    return best;
+  }
   posOf(id: number) { const v = this.rv.get(id); return v ? { x: v.x, y: v.snapY - 14 } : null; }
   // ───── hazards, corpses, items, posters ─────
   private syncHazards(H: Hazard[], now: number) {
@@ -201,6 +220,17 @@ let _mark: Texture | null = null;
 function markTexture() { if (_mark) return _mark; const c = document.createElement('canvas'); c.width = 9; c.height = 7; const g = c.getContext('2d')!;
   g.fillStyle = '#080d0a'; for (let y = 0; y < 6; y++) g.fillRect(y - 0, y, 9 - y * 2 + 0, 1); g.fillStyle = '#f2b46a'; for (let y = 0; y < 4; y++) g.fillRect(y + 1, y, 7 - y * 2, 1);
   _mark = Texture.from(c); _mark.source.scaleMode = 'nearest'; return _mark; }
+function ringTexture() {
+  if (_ring) return _ring; const c = document.createElement('canvas'); c.width = 28; c.height = 12; const g = c.getContext('2d')!;
+  g.strokeStyle = '#f2b46a'; g.lineWidth = 2; g.beginPath(); g.ellipse(14, 6, 11, 4, 0, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = '#080d0a'; g.lineWidth = 1; g.beginPath(); g.ellipse(14, 6, 13, 5, 0, 0, Math.PI * 2); g.stroke();
+  _ring = Texture.from(c); _ring.source.scaleMode = 'nearest'; return _ring;
+}
+function mixTint(a: number, b: number, t: number) {
+  const ch = (s: number, m: number) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t) & 255;
+  return (ch(16, 0) << 16) | (ch(8, 0) << 8) | ch(0, 0);
+}
+let _ring: Texture | null = null;
 let _shadow: Texture | null = null;
 function shadowTexture() { if (_shadow) return _shadow; const c = document.createElement('canvas'); c.width = 64; c.height = 16; const g = c.getContext('2d')!;
   const gr = g.createRadialGradient(32, 8, 2, 32, 8, 32); gr.addColorStop(0, 'rgba(0,0,0,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 16);

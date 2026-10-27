@@ -18,8 +18,9 @@ export interface Omen { e: SimEvent2; read: boolean; at: number }
 export class Hud2 {
   readonly el: HTMLElement; powers: GodPowerInfo[] = []; snap: Snapshot2 | null = null; detail: RatDetail | null = null; B: BurrowInit | null = null;
   consent: Consent = DEFAULT_CONSENT; names = new Map<number, string>();
+  laws: { id: string; name: string; prop: string }[] = [];
   feedLog: SimEvent2[] = []; notable: SimEvent2[] = []; omens: Omen[] = []; ripples = new Map<number, Ripple>();
-  private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement;
+  private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
   readonly god: GodMenu; readonly sheets: Sheets; following = -1; private started = false; private nudgeEls = new Map<number, HTMLElement>();
   speed = 1; private lastTop = 0;
@@ -72,9 +73,10 @@ export class Hud2 {
         <span class="h2-grace" aria-label="Grace"><span class="lbl2">GRACE</span><i><b style="width:0%"></b></i></span></div>
       <button class="btn h2-iconbtn" data-k="omens" aria-label="Omens inbox">✶<span class="h2-badge hidden">0</span></button></div>`);
     this.pillsEl = h(`<div class="h2-pills"></div>`); this.feedEl = h(`<div class="h2-feed"></div>`); this.nudgeEl = h(`<div class="h2-nudges"></div>`);
+    this.selEl = h(`<div class="h2-sel" style="display:none"></div>`);
     this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
       <button class="h2-god" data-k="god" aria-label="Act as god">ACT</button></div>`);
-    this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.bottom);
+    this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.bottom, this.selEl);
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
     on('god', () => this.god.open()); on('stat', () => this.sheets.society());
@@ -83,7 +85,7 @@ export class Hud2 {
   setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
   // ───────── sim messages ─────────
   handle(m: FromWorker2) {
-    if (m.t === 'init') { this.powers = m.powers; this.B = m.burrow; }
+    if (m.t === 'init') { this.powers = m.powers; this.B = m.burrow; this.laws = m.laws; }
     else if (m.t === 'snap') { this.snap = m.snap; if (m.inspect) { this.detail = m.inspect; this.names.set(m.inspect.id, m.inspect.name); this.sheets.refreshRat(m.inspect); }
       if (m.snap.burrow) this.B && this.B.chambers.push(...m.snap.burrow.newChambers);
       for (const p of m.snap.prayers) this.names.set(p.ratId, p.name);
@@ -164,9 +166,10 @@ export class Hud2 {
   // ───────── world taps ─────────
   private tapWorld(sx: number, sy: number) {
     const w = this.world.cam.s2w(sx, sy);
-    if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, 26 / Math.max(0.3, this.world.cam.z) + 10)); return; }
-    const id = this.world.actors.pickAt(w.x, w.y, 22 / Math.max(0.3, this.world.cam.z) + 8);
-    if (id >= 0) { this.followRat(id); this.sheets.rat(id); } else if (this.following >= 0) { this.following = -1; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); this.sheets.close(); }
+    const slack = 52 / Math.max(0.35, this.world.cam.z);
+    if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, slack)); return; }
+    const id = this.world.actors.pickAt(w.x, w.y, slack);
+    if (id >= 0) { this.followRat(id); this.sheets.rat(id); } else if (this.following >= 0 || this.world.actors.selected >= 0) { this.following = -1; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); this.sheets.close(); }
   }
   chamberAt(wx: number, wy: number) { if (!this.B) return null; let best = null as null | (typeof this.B.chambers)[number], bd = 1e9;
     for (const c of this.B.chambers) { const dx = (wx / PX - c.cx) / Math.max(1, c.rx), dy = (wy / PX - c.cy) / Math.max(1, c.ry); const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } } return bd < 2.5 ? best : null; }
@@ -179,6 +182,19 @@ export class Hud2 {
       const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day} · ${hh}:00 · ${env.weather.toUpperCase()}`; pop.textContent = `${st.pop} RATS`;
       g.style.width = `${Math.round((st.grace / Math.max(1, st.graceMax)) * 100)}%`; }
     this.nudges(s);
+    this.tagSelected();
+  }
+  /** gold name over the marked rat. The ring lives on the sprite; this is the readable label. */
+  private tagSelected() {
+    const id = this.world.actors.selected;
+    if (id < 0) { this.selEl.style.display = 'none'; return; }
+    const p = this.world.actors.posOf(id);
+    if (!p) { this.selEl.style.display = 'none'; return; }
+    const sp = this.world.cam.w2s(p.x, p.y - 22);
+    this.selEl.style.display = 'block';
+    this.selEl.style.left = `${sp.x}px`;
+    this.selEl.style.top = `${sp.y}px`;
+    this.selEl.textContent = this.name(id);
   }
   /** diegetic prayer nudges: a small glyph over a praying rat; tap it to hear the plea and see the power it hints at */
   private nudges(s: Snapshot2) {

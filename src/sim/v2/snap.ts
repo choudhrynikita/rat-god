@@ -100,6 +100,7 @@ export function buildSnap(w: World, sinceSeq: number): Snapshot2 {
     plate: (k.food > 4 ? 'feast' : k.food > 2 ? 'meal' : k.food > 0.4 ? 'scraps' : 'empty') as 'feast' | 'meal' | 'scraps' | 'empty',
     reaching: w.king.reaching, reachingKind: w.king.reachingKind,
     laws: w.laws.map((l) => ({ id: l.id, adopt: l.adopt, since: l.since, repealing: l.repealing })),
+    board: lawBoard(w),
     available: safeLaws(w),
     stanceToGod: (k.beliefs.god > 0.45 ? 'devout' : k.beliefs.god < -0.35 ? 'defiant' : 'indifferent') as 'devout' | 'defiant' | 'indifferent',
     punished: w.chron.godActs.filter((a) => a.power === 'punish_king' || a.power === 'punish').length,
@@ -121,6 +122,20 @@ export function buildSnap(w: World, sinceSeq: number): Snapshot2 {
 }
 
 function safeLaws(w: World) { try { return available(w).slice(0, 16); } catch { return []; } }
+
+/** 36 sockets. Pressed laws fill from the first socket; provenance is base until drafting exists. */
+function lawBoard(w: World) {
+  const sockets: (string | null)[] = Array.from({ length: 36 }, () => null);
+  const provenance: ('base' | 'drafted' | 'tech' | 'god' | null)[] = Array.from({ length: 36 }, () => null);
+  const sealed: boolean[] = Array.from({ length: 36 }, () => false);
+  for (let i = 0; i < w.laws.length && i < 36; i++) {
+    const l = w.laws[i];
+    sockets[i] = l.id;
+    provenance[i] = 'base';
+    sealed[i] = !l.repealing;
+  }
+  return { sockets, provenance, sealed };
+}
 
 function alivePop(w: World) { let n = 0; for (const r of w.rats) if (r.alive) n++; return n; }
 

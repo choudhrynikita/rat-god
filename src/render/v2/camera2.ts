@@ -87,7 +87,7 @@ export class Camera2 {
     }
     if (this.ptrs.size === 0) {
       this.pinch = null;
-      if (this.dragging && !cancel && this.moved < 10 && now - p.t < 320) {
+      if (this.dragging && !cancel && this.moved < 14 && now - p.t < 400) {
         const lt = this.lastTap; const sx = e.clientX - this.el.getBoundingClientRect().left, sy = e.clientY - this.el.getBoundingClientRect().top;
         if (now - lt.t < 320 && Math.hypot(sx - lt.x, sy - lt.y) < 36) { this.lastTap.t = 0; this.onDoubleTap(sx, sy); }
         else { this.lastTap = { t: now, x: sx, y: sy }; this.onTap(sx, sy); }

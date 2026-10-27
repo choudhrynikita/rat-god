@@ -49,8 +49,10 @@ export class Sheets {
         <div class="h2-sec">Beliefs</div>${Object.entries(d.beliefs).map(([k, v]) => `<div class="h2-row"><span>${k.toUpperCase()}</span><span class="v">${v > 0.2 ? 'for' : v < -0.2 ? 'against' : 'unsure'}</span></div>`).join('')}`;
       else body = this.rippleList((d.ripples ?? []).map((id) => hud.ripples.get(id)).filter(Boolean) as never) || '<p class="h2-p">You have not touched this life. Yet.</p>';
     }
-    body += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn rust" data-act>ACT ON ${d ? esc(d.name.toUpperCase()) : 'THIS RAT'}</button><button class="btn" data-unfollow>STOP FOLLOWING</button></div>`;
+    body += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn rust" data-bless>BLESS</button><button class="btn" data-curse>CURSE</button><button class="btn rust" data-act>ACT ON ${d ? esc(d.name.toUpperCase()) : 'THIS RAT'}</button><button class="btn" data-unfollow>STOP FOLLOWING</button></div>`;
     const el = this.open(title, body, (root) => {
+      root.querySelector<HTMLElement>('[data-bless]')!.onclick = () => { const id = this.ratId; this.close(); hud.god.begin('bless', { rat: id }); };
+      root.querySelector<HTMLElement>('[data-curse]')!.onclick = () => { const id = this.ratId; this.close(); hud.god.begin('curse', { rat: id }); };
       root.querySelector<HTMLElement>('[data-act]')!.onclick = () => { const id = this.ratId; this.close(); hud.god.open({ rat: id }); };
       root.querySelector<HTMLElement>('[data-unfollow]')!.onclick = () => { hud.following = -1; hud.world.cam.follow = null; hud.world.actors.selected = -1; this.close(); };
     }, tabs, (id) => { this.ratTab = id; if (id === 'story') hud.sim.send({ t: 'story', id: this.ratId }); this.renderRat(hud.detail?.id === this.ratId ? hud.detail : d); }, 'rat');
@@ -70,7 +72,7 @@ export class Sheets {
   // ───────── the city ─────────
   society(tab = this.socTab) {
     this.socTab = tab; const s = this.hud.snap; if (!s) return;
-    const tabs = [['overview', 'OVERVIEW'], ['factions', 'FACTIONS'], ['faiths', 'FAITHS'], ['politics', 'PARTIES'], ['castes', 'CASTES & HOMES'], ['tech', 'KNOWLEDGE'], ['justice', 'JUSTICE'], ['firms', 'FIRMS'], ['ripples', 'RIPPLES']].map(([id, label]) => ({ id, label, on: id === tab }));
+    const tabs = [['overview', 'OVERVIEW'], ['factions', 'FACTIONS'], ['faiths', 'FAITHS'], ['politics', 'PARTIES'], ['laws', 'LAWS'], ['castes', 'CASTES & HOMES'], ['tech', 'KNOWLEDGE'], ['justice', 'JUSTICE'], ['firms', 'FIRMS'], ['ripples', 'RIPPLES']].map(([id, label]) => ({ id, label, on: id === tab }));
     this.open('THE CITY', this.socBody(tab, s), undefined, tabs, (id) => this.society(id), 'society');
   }
   private socBody(tab: string, s: Snapshot2) {
@@ -83,6 +85,7 @@ export class Sheets {
         <div class="h2-sec">Stories unfolding</div>${s.arcs.filter((a) => !a.ended).slice(0, 8).map((a) => `<p class="h2-p"><span class="h2-chip">${esc(a.kind.replace(/_/g, ' '))}</span>${esc(clean(a.title))} — ${esc(clean(a.stage))} ${a.rats[0] ? N(a.rats[0]) : ''}</p>`).join('') || '<p class="h2-p">Quiet days.</p>'}`; }
       case 'factions': return s.factions.map((f) => `<div class="h2-sec" style="color:${hex(f.color)}">${esc(f.name)} · ${f.kind}</div><p class="h2-p">“${esc(clean(f.creed))}” — aims: ${esc(clean(f.aims))}</p>${row('MEMBERS', String(f.members))}${row('INFLUENCE', pct(f.strength))}<div class="h2-row"><span>LEADER</span>${N(f.leader)}</div>`).join('') || '<p class="h2-p">No factions yet.</p>';
       case 'faiths': return s.religions.map((r) => `<div class="h2-sec" style="color:${hex(r.color)}">${esc(r.name)}</div><p class="h2-p">Worships ${esc(r.deity)}. ${r.doctrine.map((d) => esc(clean(d))).join(' · ')}</p>${row('FAITHFUL', String(r.members))}${row('TEMPLES', String(r.temples.length))}${row('TOWARD OTHERS', r.tolerance > 0.3 ? 'harmonious' : r.tolerance < -0.3 ? 'persecuting' : 'wary')}${r.enemies.length ? row('HOLY WAR WITH', r.enemies.map((e) => esc(s.religions.find((x) => x.id === e)?.name ?? '?')).join(', ')) : ''}<div class="h2-row"><span>PROPHET</span>${N(r.prophet)}</div>`).join('') || '<p class="h2-p">No organised faith yet. They pray to you alone, or not at all.</p>';
+      case 'laws': return this.lawBoard(s);
       case 'politics': return `${s.council ? `<div class="h2-sec">Council</div>${row('SEATS', String(s.council.seats))}${row('NEXT ELECTION', `day ${day(s.council.nextElection)}`)}${s.council.lastVote ? `<p class="h2-p">Last vote: ${esc(clean(s.council.lastVote))}</p>` : ''}` : '<p class="h2-p">No council sits.</p>'}
         ${s.parties.map((p) => `<div class="h2-sec" style="color:${hex(p.color)}">${esc(p.name)}${p.banned ? ' · BANNED' : ''}</div><p class="h2-p">${p.platform.map((x) => `<span class="h2-chip">${esc(clean(x))}</span>`).join('')}</p>${row('MEMBERS · SEATS', `${p.members} · ${p.seats}`)}${p.corrupt > 0.4 ? row('CORRUPTION', pct(p.corrupt)) : ''}<div class="h2-row"><span>LEADER</span>${N(p.leader)}</div>`).join('')}`;
       case 'castes': return `${(s.castes ?? []).sort((a, b) => a.rank - b.rank).map((c) => `<div class="h2-sec" style="color:${hex(c.color)}">${esc(c.name)} · rank ${c.rank + 1}</div>${row('MEMBERS', String(c.members))}<p class="h2-p">${c.occupations.map((o) => `<span class="h2-chip">${esc(o)}</span>`).join('')}</p>${c.norms.map((n) => `<p class="h2-p" style="color:var(--grey)">${esc(clean(n))}</p>`).join('')}`).join('') || '<p class="h2-p">No castes have hardened. Yet.</p>'}
@@ -98,6 +101,28 @@ export class Sheets {
       case 'ripples': { const rs = [...this.hud.ripples.values()].sort((a, b) => b.tick - a.tick); return rs.length ? `<p class="h2-p" style="color:var(--grey)">What your hand set moving.</p>${this.rippleList(rs)}` : '<p class="h2-p">You have not acted. Everything here happened without you.</p>'; }
     }
     return '';
+  }
+  /** God's Wheel: 36 sockets. Pressed laws sit in the first sockets; the rest stay empty. */
+  private lawBoard(s: Snapshot2) {
+    const k = s.king;
+    const cat = new Map(this.hud.laws.map((l) => [l.id, l]));
+    const sockets = k?.board?.sockets ?? Array.from({ length: 36 }, (_, i) => k?.laws[i]?.id ?? null);
+    const sealed = k?.board?.sealed ?? sockets.map((id) => id != null);
+    const cells = sockets.slice(0, 36).map((id, i) => {
+      const law = id ? cat.get(id) : undefined;
+      const name = law?.name ?? (id ? id.replace(/_/g, ' ') : '');
+      const short = name ? name.split(' ').slice(0, 2).join(' ') : String(i + 1);
+      const on = id ? ' on' : '';
+      const reach = k?.reaching && id === k.reaching ? ' reach' : '';
+      const title = law ? `${law.name} — ${law.prop}` : (id ?? 'empty socket');
+      return `<div class="h2-sock${on}${reach}" title="${esc(title)}">${esc(short)}${sealed[i] === false && id ? ' ·' : ''}</div>`;
+    }).join('');
+    const pressed = (k?.laws ?? []).map((l) => {
+      const law = cat.get(l.id);
+      return `<div class="h2-row"><span>${esc(law?.name ?? l.id.replace(/_/g, ' '))}</span><span class="v">${l.repealing ? 'repealing' : 'pressed'}</span></div>${law ? `<p class="h2-p" style="color:var(--grey)">${esc(law.prop)}</p>` : ''}`;
+    }).join('') || '<p class="h2-p">The board is empty. The king has pressed nothing.</p>';
+    const reach = k?.reaching ? `<p class="h2-p">The king reaches for <b style="color:var(--amberL)">${esc(cat.get(k.reaching)?.name ?? k.reaching.replace(/_/g, ' '))}</b> (${esc(k.reachingKind ?? 'pass')}).</p>` : '<p class="h2-p" style="color:var(--grey)">The king is not reaching for a law.</p>';
+    return `<div class="h2-sec">The wheel · 36 sockets</div>${reach}<div class="h2-board">${cells}</div><div class="h2-sec">Pressed</div>${pressed}`;
   }
   // ───────── inbox & logs ─────────
   omens(tab: 'omens' | 'notable' = 'omens') {

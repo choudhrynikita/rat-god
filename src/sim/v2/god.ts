@@ -94,7 +94,12 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
   const rp: RippleS = { id: ++w.nextRipple, power: cmd.power, tick: w.tick, text, target: rat?.id, open: true, chain: [], until: w.tick + 960 * 14, world: true };
   w.ripples.push(rp); if (w.ripples.length > 24) w.ripples.shift();
   w.ripCtx = [rp.id];
-  const ev = emit(w, cmd.power === 'punish_king' || cmd.power === 'punish' ? 'god_punish' : cmd.power === 'smite' ? 'smite' : 'god_act', text, cmd.power === 'smite' || cmd.power === 'punish_king' ? 2 : 1, { rats: rat ? [rat.id] : [], fx: cmd.power === 'smite' ? 'smite' : 'god', card: text.slice(0, 48) });
+  const fx = cmd.power === 'smite' ? 'smite'
+    : cmd.power === 'bless' || cmd.power === 'anoint_prophet' || cmd.power === 'seed_founder' ? 'bless'
+    : cmd.power === 'curse' || cmd.power === 'famine' ? 'curse'
+    : cmd.power === 'whisper' || cmd.power === 'inspire' || cmd.power === 'sow_rumour' ? 'whisper'
+    : 'god';
+  const ev = emit(w, cmd.power === 'punish_king' || cmd.power === 'punish' ? 'god_punish' : cmd.power === 'smite' ? 'smite' : 'god_act', text, cmd.power === 'smite' || cmd.power === 'punish_king' ? 2 : 1, { rats: rat ? [rat.id] : [], fx, card: text.slice(0, 48) });
   w.ripCtx = [];
   w.chron.godActs.push({ tick: w.tick, power: cmd.power, text });
   if (rat) { rat.beliefs.god = clamp(rat.beliefs.god + (cmd.power === 'smite' || cmd.power === 'curse' || cmd.power === 'punish' ? -0.15 : 0.2), -1, 1); rat.rip.push({ id: rp.id, d: 0, t: w.tick }); }

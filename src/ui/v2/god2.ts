@@ -71,17 +71,23 @@ export class GodMenu {
     if (!need.length) return this.fire(info, target, params);
     const bar = h(`<div class="h2-target panel rivet"><span class="body"></span><button class="btn red">CANCEL</button></div>`);
     (bar.querySelector('button') as HTMLElement).onclick = () => this.cancel();
-    if (info.power === 'punish' && this.hud.snap?.king) { const kb = h(`<button class="btn rust">THE KING</button>`); kb.onclick = () => { target.rat = this.hud.snap!.king!.id; this.targeting!.need = this.targeting!.need.filter((n) => n !== 'rat'); this.advance(); }; bar.insertBefore(kb, bar.lastElementChild); }
-    this.hud.el.appendChild(bar); this.targeting = { info, target, params, need, bar }; this.hud.world.actors.selected = -1; this.advance();
+    if (info.power === 'punish' && this.hud.snap?.king) { const kb = h(`<button class="btn rust">THE KING</button>`); kb.onclick = () => { target.rat = this.hud.snap!.king!.id; this.hud.world.actors.selected = target.rat; this.targeting!.need = this.targeting!.need.filter((n) => n !== 'rat'); this.advance(); }; bar.insertBefore(kb, bar.lastElementChild); }
+    const held = this.hud.following >= 0 ? this.hud.following : this.hud.world.actors.selected;
+    if (held >= 0 && need.some((k) => k === 'rat' || k === 'dynasty' || k === 'faction')) {
+      const tb = h(`<button class="btn rust">THIS RAT</button>`);
+      tb.onclick = () => this.pick(0, 0, held);
+      bar.insertBefore(tb, bar.lastElementChild);
+    }
+    this.hud.el.appendChild(bar); this.targeting = { info, target, params, need, bar }; this.advance();
   }
   private advance() { const t = this.targeting!; if (!t.need.length) { this.cancel(); this.fire(t.info, t.target, t.params); return; }
     (t.bar.querySelector('.body') as HTMLElement).textContent = `${t.info.label}: ${NEEDS_LABEL[t.need[0]] ?? 'TAP THE WORLD'}`; }
   pick(wx: number, wy: number, ratId: number) {
     const t = this.targeting; if (!t) return; const k = t.need[0]; const snap = this.hud.snap;
     const ratIdx = (id: number) => { if (!snap) return -1; for (let i = 0; i < snap.rats.n; i++) if (snap.rats.id[i] === id) return i; return -1; };
-    if (k === 'rat' || k === 'rat2') { if (ratId < 0) return this.flashBar(); t.target[k] = ratId; }
-    else if (k === 'dynasty') { const i = ratIdx(ratId); if (i < 0) return this.flashBar(); t.target.dynasty = snap!.rats.dynasty[i]; }
-    else if (k === 'faction') { const i = ratIdx(ratId); if (i < 0 || !snap!.rats.faction[i]) return this.flashBar(); t.target.faction = snap!.rats.faction[i]; }
+    if (k === 'rat' || k === 'rat2') { if (ratId < 0) return this.flashBar(); t.target[k] = ratId; this.hud.world.actors.selected = ratId; }
+    else if (k === 'dynasty') { const i = ratIdx(ratId); if (i < 0) return this.flashBar(); t.target.dynasty = snap!.rats.dynasty[i]; this.hud.world.actors.selected = ratId; }
+    else if (k === 'faction') { const i = ratIdx(ratId); if (i < 0 || !snap!.rats.faction[i]) return this.flashBar(); t.target.faction = snap!.rats.faction[i]; this.hud.world.actors.selected = ratId; }
     else if (k === 'chamber') { const c = this.hud.chamberAt(wx, wy); if (!c) return this.flashBar(); t.target.chamber = c.id; }
     else if (k === 'corpse') { const c = snap?.corpses.reduce((b, c) => { const d = Math.hypot(c.x * PX - wx, c.y * PX - wy); return d < b.d ? { d, id: c.id } : b; }, { d: 80, id: -1 }); if (!c || c.id < 0) return this.flashBar(); t.target.corpse = c.id; }
     else { t.target.x = wx / PX; t.target.y = wy / PX; }

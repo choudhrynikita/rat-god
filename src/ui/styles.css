@@ -12,6 +12,8 @@ body { font-family: 'VT323', monospace; font-size: 20px; line-height: 1.1; user-
 #world { position: fixed; inset: 0; overflow: hidden; }
 #ui { position: fixed; inset: 0; pointer-events: none; }
 #ui > * { pointer-events: auto; }
+/* v2 HUD is a full-screen layer. The root must pass taps through to the city. */
+#ui > .h2 { pointer-events: none; }
 .disp { font-family: 'Silkscreen', monospace; letter-spacing: 0.5px; }
 button { font: inherit; color: inherit; cursor: pointer; }
 .btn { font-family: 'Silkscreen', monospace; font-size: 13px; min-height: 44px; min-width: 44px; padding: 0 12px; background: var(--slate); color: var(--bone); border: 2px solid #000; box-shadow: inset 2px 2px 0 var(--teal), 3px 3px 0 #000; text-transform: uppercase; }
