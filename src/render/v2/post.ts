@@ -33,8 +33,19 @@ void main(){
   if (uCA > 0.0) { vec2 d = (vUV - 0.5) * uCA / uRT * 2.0; col = vec3(texture(uScene, uv + d).r, texture(uScene, uv).g, texture(uScene, uv - d).b); }
   else col = texture(uScene, uv).rgb;
   vec4 a = texture(uActor, uv); col = col * (1.0 - a.a) + a.rgb;
-  col *= L;
-  // rim light: actor edge facing the light gradient
+  vec3 lit = mix(vec3(0.28), L * 1.55, uLightOn);
+  col *= lit;
+  if (uLightOn > 0.5) {
+    vec2 px = vec2(1.6) / uRT;
+    float l0 = dot(texture(uScene, uv).rgb, vec3(0.3));
+    float ln = dot(texture(uScene, uv + vec2(px.x, 0.0)).rgb, vec3(0.3));
+    ln += dot(texture(uScene, uv - vec2(px.x, 0.0)).rgb, vec3(0.3));
+    ln += dot(texture(uScene, uv + vec2(0.0, px.y)).rgb, vec3(0.3));
+    ln += dot(texture(uScene, uv - vec2(0.0, px.y)).rgb, vec3(0.3));
+    float ao = clamp(l0 / max(0.04, ln * 0.25), 0.35, 1.0);
+    col *= mix(0.72, 1.0, ao);
+  }
+  col += texture(uBloom, lp).rgb * uBloomAmt * (0.65 + L * 0.8);
   if (uRim > 0.0 && a.a > 0.05) {
     vec2 e = vec2(4.0 * uLScale / uLRT.x, 0.0), f = vec2(0.0, 4.0 * uLScale / uLRT.y);
     vec2 g = vec2(dot(texture(uLight, lp + e).rgb - texture(uLight, lp - e).rgb, vec3(.33)), dot(texture(uLight, lp + f).rgb - texture(uLight, lp - f).rgb, vec3(.33)));
@@ -42,7 +53,6 @@ void main(){
     float out_ = 1.0 - texture(uActor, sharpUV(p + dir * 1.0)).a;
     col += a.a * out_ * L * uRim * (0.25 + min(gl * 30.0, 0.75)) * 0.55;
   }
-  col += texture(uBloom, lp).rgb * uBloomAmt;
   // fog & drifting dust, thicker with depth underground
   float wy = uCamW.y + (sp.y - uScreen.y * 0.5) / uCamW.z; float wx = uCamW.x + (sp.x - uScreen.x * 0.5) / uCamW.z;
   float depth = clamp((wy - uSurf) / 2200.0, 0.0, 1.0);
@@ -91,8 +101,8 @@ export class Post {
   private ft: number[] = []; private tierDropAt = 0;
   constructor(private renderer: Renderer) {
     this.sceneHold.addChild(this.sceneRoot); this.actorHold.addChild(this.actorRoot); this.lightHold.addChild(this.lightRoot);
-    this.thr = new Filter({ glProgram: GlProgram.from({ vertex: FVERT, fragment: THRESH, name: 'rg-threshold' }), resources: { tu: { uThr: { value: 0.72, type: 'f32' } } } });
-    this.blur = new BlurFilter({ strength: 6, quality: 2 });
+    this.thr = new Filter({ glProgram: GlProgram.from({ vertex: FVERT, fragment: THRESH, name: 'rg-threshold' }), resources: { tu: { uThr: { value: 0.45, type: 'f32' } } } });
+    this.blur = new BlurFilter({ strength: 10, quality: 2 });
     this.bloomSprite.filters = [this.thr, this.blur]; this.bloomHold.addChild(this.bloomSprite);
     const geometry = new Geometry({ attributes: { aPosition: [0, 0, 1, 0, 1, 1, 0, 1], aUV: [0, 0, 1, 0, 1, 1, 0, 1] }, indexBuffer: [0, 1, 2, 0, 2, 3] });
     this.alloc0();
@@ -127,14 +137,14 @@ export class Post {
     const T = this.toggles; const amb = env.ambient;
     r.render({ container: this.sceneHold, target: this.sceneRT, clear: true, clearColor: [0.03, 0.04, 0.04, 1] });
     r.render({ container: this.actorHold, target: this.actorRT, clear: true, clearColor: [0, 0, 0, 0] });
-    if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] / 2, amb[1] / 2, amb[2] / 2, 0] });
+    if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] * 0.35, amb[1] * 0.32, amb[2] * 0.38, 0] });
     const bloomOn = T.bloom && this.tier !== 'low';
     if (bloomOn) { this.bloomSprite.texture = this.sceneRT; this.bloomSprite.scale.set(LS); this.blur.quality = this.tier === 'high' ? 2 : 1; r.render({ container: this.bloomHold, target: this.bloomRT, clear: true, clearColor: [0, 0, 0, 1] }); }
     const U = this.U;
     U.uRT[0] = this.alloc.w; U.uRT[1] = this.alloc.h; U.uLRT[0] = this.alloc.lw; U.uLRT[1] = this.alloc.lh; U.uScreen[0] = devW; U.uScreen[1] = devH;
     U.uS = s; U.uOff[0] = ox - ix + PAD + cam.shakeX / s; U.uOff[1] = oy - iy + PAD + cam.shakeY / s; U.uLScale = LS; U.uTime = timeS;
-    U.uBloomAmt = bloomOn ? 0.55 : 0; U.uRim = T.rim && this.tier === 'high' && T.lighting ? 1 : 0; U.uLightOn = T.lighting ? 1 : 0;
-    U.uVig = T.vignette ? 0.42 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.03 : 0; U.uCA = T.ca && this.tier === 'high' ? 0.8 : 0; U.uHaze = T.haze ? env.haze : 0;
+    U.uBloomAmt = bloomOn ? 1.15 : 0; U.uRim = T.rim && this.tier === 'high' && T.lighting ? 1.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
+    U.uVig = T.vignette ? 0.62 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.055 : 0; U.uCA = T.ca && this.tier === 'high' ? 1.6 : 0; U.uHaze = T.haze ? env.haze * 1.4 : 0;
     U.uScan = T.crt ? 1 : 0; U.uFlash = env.flash;
     const g = T.grade; U.uTint[0] = g ? env.tint[0] : 1; U.uTint[1] = g ? env.tint[1] : 1; U.uTint[2] = g ? env.tint[2] : 1; U.uSat = g ? env.sat : 1; U.uContrast = g ? env.contrast : 1;
     U.uFog = T.fog ? env.fog : 0; U.uFogCol[0] = env.fogCol[0]; U.uFogCol[1] = env.fogCol[1]; U.uFogCol[2] = env.fogCol[2]; U.uDust = T.fog ? env.dust : 0;

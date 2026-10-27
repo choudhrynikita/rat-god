@@ -1,13 +1,13 @@
 /** One tick of the living city. Each system already exists; this only calls them in order. */
 import { Anim, DAY_TICKS, HOUR_TICKS, RF, type Season, type WeatherKind } from './contract';
-import { digEdge, frontierS, isOpen } from './burrow';
+import { digEdge, frontierS, isOpen, planChamber } from './burrow';
 import { healDaily } from './combat';
 import { economyDaily } from './economy';
 import { familyDaily } from './family';
 import { justiceHourly } from './justice';
-import { computeLawMods, kingThink, lawsHourly, succession } from './laws2';
+import { computeLawMods, crown, kingThink, lawsHourly, succession } from './laws2';
 import { nearestOnGraph, pathTo, moveAll } from './move';
-import { maybeExtras } from './places';
+import { anyChamber, maybeExtras, spotIn } from './places';
 import { factionsDaily, partiesDaily } from './politics';
 import { bodySize, kill, newRat, prune, stageOf } from './rats';
 import { socialHourly } from './social';
@@ -33,6 +33,7 @@ function stepOne(w: World) {
   think(w);
   moveAll(w);
   dig(w);
+  foundingPulse(w);
   if (w.kingDied) { const why = w.kingDied.cause; w.kingDied = null; guard('succession', () => succession(w, why)); }
   if (w.tick % HOUR_TICKS === 0) {
     guard('laws', () => lawsHourly(w));
@@ -132,12 +133,52 @@ function dig(w: World) {
   if (!w.digQueue.length || w.tick % 2 !== 0) return;
   const e = w.edges[w.digQueue[0]];
   if (!e || isOpen(e)) return;
-  digEdge(w, e, 0.85);
-  if ((w.tick + e.id) % 24 !== 0) return;
+  digEdge(w, e, w.founding && w.founding.stage !== 'done' ? 2.4 : 0.85);
+  if ((w.tick + e.id) % 16 !== 0) return;
   const s = clamp(frontierS(e), 0, e.len);
   const digger = w.rats.find((r) => r.alive && !(r.flags & (RF.king | RF.jailed)) && r.stageN >= 2);
   if (!digger) return;
   if (pathTo(w, digger, { edge: e.id, s: Math.max(0.2, s - 0.4) })) { digger.intent.kind = 'dig'; digger.anim = Anim.Dig; digger.intent.until = w.tick + 30; }
+}
+
+/** Uncrowned start: nest, then a store, then a throne. The button is born only when that hall is empty. */
+function foundingPulse(w: World) {
+  const f = w.founding; if (!f || f.stage === 'done') return;
+  const leader = w.byId.get(f.leader);
+  if (!leader?.alive) { f.stage = 'done'; return; }
+  if ((f.stage === 'nest' || f.stage === 'cache') && w.tick % 40 !== 0) return;
+  if ((f.stage === 'throne' || f.stage === 'clear') && w.tick % 8 !== 0) return;
+  const done = (k: 'nest' | 'cache' | 'midden' | 'granary' | 'throne') => w.chambers.some((c) => c.kind === k && c.progress >= 0.999);
+  const nest = w.chambers.find((c) => c.kind === 'nest');
+  const from = nest?.entryNode ?? w.entrances[0];
+  if (f.stage === 'nest') {
+    if (!done('nest') || from == null) return;
+    const ch = planChamber(w, 'cache', { from, name: 'THE FIRST CACHE' }) ?? planChamber(w, 'midden', { from, name: 'THE FIRST MIDDEN' });
+    if (ch) { f.stage = 'cache'; emit(w, 'dig_start', `${leader.name} sends them to chew a store.`, 1, { rats: [leader.id], chamber: ch.id, x: ch.cx, y: ch.cy }); }
+  } else if (f.stage === 'cache') {
+    if (!done('cache') && !done('midden') && !done('granary')) return;
+    const hall = planChamber(w, 'throne', { from, name: 'THE FIRST THRONE' });
+    if (hall) { f.stage = 'throne'; emit(w, 'dig_start', `They start a hall for ${leader.name}. The crown waits on the far wall.`, 1, { rats: [leader.id], chamber: hall.id, x: hall.cx, y: hall.cy }); }
+  } else if (f.stage === 'throne') {
+    const hall = anyChamber(w, 'throne'); if (!hall) return;
+    f.stage = 'clear'; f.wait = w.tick;
+    const spot = spotIn(w, hall, 0.5); pathTo(w, leader, spot);
+    emit(w, 'chamber_done', `${hall.name} is finished. The others file out. ${leader.name} stays.`, 2, { rats: [leader.id], chamber: hall.id, x: hall.cx, y: hall.cy, fx: 'dust_burst' });
+  } else if (f.stage === 'clear') {
+    const hall = anyChamber(w, 'throne'); if (!hall) return;
+    const floor = hall.floorEdge;
+    const nestSpot = nest ? spotIn(w, nest, 0.3) : null;
+    let others = 0;
+    for (const r of w.rats) {
+      if (!r.alive || r.id === leader.id || r.edge !== floor) continue;
+      others++;
+      if (nestSpot) pathTo(w, r, nestSpot);
+    }
+    if (others > 0 && w.tick - f.wait < 160) return;
+    crown(w, leader, 'the finished hall');
+    leader.tool = 8; leader.anim = Anim.Throne;
+    f.stage = 'done'; w.founding = null;
+  }
 }
 
 function tally(w: World) {

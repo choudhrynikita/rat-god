@@ -12,6 +12,7 @@ export class Sheets {
   constructor(private hud: Hud2) {}
   close() { this.el?.remove(); this.el = null; this.kind = ''; }
   open(title: string, body: string, bind?: (root: HTMLElement) => void, tabs?: { id: string; label: string; on: boolean }[], onTab?: (id: string) => void, kind = 'misc') {
+    if (this.hud.blocking) return this.el ?? this.hud.el;
     this.close(); this.kind = kind;
     const el = h(`<div class="h2-sheet panel rivet scan" role="dialog" aria-label="${esc(title)}"><div class="hd"><h3>${title}</h3><button class="btn" data-close aria-label="Close">✕</button></div>
       ${tabs ? `<div class="h2-tabs">${tabs.map((t) => `<button class="btn${t.on ? ' on' : ''}" data-tab="${t.id}">${esc(t.label)}</button>`).join('')}</div>` : ''}<div class="sc">${body}</div></div>`);
@@ -141,19 +142,25 @@ export class Sheets {
   settings() {
     const hud = this.hud, P = hud.world.post; const c = { ...hud.consent };
     const seg = (k: string, opts: [string, string][], cur: string) => `<span class="seg" data-k="${k}">${opts.map(([v, l]) => `<button class="btn${v === cur ? ' on' : ''}" data-v="${v}">${l}</button>`).join('')}</span>`;
-    const fx = ['lighting', 'bloom', 'rim', 'grade', 'fog', 'vignette', 'grain', 'crt', 'ca', 'haze'] as const;
+    const GROUPS: { id: string; label: string; keys: (keyof import('../../render/v2/post').PostToggles)[] }[] = [
+      { id: 'glow', label: 'GLOW', keys: ['lighting', 'bloom', 'rim', 'haze'] },
+      { id: 'depth', label: 'DEPTH', keys: ['fog', 'grade', 'vignette'] },
+      { id: 'film', label: 'FILM', keys: ['grain', 'ca'] },
+      { id: 'scan', label: 'SCAN', keys: ['crt'] },
+    ];
     const body = `<div class="h2-sec">Content (this device)</div>
       <div class="h2-tog"><span>Mature content</span>${seg('mature', [['0', 'OFF'], ['1', 'ON']], c.mature ? '1' : '0')}</div>
       <div class="h2-tog"><span>Gore</span>${seg('gore', [['0', 'NONE'], ['1', 'BLOOD'], ['2', 'CARNAGE']], String(c.mature ? c.gore : 0))}</div>
       <div class="h2-tog"><span>Sexual themes</span>${seg('sexual', [['0', 'OFF'], ['1', 'IMPLIED']], c.mature && c.sexual ? '1' : '0')}</div>
       <div class="h2-sec">Picture</div><div class="h2-tog"><span>Quality</span>${seg('tier', [['auto', 'AUTO'], ['high', 'HIGH'], ['mid', 'MID'], ['low', 'LOW']], P.auto ? 'auto' : P.tier)}</div>
-      ${fx.map((k) => `<div class="h2-tog"><span>${{ lighting: 'Lights & shadow', bloom: 'Glow', rim: 'Rim light', grade: 'Colour grade', fog: 'Fog & dust', vignette: 'Vignette', grain: 'Film grain', crt: 'Scanlines', ca: 'Lens fringe', haze: 'Heat haze' }[k]}</span>${seg('fx:' + k, [['1', 'ON'], ['0', 'OFF']], P.toggles[k] ? '1' : '0')}</div>`).join('')}
+      ${GROUPS.map((g) => `<div class="h2-tog"><span>${g.label}</span>${seg('grp:' + g.id, [['1', 'ON'], ['0', 'OFF']], g.keys.every((k) => P.toggles[k]) ? '1' : '0')}</div>`).join('')}
+      <p class="h2-p" style="color:var(--grey)">Glow is light and bloom. Depth is fog and colour. Film is grain. Scan is the old tube.</p>
       <div class="h2-sec">Game</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-chron>CHRONICLE</button><button class="btn red" data-new>NEW WORLD</button></div>`;
     this.open('SETTINGS', body, (root) => {
       root.querySelectorAll<HTMLElement>('.seg button').forEach((b) => b.onclick = () => { const k = (b.parentElement as HTMLElement).dataset.k!, v = b.dataset.v!;
         if (k === 'mature') { c.mature = v === '1'; if (!c.mature) { c.gore = 0; c.sexual = false; } } else if (k === 'gore') { c.gore = Number(v) as 0 | 1 | 2; if (c.gore) c.mature = true; } else if (k === 'sexual') { c.sexual = v === '1'; if (c.sexual) c.mature = true; }
         else if (k === 'tier') { if (v === 'auto') P.auto = true; else { P.auto = false; P.setTier(v as Tier); hud.world.onTier(v as Tier); } }
-        else if (k.startsWith('fx:')) (P.toggles as unknown as Record<string, boolean>)[k.slice(3)] = v === '1';
+        else if (k.startsWith('grp:')) { const g = GROUPS.find((x) => x.id === k.slice(4)); if (g) for (const key of g.keys) P.toggles[key] = v === '1'; }
         if (['mature', 'gore', 'sexual'].includes(k)) { hud.consent = c; saveConsent(c); hud.sendConsent(); }
         this.settings(); });
       root.querySelector<HTMLElement>('[data-chron]')!.onclick = () => hud.sim.send({ t: 'chronicle' });

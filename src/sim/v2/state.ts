@@ -115,6 +115,8 @@ export interface World {
   homes: Home[]; castes: Caste[]; ripples: RippleS[]; ripCtx: number[]; consent: Consent; nextHome: number; nextRipple: number;
   housingEra: number; casteEra: number; /** day it began, 0 = not yet */ godRejection: number; wars: { day: number; name: string; dead: number }[];
   watched: Set<number>;
+  /** founding beat: the uncrowned leader, then the rooms, then the button. Null once a king already reigns. */
+  founding: { leader: number; stage: 'nest' | 'cache' | 'throne' | 'clear' | 'done'; wait: number } | null;
 }
 
 export const R = (w: { rng: number }) => {

@@ -5,7 +5,7 @@ import { addRel, newRat } from './rats';
 import { setPose } from './move';
 import { crown } from './laws2';
 import { genTerrain } from './terrain';
-import { RK, R, clamp, type World } from './state';
+import { RK, R, clamp, emit, type World } from './state';
 
 const DEFAULT_CONSENT: Consent = { mature: false, gore: 0, sexual: false };
 
@@ -19,7 +19,7 @@ export function createWorld(opts: NewGameOpts): World {
   const city = opts.scenario !== 'founding';
   const order: ChamberKind[] = city
     ? ['plaza', 'granary', 'shrine', 'market', 'nursery', 'throne', 'barracks', 'jail', 'temple']
-    : ['cache'];
+    : [];
   // the planner routes from a dug node; long searches die in the rock, so stay near the nest
   if (!w.chambers.some((c) => c.kind === 'nest')) {
     for (let t = 0; t < 8 && !w.chambers.some((c) => c.kind === 'nest'); t++) planChamber(w, 'nest', { from: ent.id });
@@ -44,23 +44,29 @@ export function createWorld(opts: NewGameOpts): World {
     const from = (w.chambers.find((c) => c.progress >= 0.999) ?? home)?.entryNode ?? ent.id;
     planChamber(w, 'midden', { from });
   }
-  const n = city ? Math.max(24, opts.founders ?? 48) : Math.max(4, opts.founders ?? 8);
+  const n = city ? Math.max(24, opts.founders ?? 48) : Math.max(6, opts.founders ?? 10);
   spawn(w, n);
   const adults = w.rats.filter((r) => r.alive && r.stageN >= 2);
-  const king = adults.reduce((a, b) => (b.genes.charisma + b.P.E > a.genes.charisma + a.P.E ? b : a), adults[0]);
-  if (king) {
-    crown(w, king, 'the first claw');
+  const leader = adults.reduce((a, b) => (b.genes.charisma + b.P.E > a.genes.charisma + a.P.E ? b : a), adults[0]);
+  if (leader && city) {
+    crown(w, leader, 'the first claw');
     const hall = w.chambers.find((c) => c.kind === 'throne' && c.progress >= 0.999) ?? w.chambers.find((c) => c.progress >= 0.999);
     if (hall && hall.floorEdge >= 0) {
       const e = w.edges[hall.floorEdge];
-      king.edge = e.id; king.s = e.len * 0.5; setPose(w, king); king.anim = Anim.Throne;
+      leader.edge = e.id; leader.s = e.len * 0.5; setPose(w, leader); leader.anim = Anim.Throne;
     }
     let guards = 0, priests = 0;
     for (const r of adults) {
-      if (r === king) continue;
+      if (r === leader) continue;
       if (guards < 3) { r.flags |= RF.enforcer; r.role = 'enforcer'; guards++; }
       else if (priests < 2) { r.flags |= RF.priest; r.role = 'priest'; r.beliefs.god = Math.max(r.beliefs.god, 0.7); priests++; }
     }
+  } else if (leader) {
+    leader.flags |= RF.leader | RF.founder;
+    leader.role = 'leader';
+    leader.titles.push('THE FIRST CLAW');
+    w.founding = { leader: leader.id, stage: 'nest', wait: 0 };
+    emit(w, 'founding', `${leader.name} leads them. No crown yet. The first room is only a hole.`, 1, { rats: [leader.id], x: leader.x, y: leader.y });
   }
   w.granary = city ? 70 : 18;
   w.foodOnSurface = city ? 36 : 10;
@@ -180,6 +186,7 @@ function blank(opts: NewGameOpts, seed: number): World {
     nextFirm: 0, nextParty: 0, nextRel: 0, nextFaction: 0, nextFest: 0, surfaceScrap: 6, noticed: 0,
     homes: [], castes: [], ripples: [], ripCtx: [], consent: { ...consent, sexual: false },
     nextHome: 0, nextRipple: 0, housingEra: 0, casteEra: 0, godRejection: 0, wars: [], watched: new Set<number>(),
+    founding: null,
   } satisfies World;
   // tile size is a contract constant; terrain init echoes it
   void TILE_CM;

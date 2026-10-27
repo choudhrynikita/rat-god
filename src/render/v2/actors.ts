@@ -121,17 +121,33 @@ export class Actors {
       const sx = Math.sign(v.flip || v.facing) * Math.max(0.15, Math.abs(v.flip));
       // slope / climb rotation from heading (sprite space: positive = clockwise)
       let hx = Math.cos(v.ch), hy = Math.sin(v.ch); if (!moving && anim !== Anim.Climb) { hx = 1; hy = 0; }
-      let target = v.facing * Math.atan2(hy, Math.abs(hx)); const climb = Math.abs(target) > 1.0 || anim === Anim.Climb;
-      if (!climb) target = Math.max(-0.55, Math.min(0.55, target));
-      let d = target - v.rot; d = Math.atan2(Math.sin(d), Math.cos(d)); v.rot += d * Math.min(1, dt / 90);
-      // floor snap (feet on the painted ground), only when upright & in tunnels
-      let fy = v.y;
-      if (!impostor && !climb && anim !== Anim.Swim && v.y > this.terrain.T.surfaceY[Math.max(0, Math.min(this.terrain.W - 1, Math.floor(v.x / PX)))] * PX - 4) {
-        const fl = this.terrain.floorBelow(v.x, v.y - 7, 20); if (fl - (v.y - 7) < 20) fy = fl;
+      let target = v.facing * Math.atan2(hy, Math.abs(hx)); const steep = Math.abs(target) > 1.0 || anim === Anim.Climb;
+      if (!steep) target = Math.max(-0.35, Math.min(0.35, target));
+      else {
+        const fl = this.terrain.floorBelow(v.x, v.y - 6, 22);
+        if (fl - (v.y - 6) < 16) target = Math.max(-0.28, Math.min(0.28, target));
+        else target = Math.max(-1.15, Math.min(1.15, target));
       }
-      if (Math.abs(fy - v.snapY) > 30) v.snapY = fy; else v.snapY += (fy - v.snapY) * 0.35; 
-      // size & coat
-      let sc = R.size[i] || 1; if (ch === 'pup') sc = Math.max(0.75, Math.min(1.15, sc / 0.5)); if (ch === 'king') sc *= 0.92;
+      let d = target - v.rot; d = Math.atan2(Math.sin(d), Math.cos(d)); v.rot += d * Math.min(1, dt / 90);
+      // feet on the painted floor. Search down through a body-height, and climb out if the sim point is inside dirt.
+      let fy = v.y;
+      const col = Math.max(0, Math.min(this.terrain.W - 1, Math.floor(v.x / PX)));
+      const under = v.y > this.terrain.T.surfaceY[col] * PX - 4;
+      if (!impostor && anim !== Anim.Swim && under) {
+        let probe = v.y;
+        if (!this.terrain.isOpenPx(v.x, probe)) {
+          let y = Math.floor(probe);
+          for (let k = 0; k < 32 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
+          probe = y;
+        }
+        const fl = this.terrain.floorBelow(v.x, probe - 2, 42);
+        if (fl - (probe - 2) <= 42) fy = fl;
+      }
+      const gap = fy - v.snapY;
+      if (Math.abs(gap) > 12) v.snapY = fy; else v.snapY += gap * 0.72;
+      // a rat must fit the tunnel: native art is ~52px, a room is only a few tiles tall
+      let sc = (R.size[i] || 1) * 0.56; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.12;
+      sc = Math.max(0.28, Math.min(0.78, sc));
       if (anim === Anim.Squeeze && !c.id.includes('squeeze')) { v.body.scale.set(sx * sc, sc * 0.8); } else v.body.scale.set(sx * sc, sc);
       v.ghost.scale.copyFrom(v.body.scale);
       v.body.position.set(c.dx[f] * v.facing * sc, c.dy[f] * sc);
@@ -148,18 +164,18 @@ export class Actors {
       const tool = R.tool?.[i] ?? 0;
       if (tool && !impostor) { v.tool.visible = true; v.tool.texture = toolTexture(tool, Math.floor(now / 120 + v.off * 7) % 3); v.tool.anchor.set(0.5, 1); v.tool.scale.set(v.facing, 1);
         v.tool.position.set(v.facing * c.w * 0.3 * sc, -c.top * 0.35 * sc); } else v.tool.visible = false;
-      const glow = tool === 1 || tool === 6 || (flags & RF.blessed) || (flags & RF.rodentoid) || tool === 5;
+      const glow = tool === 1 || tool === 6 || tool === 8 || (flags & RF.blessed) || (flags & RF.rodentoid) || tool === 5;
       if (glow) { if (!v.light) { v.light = new Sprite(lightTexture()); v.light.anchor.set(0.5); v.light.blendMode = 'add'; this.lights.addChild(v.light); }
         const L = v.light; const fl = 0.85 + Math.sin(now * 0.02 + v.off * 9) * 0.08 + Math.sin(now * 0.053) * 0.05;
         if (tool === 1) { L.tint = 0xffa040; L.scale.set(1.3 * fl); L.alpha = 0.9; } else if (tool === 6) { L.tint = 0xffc070; L.scale.set(1.7 * fl); L.alpha = 0.85; }
-        else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.7 + Math.random() * 0.3); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
+        else if (tool === 8) { L.tint = 0xf2b46a; L.scale.set(1.5 * fl); L.alpha = 0.95; } else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.7 + Math.random() * 0.3); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
         L.position.set(v.x, v.snapY - 12); } else if (v.light) { v.light.destroy(); v.light = null; }
       // selection: gold ring at the feet, chevron over the head, body warmed
       if (v.id === this.selected) {
         if (!v.ring) { v.ring = new Sprite(ringTexture()); v.ring.anchor.set(0.5, 0.5); v.root.addChildAt(v.ring, 0); }
-        if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.mark.scale.set(2.4); v.root.addChild(v.mark); }
+        if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.mark.scale.set(1.5); v.root.addChild(v.mark); }
         const pulse = 0.5 + Math.sin(now * 0.008) * 0.5;
-        v.ring.position.set(0, 1); v.ring.rotation = -v.rot; v.ring.scale.set(1.15 + pulse * 0.18); v.ring.alpha = 0.75 + pulse * 0.25;
+        v.ring.position.set(0, 2); v.ring.rotation = -v.rot; v.ring.scale.set(sc * (0.9 + pulse * 0.12)); v.ring.alpha = 0.8 + pulse * 0.2;
         v.mark.position.set(0, -c.top * sc - 8 + Math.sin(now * 0.008) * 2); v.mark.rotation = -v.rot;
         v.body.tint = mixTint(tint, 0xf2b46a, 0.28 + pulse * 0.22);
       } else {
@@ -174,7 +190,7 @@ export class Actors {
     let best = -1, bd = r * r;
     for (const v of this.rv.values()) {
       if (!v.root.visible) continue;
-      const top = v.snapY - 46, bot = v.snapY + 6;
+      const top = v.snapY - 32, bot = v.snapY + 4;
       const cy = wy < top ? top : wy > bot ? bot : wy;
       const d = (v.x - wx) * (v.x - wx) + (cy - wy) * (cy - wy);
       if (d < bd) { bd = d; best = v.id; }

@@ -16,6 +16,7 @@ export function toolTexture(tool: number, frame: number): Texture {
     case 5: px = [...line(0, 7, 3, 4, '#ba8360'), ...line(3, 4, 5, 5, '#ba8360'), [5 + (frame % 2), 4 - frame % 2, CYAN], [4, 3, frame ? CYAN : '#42c3ca']]; t = draw(7, 8, px); break; // wire & spark
     case 6: px = [...line(2, 0, 2, 1, MET), [1, 2, DARK], [3, 2, DARK], [1, 3, FIRE[frame % 3]], [2, 3, '#f6c992'], [3, 3, FIRE[0]], [1, 4, FIRE[0]], [2, 4, FIRE[(frame + 1) % 3]], [3, 4, FIRE[0]], ...line(1, 5, 3, 5, DARK)]; t = draw(5, 6, px); break; // lantern
     case 7: px = [...line(0, 8, 4, 3, MET2), [4, 2, MET2], [5, 3, MET2], [5, 1, MET2], [6, 2, MET2]]; t = draw(7, 9, px); break; // wrench
+    case 8: { const hot = FIRE[frame % 3]; px = []; for (let y = 1; y <= 7; y++) for (let x = 0; x <= 6; x++) { const edge = x === 0 || y === 1 || x === 6 || y === 7; px.push([x, y, edge ? '#080d0a' : (x === 1 || y === 2 || x === 5 || y === 6) ? '#3b2015' : hot]); } px.push([3, 4, '#fff4d2']); t = draw(7, 9, px); break; } // the king's button
     default: t = Texture.EMPTY;
   }
   cache.set(k, t); return t;

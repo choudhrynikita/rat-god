@@ -23,7 +23,7 @@ export class Hud2 {
   private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
   readonly god: GodMenu; readonly sheets: Sheets; following = -1; private started = false; private nudgeEls = new Map<number, HTMLElement>();
-  speed = 1; private lastTop = 0;
+  speed = 1; private lastTop = 0; blocking = false;
   constructor(host: HTMLElement, readonly world: World2, readonly sim: SimPort) {
     host.innerHTML = ''; this.el = h(`<div class="h2"></div>`); host.appendChild(this.el);
     this.god = new GodMenu(this); this.sheets = new Sheets(this);
@@ -34,7 +34,7 @@ export class Hud2 {
   }
   start() {
     this.build();
-    const go = () => { this.sim.send({ t: 'new', opts: { seed: Number(new URLSearchParams(location.search).get('seed') ?? Date.now() % 100000), scenario: 'city' } }); this.sendConsent(); this.opening(); };
+    const go = () => { const q = new URLSearchParams(location.search); const scenario = q.get('scenario') === 'city' ? 'city' : 'founding'; this.sim.send({ t: 'new', opts: { seed: Number(q.get('seed') ?? Date.now() % 100000), scenario, founders: scenario === 'city' ? 48 : 10 } }); this.sendConsent(); this.opening(); };
     if (loadConsent() && !new URLSearchParams(location.search).has('consent')) go(); else this.gate(go);
   }
   sendConsent() { this.sim.send({ t: 'consent', consent: this.consent }); this.world.fx.gore = this.consent.mature ? this.consent.gore : 0; this.world.actors.gore = this.world.fx.gore > 0; }
@@ -145,13 +145,15 @@ export class Hud2 {
     const e = this.majorQ.shift()!; this.lastMajor = now; this.cinematic(e);
   }
   cinematic(e: SimEvent2) {
+    this.sheets.close(); this.god.close(); this.god.cancel();
     const art = cardFor(e); this.world.slow(4000, 0.15); if (this.canJump(e)) this.jump(e, 1.8);
     window.dispatchEvent(new CustomEvent('rg:stinger', { detail: { kind: e.kind, sfx: e.sfx, score: e.score } }));
     const c = h(`<div class="h2-cine" role="dialog" aria-label="Major event"><div class="card panel rivet scan">
       ${art ? `<div class="art" style="background-image:url(${art})"></div>` : ''}<span class="lbl2">${esc(e.kind.replace(/_/g, ' '))} · day ${Math.floor(e.tick / 960) + 1}</span>
       <h2>${esc(e.text)}</h2><div class="row">${this.canJump(e) ? '<button class="btn rust" data-a="watch">WATCH</button>' : ''}<button class="btn" data-a="later">LATER</button></div></div></div>`);
     const om = this.omens.find((o) => o.e === e || o.e.seq === e.seq);
-    const close = (read: boolean) => { if (!this.cine) return; this.cine = null; c.remove(); if (om && read) om.read = true; this.badge(); setTimeout(() => this.pumpMajor(), 400); };
+    this.blocking = true; this.el.classList.add('modal');
+    const close = (read: boolean) => { if (!this.cine) return; this.cine = null; this.blocking = false; this.el.classList.remove('modal'); c.remove(); if (om && read) om.read = true; this.badge(); setTimeout(() => this.pumpMajor(), 400); };
     c.querySelectorAll<HTMLElement>('[data-a]').forEach((b) => b.onclick = () => { if (b.dataset.a === 'watch') { this.jump(e, 2.4); close(true); } else close(false); });
     this.cine = c; this.el.appendChild(c); setTimeout(() => close(false), 14000);
   }
@@ -168,6 +170,7 @@ export class Hud2 {
     const w = this.world.cam.s2w(sx, sy);
     const slack = 52 / Math.max(0.35, this.world.cam.z);
     if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, slack)); return; }
+    if (this.blocking) return;
     const id = this.world.actors.pickAt(w.x, w.y, slack);
     if (id >= 0) { this.followRat(id); this.sheets.rat(id); } else if (this.following >= 0 || this.world.actors.selected >= 0) { this.following = -1; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); this.sheets.close(); }
   }

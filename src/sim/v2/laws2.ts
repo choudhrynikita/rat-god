@@ -92,9 +92,14 @@ export function crown(w: World, r: Rat, how: string) {
   w.kingId = r.id; w.reignNo++; w.reignStart = w.tick; r.flags |= RF.king; r.role = 'king'; if (r.firm) { /* keeps no firm */ r.firm = 0; }
   if (!r.dynasty) newDynasty(w, r); const dyn = w.dyns.find((d) => d.id === r.dynasty); dyn?.kings.push(r.id);
   w.king = newMind(w, r); w.interregnum = 0;
-  r.titles.push(`KING (${how})`); remember(w, r, 'crowned', `I was crowned king (${how}).`, 1, 0, true);
+  const born = how === 'the finished hall';
+  if (born) r.tool = 8;
+  r.titles.push(born ? 'KING (THE BUTTON)' : `KING (${how})`); remember(w, r, 'crowned', born ? 'The hall emptied, and a button pushed out of me.' : `I was crowned king (${how}).`, 1, 0, true);
   w.chron.reigns.push({ king: r.id, name: r.name, dynasty: dyn?.name ?? '', start: w.tick, end: null, cause: null, laws: [] });
-  emit(w, 'crowned', `${r.name} of ${dyn?.name ?? 'no house'} is crowned (${how}).`, 3, { rats: [r.id], x: r.x, y: r.y, fx: 'crown', sfx: 'fanfare', card: `Long live ${r.name}.` });
+  const she = r.female;
+  emit(w, 'crowned', born
+    ? `${r.name} stands alone in the finished hall. A button of bone pushes out of ${she ? 'her' : 'him'}. ${she ? 'She' : 'He'} is king.`
+    : `${r.name} of ${dyn?.name ?? 'no house'} is crowned (${how}).`, 3, { rats: [r.id], x: r.x, y: r.y, fx: born ? 'bless' : 'crown', sfx: 'fanfare', card: born ? 'The button is born.' : `Long live ${r.name}.` });
   for (const o of w.rats) { const rl = o.rel.get(r.id); o.beliefs.crown = clamp(o.beliefs.crown + (rl ? rl.aff * 0.2 : 0) + 0.05, -1, 1); }
 }
 function newMind(w: World, r: Rat): KingMind {

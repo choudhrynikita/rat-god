@@ -269,24 +269,33 @@ function blockEdge(w: World, e: NavEdge) {
   if (e.chamber >= 0) { const ch = w.chambers[e.chamber]; ch.progress = 1; ch.rx = Math.max(3, ch.rx * 0.6); w.dirtyChambers.add(ch.id); }
   emit(w, 'dig_done', 'Diggers strike stone. The tunnel ends blind.', 0, { x: p.x, y: p.y });
 }
-/** carve tiles for the dug interval [d0, d1] (measured from `from`) */
+/** carve tiles for the dug interval [d0, d1] (measured from `from`).
+ *  Tunnels are a chewed disc with a crumbly rim. A room does not pop open: it swells from the door as the floor is dug, and the far wall stays dirt until the end. */
 export function carveEdge(w: World, e: NavEdge, d0: number, d1: number) {
   const ch = e.chamber >= 0 ? w.chambers[e.chamber] : null; const r = e.width / 2;
   for (let d = Math.max(0, d0 - 0.5); d <= d1 + 1e-6; d += 0.5) {
     const s = e.from === e.a ? d : e.len - d; const p = sampleEdge(e, Math.min(e.len, Math.max(0, s)));
-    if (!ch) { stampDisc(w, p.x, p.y, r); continue; }
-    // chamber: excavate the full-height column above this floor point (organic ellipse)
-    stampDisc(w, p.x, p.y, 1.1);
-    for (let xx = Math.floor(p.x - 0.75); xx <= p.x + 0.75; xx++) for (let yy = Math.floor(ch.cy - ch.ry - 1); yy <= ch.floorY + 1; yy++) {
-      if (!inB(w.T, xx, yy)) continue; if (!inChamber(ch, xx + 0.5, yy + 0.5)) continue; const i = yy * w.T.W + xx;
-      if (diggable(w.T, i) && w.T.carve[i] < 255) { w.T.carve[i] = 255; w.dirtyTiles.add(i); }
-    }
+    stampDisc(w, p.x, p.y, ch ? 1.15 : r);
   }
-  // chamber ends: carve the rounded walls beyond the floor walkway once complete
-  if (ch && isOpen(e)) for (let yy = Math.floor(ch.cy - ch.ry - 1); yy <= ch.floorY + 1; yy++) for (let xx = Math.floor(ch.cx - ch.rx - 1); xx <= ch.cx + ch.rx + 1; xx++) {
-    if (!inB(w.T, xx, yy) || !inChamber(ch, xx + 0.5, yy + 0.5)) continue; const i = yy * w.T.W + xx; if (diggable(w.T, i) && w.T.carve[i] < 255) { w.T.carve[i] = 255; w.dirtyTiles.add(i); }
-  }
+  if (ch) chewRoom(w, ch, Math.min(1, (d1 + 0.01) / Math.max(0.05, e.len)));
   if (ch) { ch.progress = e.dug / e.len; w.dirtyChambers.add(ch.id); }
+}
+/** open an ellipse from the entry. The rim stays half-gnawed so the dig face reads as teeth, not a stamp. */
+function chewRoom(w: World, ch: Chamber, prog: number) {
+  const T = w.T; const entry = w.nodes[ch.entryNode]; if (!entry) return;
+  const reach = (0.18 + 0.88 * prog) * (Math.hypot(ch.cx - entry.x, ch.cy - entry.y) + ch.rx + 1);
+  const y0 = Math.floor(ch.cy - ch.ry - 1), y1 = Math.floor(ch.floorY + 1);
+  const x0 = Math.floor(ch.cx - ch.rx - 1), x1 = Math.floor(ch.cx + ch.rx + 1);
+  for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+    if (!inB(T, xx, yy) || !inChamber(ch, xx + 0.5, yy + 0.5)) continue;
+    const dist = Math.hypot(xx + 0.5 - entry.x, yy + 0.5 - entry.y);
+    if (dist > reach + 1.1) continue;
+    const i = yy * T.W + xx; if (!diggable(T, i) && T.mat[i] !== Mat.Air) continue;
+    const rim = dist > reach - 1.15;
+    const v = rim ? 100 + ((xx * 5 + yy * 9 + ch.seed) % 70) : 255;
+    if (T.carve[i] < v) { T.carve[i] = v; w.dirtyTiles.add(i); }
+    if (!rim && T.debris[i] < 40) T.debris[i] = 18;
+  }
 }
 /** re-stamp every dug edge whose bbox touches (x0..x1, y0..y1) — used after a collapse refills tiles */
 export function restamp(w: World, x0: number, y0: number, x1: number, y1: number) {
