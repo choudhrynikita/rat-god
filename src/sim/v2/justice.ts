@@ -20,7 +20,8 @@ const SENT: Record<string, number> = { theft: 3, extortion: 4, assault: 5, murde
 export function justiceHourly(w: World) {
   const J = w.justice; J.secretPolice = lawOn(w, 'secret_police');
   // appoint enforcers when the law or a guards firm demands it
-  const want = (lawOn(w, 'enforcers') ? 2 + Math.floor(w.rats.length / 30) : 0) + w.firms.filter((f) => f.kind === 'guards' && f.status === 'open').reduce((s, f) => s + f.workers, 0) * 0 + (J.secretPolice ? 2 : 0);
+  const openMurder = w.crimes.some((c) => !c.solved && (c.kind === 'murder' || c.kind === 'assault'));
+  const want = (lawOn(w, 'enforcers') ? 2 + Math.floor(w.rats.length / 30) : 0) + (openMurder ? 1 : 0) + w.firms.filter((f) => f.kind === 'guards' && f.status === 'open').reduce((s, f) => s + f.workers, 0) * 0 + (J.secretPolice ? 2 : 0);
   const have = enforcers(w);
   if (have.length < want) { const c = w.rats.filter((r) => isAdult(r) && !(r.flags & (RF.king | RF.jailed | RF.enforcer | RF.criminal)) && (r.role === 'idle' || r.role === 'none' || r.role === 'worker')).sort((a, b) => b.beliefs.order + b.skills.fight - a.beliefs.order - a.skills.fight)[0]; if (c) { c.flags |= RF.enforcer; c.role = 'enforcer'; emit(w, 'hired', `${c.name} takes up the enforcer's club.`, 0, { rats: [c.id] }); } }
   if (have.length > want + 1) { const x = have[0]; x.flags &= ~RF.enforcer; x.role = 'idle'; }
@@ -30,7 +31,7 @@ export function justiceHourly(w: World) {
     for (const c of w.crimes) {
       if (c.solved || w.tick - c.tick > 960 * 6) continue;
       const by = w.byId.get(c.by); if (!by || !by.alive) { c.solved = true; continue; }
-      const p = 0.01 + c.witnessed.length * 0.02 + E.length * 0.01 + (J.secretPolice ? 0.02 : 0);
+      const p = 0.01 + c.witnessed.length * 0.02 + E.length * 0.01 + (c.kind === 'murder' ? 0.12 : 0) + (J.secretPolice ? 0.02 : 0);
       if (chance(w, p)) { c.solved = true; arrest(w, by, c.kind, false); }
     }
     // rumour-driven arrests: the suspicious (guilty or not) get taken

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../src/sim/v2/boot';
+import { RF } from '../src/sim/v2/contract';
 import { actGod } from '../src/sim/v2/god';
 import { maybeGrow } from '../src/sim/v2/grow';
 import { loadWorld, saveWorld } from '../src/sim/v2/persist';
 import { buildSnap } from '../src/sim/v2/snap';
+import { emit } from '../src/sim/v2/state';
 import { stepWorld } from '../src/sim/v2/step';
 
 describe('v2 loop', () => {
@@ -117,5 +119,29 @@ describe('v2 loop', () => {
     }
     expect(w.religions.length).toBeGreaterThan(0);
     expect(w.religions[0].members).toBeGreaterThan(0);
+  });
+
+  it('makes a curse of madness attack, a blessing change the body, and a dug room stay quiet', () => {
+    const w = createWorld({ seed: 4, scenario: 'city', founders: 24 });
+    const adults = w.rats.filter((r) => r.alive && r.stageN >= 2);
+    const a = adults[0]; const b = adults[1];
+    b.edge = a.edge; b.s = a.s; b.x = a.x + 0.3; b.y = a.y;
+    const cursed = actGod(w, { t: 'god', req: 2, power: 'curse', target: { rat: a.id }, params: { curse: 'madness' } });
+    expect(cursed.ok).toBe(true);
+    expect(a.curses.some((c) => String(c).includes('madness'))).toBe(true);
+    expect(a.emo.anger).toBe(1);
+    expect(w.rats.some((r) => r.alive && r.id !== a.id && r.emo.fear >= 0.5)).toBe(true);
+    stepWorld(w, 80);
+    expect(w.events.some((e) => e.kind === 'fight' || e.kind === 'murder' || e.kind === 'maimed' || e.kind === 'death')).toBe(true);
+    const strong = w.rats.find((r) => r.alive && r.id !== a.id)!;
+    const blessed = actGod(w, { t: 'god', req: 3, power: 'bless', target: { rat: strong.id }, params: { gift: 'strength' } });
+    expect(blessed.ok).toBe(true);
+    expect(strong.genes.strength).toBeGreaterThanOrEqual(0.95);
+    expect(strong.flags & RF.blessed).toBeTruthy();
+    w.ripples.push({ id: 9, power: 'sign', tick: w.tick, text: 'a mark', open: true, chain: [], until: w.tick + 9999, world: true });
+    w.ripCtx = [9];
+    const dug = emit(w, 'chamber_done', 'THE CLAY SLUM is dug out.', 1, { x: 1, y: 1 });
+    expect(dug.imp).toBe('minor');
+    expect(dug.score).toBeLessThanOrEqual(18);
   });
 });

@@ -9,7 +9,7 @@ import { anyChamber, chambersOf, nearestChamber, spotIn } from './places';
 import { newRat } from './rats';
 import { court, interact } from './social';
 import { FIRM_SPEC } from './economy';
-import { R, chance, emit, type Rat, type World } from './state';
+import { R, chance, emit, type Rat, type IntentKind, type World } from './state';
 import { has, researchTick } from './tech';
 
 const GEST = 3 * DAY_TICKS;
@@ -35,6 +35,14 @@ export function chooseIntent(w: World, r: Rat) {
   if (!r.alive || r.rodentoid) return;
   if (r.flags & RF.king) { holdThrone(w, r); return; }
   if (r.flags & RF.jailed) { r.anim = Anim.Jailed; r.intent.kind = 'jail'; r.intent.until = w.tick + 40; return; }
+  if (r.curses.some((c) => String(c).includes('madness'))) return;
+  if (r.emo.fear > 0.72) { r.anim = Anim.Cower; r.intent.kind = 'flee'; r.intent.until = w.tick + 16; return; }
+  if (r.spouse && r.emo.love > 0.35 && r.emo.fear < 0.4) {
+    const sp = w.byId.get(r.spouse);
+    if (sp?.alive && sp.edge >= 0 && (r.edge !== sp.edge || Math.abs(r.s - sp.s) > 2)) {
+      pathTo(w, r, { edge: sp.edge, s: sp.s }); r.anim = Anim.Walk; r.intent.kind = 'court'; r.intent.until = w.tick + 28; return;
+    }
+  }
   if (r.role === 'herald' && heraldErrand(w, r)) return;
   const night = w.env.hour < 5 || w.env.hour >= 22;
   if (!night) r.flags &= ~RF.asleep;
@@ -57,6 +65,7 @@ export function chooseIntent(w: World, r: Rat) {
     r.intent.kind = 'research'; r.anim = Anim.Idle; r.intent.until = w.tick + 40; return;
   }
   if (r.stageN >= 2 && workAt(w, r)) return;
+  if (dwell(w, r)) return;
   wander(w, r);
 }
 
@@ -140,6 +149,45 @@ function workAt(w: World, r: Rat): boolean {
   if (!task || task === 'forage' || task === 'dig') return false;
   const kinds = POST[task]; if (!kinds || !chance(w, 0.65)) return false;
   if (goChamber(w, r, kinds)) { r.anim = Anim.Idle; r.intent.kind = 'work'; r.intent.until = w.tick + 42; return true; }
+  return false;
+}
+
+function visit(w: World, r: Rat, kinds: ChamberKind[], anim: Anim, kind: IntentKind, stay = 0.22): boolean {
+  const ch = nearestChamber(w, r, kinds) ?? kinds.map((k) => anyChamber(w, k)).find(Boolean) ?? null;
+  if (!ch || ch.floorEdge < 0) return false;
+  const spot = spotIn(w, ch, 0.25 + ((r.id * 17) % 50) / 100);
+  const there = r.edge === spot.edge && Math.abs(r.s - spot.s) < 2.2;
+  if (!there) {
+    if (!pathTo(w, r, spot)) return false;
+    r.anim = Anim.Walk; r.intent.kind = kind; r.intent.until = w.tick + 32; return true;
+  }
+  if (!chance(w, stay)) return false;
+  r.anim = anim; r.intent.kind = kind; r.intent.until = w.tick + 20; return true;
+}
+function dwell(w: World, r: Rat): boolean {
+  if (r.stageN < 2 && chance(w, 0.4) && visit(w, r, ['nursery', 'nest'], Anim.Play, 'play', 0.35)) return true;
+  if ((r.disease || r.injured > 0.4) && visit(w, r, ['infirmary', 'nest'], Anim.Sick, 'heal', 0.7)) {
+    r.injured = Math.max(0, r.injured - 0.015); return true;
+  }
+  if (r.food > 1.4 && chance(w, 0.4)) {
+    const ch = nearestChamber(w, r, ['granary', 'cache']);
+    if (ch && ch.floorEdge >= 0) {
+      const spot = spotIn(w, ch, 0.55);
+      const there = r.edge === spot.edge && Math.abs(r.s - spot.s) < 2;
+      if (!there) {
+        if (!pathTo(w, r, spot)) return false;
+        r.anim = Anim.Haul; r.carry = Carry.Food; r.intent.kind = 'haul'; r.intent.until = w.tick + 30; return true;
+      }
+      const dump = Math.min(0.8, r.food - 0.6);
+      r.food -= dump; ch.stock += dump; w.granary += dump * 0.5;
+      r.anim = Anim.Idle; r.carry = Carry.None; r.intent.until = w.tick + 10; return true;
+    }
+  }
+  if (r.genes.strength > 0.6 && chance(w, 0.22) && visit(w, r, ['barracks', 'plaza'], Anim.Patrol, 'patrol')) return true;
+  if ((r.genes.curiosity > 0.55 || r.genes.intellect > 0.6) && chance(w, 0.22) && visit(w, r, ['lab', 'workshop', 'archive'], Anim.Craft, 'work')) return true;
+  if (r.religion && chance(w, 0.2) && visit(w, r, ['shrine', 'temple'], Anim.Pray, 'pray')) {
+    r.beliefs.god = Math.min(1, r.beliefs.god + 0.01); return true;
+  }
   return false;
 }
 

@@ -14,6 +14,7 @@ import { factionsDaily, partiesDaily } from './politics';
 import { bodySize, kill, newRat, prune, stageOf } from './rats';
 import { socialHourly } from './social';
 import { R, chance, clamp01, day, emit, pick, type World } from './state';
+import { feel } from './feelings';
 import { techDaily } from './tech';
 
 const failed = new Set<string>();
@@ -36,6 +37,7 @@ function stepOne(w: World) {
   moveAll(w);
   dig(w);
   foundingPulse(w);
+  if (w.tick % 10 === 0) guard('feel', () => feel(w));
   if (w.tick % 2 === 0) guard('study', () => study(w));
   if (w.kingDied) { const why = w.kingDied.cause; w.kingDied = null; guard('succession', () => succession(w, why)); }
   if (w.tick % HOUR_TICKS === 0) {

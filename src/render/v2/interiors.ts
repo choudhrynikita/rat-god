@@ -1,107 +1,275 @@
-/** Room props. The sim stores the chamber; this dresses it from the prop kit so a nest is not a black hole. */
-import { Container, Sprite, Texture } from 'pixi.js';
+/** Each chamber is a different place, drawn in pixels. No floating labels, no parchment plaques. */
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import type { Chamber } from '../../sim/v2/contract';
-import { clip } from './sprites';
 import { PX } from './units';
 
-const KIT: Record<string, string[]> = {
-  nest: ['prop_pebble_bowl', 'prop_pebble_bowl', 'prop_food_crumb'],
-  nursery: ['prop_pebble_bowl', 'prop_pebble', 'prop_food_crumb'],
-  cache: ['prop_cheese_rind', 'prop_food_crumb', 'prop_rotten_fruit', 'prop_pebble_bowl'],
-  granary: ['prop_cheese_rind', 'prop_pebble_bowl', 'prop_food_crumb', 'prop_cheese_rind'],
-  throne: ['prop_law_tablet', 'prop_pebble_bowl'],
-  midden: ['prop_rotten_fruit', 'prop_bone', 'prop_poster_scrap'],
-  workshop: ['prop_wire_coil', 'prop_battery', 'prop_bottle_cap_pile'],
-  lab: ['prop_syringe', 'prop_battery', 'prop_wire_coil'],
-  market: ['prop_bottle_cap_pile', 'prop_cheese_rind', 'prop_pebble'],
-  shrine: ['prop_bone', 'prop_pebble_bowl'],
-  temple: ['prop_law_tablet', 'prop_bone', 'prop_pebble_bowl'],
-  barracks: ['prop_bone', 'prop_pebble'],
-  plaza: ['prop_law_poster_fresh', 'prop_pebble'],
-  jail: ['prop_bone', 'prop_wire_coil', 'prop_bone'],
-  infirmary: ['prop_syringe', 'prop_pebble_bowl'],
-  home: ['prop_pebble_bowl', 'prop_cheese_rind', 'prop_pebble'],
-  archive: ['prop_law_tablet', 'prop_pebble'],
-  council: ['prop_law_tablet', 'prop_pebble_bowl'],
-  slum: ['prop_poster_scrap', 'prop_rotten_fruit', 'prop_pebble'],
-  gallery: ['prop_pebble', 'prop_bone'],
-  latrine: ['prop_pebble'],
+const PAL: Record<string, string> = {
+  k: '#1a1410', s: '#5a534c', S: '#8a8278', w: '#d8d0c4', y: '#f2b46a', Y: '#fff2c0',
+  r: '#8a4030', R: '#c46665', b: '#3a3532', B: '#e8dcc8', g: '#4a5a32', G: '#6a8a48',
+  t: '#6a5040', T: '#a07850', c: '#3a8a90', C: '#45eaf0', m: '#2a2428', p: '#c4a060',
+  o: '#e84b5a', a: '#c48a40', d: '#2a241c', f: '#e8c9a0',
 };
 
-const SHORT: Record<string, string> = {
-  nest: 'NEST', nursery: 'NURSERY', cache: 'CACHE', granary: 'GRANARY', throne: 'THRONE',
-  midden: 'MIDDEN', workshop: 'WORKS', lab: 'LAB', market: 'MARKET', shrine: 'SHRINE',
-  temple: 'TEMPLE', barracks: 'BARRACKS', plaza: 'PLAZA', jail: 'JAIL', infirmary: 'SICK',
-  home: 'HOME', archive: 'ARCHIVE', council: 'COUNCIL', slum: 'SLUM', gallery: 'GALLERY',
-  latrine: 'LATRINE', bolthole: 'BOLT',
+/** one character = one pixel. '.' is empty. */
+const ART: Record<string, string[]> = {
+  shrine: [
+    '....ww....ww....',
+    '....wy....wy....',
+    '....ss....ss....',
+    '..SSSSSSSSSSSS..',
+    '..SSBBBBBBBBSS..',
+    '..SSSSSSSSSSSS..',
+    '.kkkkkkkkkkkkkkk',
+    '.kkkkkkkkkkkkkkk',
+  ],
+  nursery: [
+    '..pppppppppppp..',
+    '.ppffffffffffpp.',
+    'ppffBBBffBBBffpp',
+    'ppffffffffffffpp',
+    '.ppffffffffffpp.',
+    '..pppppppppppp..',
+    '....tt....tt....',
+  ],
+  granary: [
+    '..aaaa....aaaa..',
+    '.aTTTTa..aTTTTa.',
+    '.aTTTTa..aTTTTa.',
+    '..aaaa....aaaa..',
+    '....aaaaaaaa....',
+    '...aTTTTTTTTa...',
+    '...aTTTTTTTTa...',
+    '....aaaaaaaa....',
+  ],
+  throne: [
+    '....rrrrrrrr....',
+    '....rYYYYr......',
+    '....rYYYYr......',
+    '....rrrrrr......',
+    '..SSSSSSSSSS....',
+    '.SSSSSSSSSSSS...',
+    'kkkkkkkkkkkkkkkk',
+  ],
+  latrine: [
+    'gggggggggggggggg',
+    'gddddddddddddddg',
+    'gddkkkkkkkkkkddg',
+    'gddkddddddddkddg',
+    'gddddddddddddddg',
+    'gggggggggggggggg',
+  ],
+  workshop: [
+    '......cc........',
+    '.....cCCc.......',
+    'tttttttttttttttt',
+    'tTTTTTTTTTTTTTTt',
+    'tttttttttttttttt',
+    'kk....kk....kk..',
+  ],
+  jail: [
+    's.s.s.s.s.s.s.s.',
+    's.s.s.s.s.s.s.s.',
+    's.s.s.s.s.s.s.s.',
+    's.s.s.s.s.s.s.s.',
+    's.s.s.s.s.s.s.s.',
+    'SSSSSSSSSSSSSSSS',
+  ],
+  market: [
+    'oRoRoRoRoRoRoRoR',
+    '.oRoRoRoRoRoRoR.',
+    'k......k.......k',
+    'k.TTTTTTTTTTTT.k',
+    'k.TTTTTTTTTTTT.k',
+    'kk............kk',
+  ],
+  midden: [
+    '...ggg..gg......',
+    '..gBBBgttggg....',
+    '.ggtttgggtttgg..',
+    'gggtttgttttgggg.',
+    '.ggggggggggggg..',
+  ],
+  nest: [
+    '..tttttttttttt..',
+    '.ttpppppppppptt.',
+    'ttppffffffffpptt',
+    'ttppffffffffpptt',
+    '.ttpppppppppptt.',
+    '..tttttttttttt..',
+  ],
+  infirmary: [
+    'wwwwwwwwwwwwwwww',
+    'wGGGGGGGGGGGGGGw',
+    'wwwwwwwwwwwwwwww',
+    'kk..........kk..',
+    'kk..........kk..',
+  ],
+  barracks: [
+    '....s......s....',
+    '....s......s....',
+    '...ys......sy...',
+    'SSSSSSSSSSSSSSSS',
+    'tttttttttttttttt',
+    'k..k......k..k..',
+  ],
+  plaza: [
+    '...ssssssss.....',
+    '..s........s....',
+    '.s...dddd...s...',
+    '.s..dddddd..s...',
+    '.s...dddd...s...',
+    '..s........s....',
+    '...ssssssss.....',
+  ],
+  slum: [
+    't.............t.',
+    '.t...........t..',
+    '..ttttttttttt...',
+    '..tRRRRRRRRRt...',
+    '..ttttttttttt...',
+    'k............k..',
+  ],
+  temple: [
+    '......YY........',
+    '.....ywwy.......',
+    '.....wwww.......',
+    '....wwBBww......',
+    '....wwBBww......',
+    '...SSSSSSSS.....',
+    '..SSSSSSSSSS....',
+    '.kkkkkkkkkkkk...',
+  ],
+  lab: [
+    '......CC........',
+    '.....cGGc.......',
+    'SSSSSSSSSSSSSSSS',
+    's..............s',
+    's..............s',
+    'kk............kk',
+  ],
+  home: [
+    '....ssssss......',
+    '...sYYYYYs......',
+    '...sYyyYYs......',
+    '...sssssss......',
+    'tttttttttttttttt',
+    'k..k......k..k..',
+  ],
+  archive: [
+    'SSSSSSSSSSSSSSSS',
+    'SkkSkkSkkSkkSkkS',
+    'SSSSSSSSSSSSSSSS',
+    'SkkSkkSkkSkkSkkS',
+    'SSSSSSSSSSSSSSSS',
+    'kk............kk',
+  ],
+  council: [
+    '................',
+    '.ssssssssssssss.',
+    '.sTTTTTTTTTTTTs.',
+    '.ssssssssssssss.',
+    'k.k.k.....k.k.k.',
+  ],
+  gallery: [
+    'kk.kk.kk.kk.kk.k',
+    'kS.kS.kS.kS.kS.k',
+    'k..k..k..k..k..k',
+    'SSSSSSSSSSSSSSSS',
+  ],
+  cache: [
+    '..tttttttttt....',
+    '.tTTTTTTTTTTT...',
+    '.tTaaaaaaaaTT...',
+    '.tTTTTTTTTTTT...',
+    '..tttttttttt....',
+  ],
+  bolthole: [
+    '...ssssss...',
+    '..sdddddds..',
+    '..sdddddds..',
+    '...ssssss...',
+  ],
+  candle: ['..Y..', '.ywy.', '..s..', '..s..', '..k..'],
+  sack: ['.aaa.', 'aTTTa', 'aTTTa', '.aaa.'],
+  bowl: ['.bbbb.', 'bddddb', '.ssss.'],
+  spear: ['..y..', '..s..', '..s..', '..s..', '..k..'],
+  cot: ['wwwwwwww', 'wGGGGGGw', 'kk....kk'],
 };
-const WASH: Record<string, number> = {
-  nest: 0x6a4030, nursery: 0xc48a62, cache: 0x8a6a30, granary: 0xc4a050, throne: 0xf2b46a,
-  midden: 0x5a6840, workshop: 0x3a8a90, lab: 0x45eaf0, market: 0xd5a063, shrine: 0xf6c992,
-  temple: 0xf6c992, barracks: 0xc46665, plaza: 0x8a7a68, jail: 0x6070a0, infirmary: 0x9be070,
-  home: 0xa07050, archive: 0x907060, council: 0xc4a060, slum: 0x6a5040, gallery: 0x7a7068, latrine: 0x6a8a62,
+
+const FLOOR: Record<string, number> = {
+  shrine: 0x4a1818, nursery: 0x5a3a18, granary: 0x4a3814, throne: 0x5a2418, latrine: 0x243018,
+  workshop: 0x143038, jail: 0x1c1c28, market: 0x4a2814, midden: 0x2a3018, nest: 0x3a2414,
+  infirmary: 0x143024, barracks: 0x3a1818, plaza: 0x3a3424, slum: 0x3a2818, temple: 0x3a141c,
+  lab: 0x101828, home: 0x3a2818, archive: 0x2a2418, council: 0x2a261c, gallery: 0x28241c,
+  cache: 0x3a2c14, bolthole: 0x1a1612, entrance: 0x241c16,
 };
-const GLYPH: Record<string, string> = {
-  A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110',
-  E: '111100110100111', F: '111100110100100', G: '011100101101011', H: '101101111101101',
-  I: '111010010010111', J: '001001001101011', K: '101101110101101', L: '100100100100111',
-  M: '101111101101101', N: '101111111101101', O: '010101101101010', P: '110101110100100',
-  Q: '010101101111001', R: '110101110101101', S: '011100010001110', T: '111010010010010',
-  U: '101101101101011', V: '101101101101010', W: '101101101111101', X: '101101010101101',
-  Y: '101101010010010', Z: '111001010100111',
+const PIECES: Record<string, string[]> = {
+  shrine: ['shrine', 'candle', 'candle', 'bowl'],
+  nursery: ['nursery', 'bowl', 'nest'],
+  granary: ['granary', 'sack', 'sack', 'sack'],
+  throne: ['throne', 'candle'],
+  latrine: ['latrine'],
+  workshop: ['workshop', 'spear'],
+  jail: ['jail', 'cot'],
+  market: ['market', 'sack', 'bowl'],
+  midden: ['midden', 'sack'],
+  nest: ['nest', 'bowl'],
+  infirmary: ['infirmary', 'cot', 'bowl'],
+  barracks: ['barracks', 'spear', 'spear'],
+  plaza: ['plaza', 'bowl'],
+  slum: ['slum', 'sack', 'cot'],
+  temple: ['temple', 'candle', 'candle', 'bowl'],
+  lab: ['lab', 'bowl'],
+  home: ['home', 'bowl', 'cot'],
+  archive: ['archive'],
+  council: ['council'],
+  gallery: ['gallery', 'bowl'],
+  cache: ['cache', 'sack'],
+  bolthole: ['bolthole'],
 };
-const labels = new Map<string, Texture>();
-function labelTex(word: string): Texture | null {
-  const hit = labels.get(word); if (hit) return hit;
-  const gw = 3, gh = 5, gap = 1;
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, word.length * (gw + gap) - gap); c.height = gh;
-  const x = c.getContext('2d'); if (!x) return null;
-  x.fillStyle = '#f6c992';
-  for (let i = 0; i < word.length; i++) {
-    const g = GLYPH[word[i]]; if (!g) continue;
-    for (let p = 0; p < g.length; p++) if (g[p] === '1') x.fillRect(i * (gw + gap) + (p % gw), (p / gw) | 0, 1, 1);
+const texCache = new Map<string, Texture>();
+function dress(kind: string): Texture | null {
+  const rows = ART[kind]; if (!rows) return null;
+  const hit = texCache.get(kind); if (hit) return hit;
+  const h = rows.length; const w = rows.reduce((m, r) => Math.max(m, r.length), 1);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); if (!g) return null;
+  for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) {
+    const ch = rows[y][x]; if (ch === '.' || ch === ' ') continue;
+    const col = PAL[ch]; if (!col) continue;
+    g.fillStyle = col; g.fillRect(x, y, 1, 1);
   }
-  const t = Texture.from(c); t.source.scaleMode = 'nearest'; labels.set(word, t); return t;
+  const t = Texture.from(c); t.source.scaleMode = 'nearest'; texCache.set(kind, t); return t;
 }
 
 export class Interiors {
   readonly layer = new Container({ label: 'rooms' });
   private sig = '';
   sync(chambers: Chamber[]) {
-    if (!clip('prop_pebble_bowl') && !clip('prop_cheese_rind')) return;
-    const sig = chambers.map((c) => `${c.id}:${(c.progress * 5) | 0}:${c.stock | 0}:${c.cx | 0}`).join('|');
+    const sig = chambers.map((c) => `${c.id}:${c.progress > 0.55 ? 1 : 0}:${c.cx | 0}`).join('|');
     if (sig === this.sig) return;
     this.sig = sig;
     for (const ch of this.layer.removeChildren()) ch.destroy();
     for (const c of chambers) {
-      if (c.progress < 0.45) continue;
-      const washCol = WASH[c.kind];
-      if (washCol != null) {
-        const wash = new Sprite(Texture.WHITE);
-        wash.anchor.set(0.5, 0.65); wash.tint = washCol; wash.alpha = 0.34;
-        wash.width = Math.max(18, c.rx * 1.35 * PX); wash.height = Math.max(10, c.ry * 0.85 * PX);
-        wash.position.set(c.cx * PX, c.floorY * PX);
-        this.layer.addChild(wash);
-      }
-      const word = SHORT[c.kind];
-      const tex = word ? labelTex(word) : null;
-      if (tex) {
-        const lab = new Sprite(tex); lab.anchor.set(0.5, 1); lab.scale.set(2);
-        lab.position.set(c.cx * PX, (c.floorY - 0.35) * PX);
-        this.layer.addChild(lab);
-      }
-      const kit = KIT[c.kind]; if (!kit?.length) continue;
-      const piles = c.kind === 'granary' || c.kind === 'cache' ? Math.min(kit.length, 2 + Math.min(3, Math.floor(c.stock / 4))) : Math.min(kit.length, 2 + (c.seed % 2));
-      for (let i = 0; i < piles; i++) {
-        const cl = clip(kit[(c.seed + i) % kit.length]); if (!cl) continue;
-        const s = new Sprite(cl.frames[0]);
-        s.anchor.set(cl.ax, cl.ay);
-        const t = (i + 1) / (piles + 1);
-        s.position.set((c.cx - c.rx * 0.72 + t * c.rx * 1.44) * PX, c.floorY * PX);
-        s.scale.set(c.kind === 'throne' && i === 0 ? 0.85 : 0.55);
+      if (c.progress < 0.55) continue;
+      const rw = Math.max(18, c.rx * PX * 0.92);
+      const rh = Math.max(10, c.ry * PX * 0.62);
+      const g = new Graphics();
+      g.ellipse(0, 0, rw, rh).fill({ color: FLOOR[c.kind] ?? 0x241c16, alpha: 0.92 });
+      g.position.set(c.cx * PX, c.floorY * PX - rh * 0.25);
+      this.layer.addChild(g);
+      const pieces = PIECES[c.kind] ?? [c.kind];
+      pieces.forEach((kind, i) => {
+        const tex = dress(kind); if (!tex) return;
+        const s = new Sprite(tex);
+        s.anchor.set(0.5, 0.9);
+        const wide = i === 0 ? Math.min(rw * 1.35, 150) : Math.min(rw * 0.42, 48);
+        s.scale.set(wide / tex.width);
+        const ang = ((c.seed * 17 + i * 97) % 360) * Math.PI / 180;
+        const rad = i === 0 ? 0 : rw * 0.55;
+        s.position.set(c.cx * PX + Math.cos(ang) * rad, c.floorY * PX - (i === 0 ? 2 : Math.abs(Math.sin(ang)) * rh * 0.35));
         this.layer.addChild(s);
-      }
+      });
     }
   }
 }

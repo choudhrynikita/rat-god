@@ -27,8 +27,9 @@ export function cardFor(e: SimEvent2): string | null {
 }
 const PORTRAIT_OF = (fl: number, stage: number, female: boolean) => fl & RF.king ? 'king' : fl & RF.founder ? 'founder' : fl & RF.prophet || fl & RF.priest ? 'prophet' : fl & RF.enforcer ? 'enforcer' : fl & RF.outcast ? 'outcast' : stage === Stage.Elder ? 'elder' : female ? 'worker_f' : 'worker_m';
 export function portraitUrl(rats: RatsBlock | null | undefined, id: number | undefined): string {
-  if (rats && id != null) for (let i = 0; i < rats.n; i++) if (rats.id[i] === id) { const fl = rats.flags[i]; return A(`portraits/portrait_${PORTRAIT_OF(fl, rats.stage[i], !!(fl & RF.female))}_talk.png`); }
-  return A('portraits/portrait_prophet_talk.png');
+  if (!rats || id == null) return '';
+  for (let i = 0; i < rats.n; i++) if (rats.id[i] === id) { const fl = rats.flags[i]; return A(`portraits/portrait_${PORTRAIT_OF(fl, rats.stage[i], !!(fl & RF.female))}_talk.png`); }
+  return '';
 }
 export const day = (tick: number) => Math.floor(tick / 960) + 1;
 export const pct = (v: number) => `${Math.round(v * 100)}%`;

@@ -29,7 +29,7 @@ const MAP: Record<number, string[]> = {
 };
 const COAT = [0xffffff, 0xc9c6cc, 0x8a8790, 0xffffff, 0xfff0d8, 0xe8d4b8, 0xfff6f6, 0xe6e0e0];
 const TIER = (r: number) => r;
-interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null;
+interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
   snapY: number; rot: number; facing: number; flip: number; clipId: string; fade: number; seen: number; t0: number; off: number; i: number; lastAnim: number }
 
@@ -68,7 +68,7 @@ export class Actors {
   private make(id: number, x: number, y: number): RV {
     const root = new Container(); const body = new Sprite(); const ghost = new Sprite(); const tool = new Sprite(); tool.visible = false; ghost.visible = false;
     root.addChild(ghost, body, tool); this.layer.addChild(root);
-    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1 };
+    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, pip: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1 };
     this.rv.set(id, v); return v;
   }
   private character(flags: number, stage: number): string {
@@ -189,20 +189,31 @@ export class Actors {
         if (v.mark) { v.mark.destroy(); v.mark = null; }
         if (v.ring) { v.ring.destroy(); v.ring = null; }
       }
+      const mood = anim === Anim.Fight ? 'anger' : anim === Anim.Flee || anim === Anim.Cower ? 'fear' : anim === Anim.Mate || anim === Anim.Kiss ? 'love' : '';
+      if (mood) {
+        if (!v.pip) { v.pip = new Sprite(pipTex(mood)); v.pip.anchor.set(0.5, 1); v.root.addChild(v.pip); }
+        v.pip.visible = true; v.pip.texture = pipTex(mood);
+        v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(1.6);
+      } else if (v.pip) v.pip.visible = false;
     }
     this.updateHazards(now);
   }
   /** nearest rat to a world point. r is a horizontal slack; the body is a column from the feet up. */
   pickAt(wx: number, wy: number, r: number): number {
-    let best = -1, bd = r * r;
+    const all = this.pickAll(wx, wy, r); return all[0] ?? -1;
+  }
+  /** every rat under a finger, nearest first, so a crowd can be stepped through */
+  pickAll(wx: number, wy: number, r: number): number[] {
+    const hits: { id: number; d: number }[] = []; const r2 = r * r;
     for (const v of this.rv.values()) {
       if (!v.root.visible) continue;
-      const top = v.snapY - 32, bot = v.snapY + 4;
+      const top = v.snapY - 40, bot = v.snapY + 8;
       const cy = wy < top ? top : wy > bot ? bot : wy;
       const d = (v.x - wx) * (v.x - wx) + (cy - wy) * (cy - wy);
-      if (d < bd) { bd = d; best = v.id; }
+      if (d <= r2) hits.push({ id: v.id, d });
     }
-    return best;
+    hits.sort((a, b) => a.d - b.d);
+    return hits.map((h) => h.id);
   }
   posOf(id: number) { const v = this.rv.get(id); return v ? { x: v.x, y: v.snapY - 14 } : null; }
   // ───── hazards, corpses, items, posters ─────
@@ -254,6 +265,16 @@ function mixTint(a: number, b: number, t: number) {
   return (ch(16, 0) << 16) | (ch(8, 0) << 8) | ch(0, 0);
 }
 let _ring: Texture | null = null;
+const _pip = new Map<string, Texture>();
+function pipTex(kind: string) {
+  const hit = _pip.get(kind); if (hit) return hit;
+  const c = document.createElement('canvas'); c.width = 5; c.height = 5; const g = c.getContext('2d')!;
+  const px = (x: number, y: number, col: string) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
+  if (kind === 'anger') { px(1, 0, '#e84b5a'); px(3, 0, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#fff2c0'); px(4, 2, '#e84b5a'); px(1, 4, '#e84b5a'); px(3, 4, '#e84b5a'); }
+  else if (kind === 'fear') { px(1, 0, '#45eaf0'); px(3, 0, '#45eaf0'); px(2, 2, '#d8d0c4'); px(1, 4, '#45eaf0'); px(3, 4, '#45eaf0'); }
+  else { px(1, 1, '#e84b5a'); px(3, 1, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#e84b5a'); px(4, 2, '#e84b5a'); px(1, 3, '#e84b5a'); px(3, 3, '#e84b5a'); px(2, 4, '#e84b5a'); }
+  const t = Texture.from(c); t.source.scaleMode = 'nearest'; _pip.set(kind, t); return t;
+}
 let _shadow: Texture | null = null;
 function shadowTexture() { if (_shadow) return _shadow; const c = document.createElement('canvas'); c.width = 64; c.height = 16; const g = c.getContext('2d')!;
   const gr = g.createRadialGradient(32, 8, 2, 32, 8, 32); gr.addColorStop(0, 'rgba(0,0,0,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 16);

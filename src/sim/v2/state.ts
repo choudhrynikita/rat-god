@@ -148,17 +148,19 @@ const SANE: Record<string, (t: string) => string> = {
   violence: (t) => t, torture: (t) => t.replace(/\btortured?\b/gi, 'hurt'),
 };
 export function allowed(w: World, tag: string) { const c = w.consent; if (!c.mature) return false; if (tag === 'gore') return c.gore >= 2; if (tag === 'violence') return true; if (tag === 'sex' || tag === 'incest') return c.sexual; return c.gore >= 1; }
+const QUIET = new Set(['chamber_done', 'dig_start', 'dig_done', 'doctrine', 'prayer', 'weather', 'birth', 'courtship', 'gossip', 'experiment_failed', 'festival', 'god_act', 'fight', 'home_built']);
 export function emit(w: World, kind: EventKind, text: string, sev: 0 | 1 | 2 | 3, o: Partial<SimEvent2> & { safe?: string } = {}): SimEvent2 {
   const { safe, ...rest } = o;
   if (rest.mature?.length) { for (const tag of rest.mature) if (!allowed(w, tag)) { text = safe ?? (SANE[tag]?.(text) ?? text); } }
   // ripples: from the current god-act context, from tagged rats, and from world-wide acts still in effect
   let rip: number[] = [...w.ripCtx]; let depth = 9;
   if (w.ripCtx.length) depth = 0;
-  for (const id of rest.rats ?? []) { const r = w.byId.get(id); if (!r) continue; for (const t of r.rip) { if (!rip.includes(t.id)) rip.push(t.id); depth = Math.min(depth, t.d + 1); } }
-  if (sev >= 1) for (const rp of w.ripples) if (rp.world && rp.open && w.tick < rp.until && !rip.includes(rp.id)) { rip.push(rp.id); depth = Math.min(depth, 1); }
+  if (sev >= 1 && rest.rats?.length) for (const id of rest.rats) { const r = w.byId.get(id); if (!r) continue; for (const t of r.rip) { if (!rip.includes(t.id)) rip.push(t.id); depth = Math.min(depth, t.d + 1); } }
   const watched = (rest.rats ?? []).some((id) => w.watched.has(id)); const royal = (rest.rats ?? []).includes(w.kingId);
-  const score = Math.round(clamp((BASE[kind] ?? 10 + sev * 12) + sev * 8 + (royal ? 12 : 0) + (watched ? 15 : 0) + (rip.length ? 10 : 0), 0, 100));
-  const imp = score >= 70 ? 'major' : score >= 35 ? 'notable' : 'minor';
+  let score = Math.round(clamp((BASE[kind] ?? 10 + sev * 12) + sev * 8 + (royal ? 12 : 0) + (watched ? 15 : 0) + (rip.length ? 8 : 0), 0, 100));
+  let imp: 'minor' | 'notable' | 'major' = score >= 70 ? 'major' : score >= 35 ? 'notable' : 'minor';
+  // dug rooms, sermons and ordinary weather are not banners. The city shows them by changing.
+  if (QUIET.has(kind) && sev < 3) { score = Math.min(score, 18); imp = 'minor'; }
   const e: SimEvent2 = { seq: ++w.seq, tick: w.tick, kind, text, sev, ...rest, imp, score };
   if (rip.length) {
     e.ripples = rip.slice(0, 4);

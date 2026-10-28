@@ -1,6 +1,6 @@
 /** God acts. Grace is spent, the city answers, a ripple is opened. No sexual acts. */
 import type { GodCommand, GodPowerInfo, GodResult, GodTarget } from './contract';
-import { RF } from './contract';
+import { Anim, RF } from './contract';
 import { kill } from './rats';
 import { clamp, clamp01, emit, type Rat, type RippleS, type World } from './state';
 
@@ -39,11 +39,18 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
     if (!rat?.alive) { ok = false; reason = 'No living rat under your hand.'; }
     else { kill(w, rat, 'smite'); text = `${rat.name} is struck down.`; effects.push(text); }
   } else if (cmd.power === 'bless' && rat?.alive) {
-    rat.flags |= RF.blessed; rat.blessings.push(cmd.params?.gift ?? 'a quiet strength'); rat.health = clamp01(rat.health + 0.2);
-    text = `${rat.name} is blessed.`; effects.push(text);
+    const gift = cmd.params?.gift ?? 'health';
+    rat.flags |= RF.blessed;
+    if (!rat.blessings.includes(gift)) rat.blessings.push(gift);
+    applyBless(w, rat, gift);
+    text = `${rat.name} is blessed with ${gift}. The others can see it.`; effects.push(text);
   } else if (cmd.power === 'curse' && rat?.alive) {
-    rat.flags |= RF.cursed; rat.curses.push(cmd.params?.curse ?? 'misfortune'); rat.health = clamp(rat.health - 0.15, 0.05, 1);
-    text = `${rat.name} is cursed.`; effects.push(text);
+    const curse = cmd.params?.curse ?? 'madness';
+    rat.flags |= RF.cursed;
+    if (!rat.curses.includes(curse)) rat.curses.push(curse);
+    applyCurse(w, rat, curse);
+    text = curse === 'madness' ? `${rat.name} goes mad and turns on the nearest rat.` : `${rat.name} is cursed with ${curse}.`;
+    effects.push(text);
   } else if (cmd.power === 'anoint_prophet' && rat?.alive) {
     rat.flags |= RF.prophet; rat.role = 'priest'; rat.beliefs.god = 1; text = `${rat.name} hears a voice and calls it yours.`; effects.push(text);
   } else if (cmd.power === 'punish_king' || (cmd.power === 'punish' && !rat)) {
@@ -114,6 +121,29 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
   return { t: 'godResult', req: cmd.req, ok: true, power: cmd.power, cost: w.unbound ? 0 : cost, grace: w.grace, effects, witnesses, events, forecast };
 }
 
+function applyBless(w: World, r: Rat, gift: string) {
+  if (gift === 'genius') { r.genes.intellect = 1; r.genes.curiosity = 1; r.skills.lore = Math.max(r.skills.lore, 0.8); }
+  else if (gift === 'charisma') { r.genes.charisma = 1; r.skills.talk = Math.max(r.skills.talk, 0.8); }
+  else if (gift === 'strength') { r.genes.strength = 1; r.skills.fight = Math.max(r.skills.fight, 0.85); }
+  else if (gift === 'longevity') r.genes.longevity = 1;
+  else if (gift === 'prophecy') { r.flags |= RF.prophet | RF.priest; r.beliefs.god = 1; r.role = 'priest'; }
+  else if (gift === 'fertility') r.genes.fertility = 1;
+  else { r.health = 1; r.disease = null; r.injured = 0; r.flags &= ~RF.sick; }
+  r.emo.joy = 1; r.anim = Anim.Cheer; r.intent.until = w.tick + 36;
+  for (const o of w.rats) if (o.alive && o !== r && Math.hypot(o.x - r.x, o.y - r.y) < 12) o.emo.joy = clamp01(o.emo.joy + 0.15);
+}
+function applyCurse(w: World, r: Rat, curse: string) {
+  if (curse === 'madness') {
+    r.emo.anger = 1; r.emo.joy = 0; r.emo.fear = 0.1; r.anim = Anim.Fight;
+    for (const o of w.rats) if (o.alive && o !== r && Math.hypot(o.x - r.x, o.y - r.y) < 14) o.emo.fear = Math.max(o.emo.fear, 0.62);
+  } else if (curse === 'plague') {
+    r.disease = 'fever'; r.flags |= RF.sick; r.emo.fear = 0.7;
+    let n = 0;
+    for (const o of w.rats) if (o.alive && o !== r && Math.hypot(o.x - r.x, o.y - r.y) < 8 && n < 4) { o.disease = 'fever'; o.flags |= RF.sick; o.emo.fear = Math.max(o.emo.fear, 0.5); n++; }
+  } else if (curse === 'barren') { r.genes.fertility = 0; r.emo.shame = 0.8; }
+  else if (curse === 'weakness') { r.genes.strength = 0.05; r.skills.fight = 0.05; r.emo.fear = 0.85; r.anim = Anim.Cower; }
+  else { r.food = 0; r.injured = Math.max(r.injured, 0.55); r.emo.fear = 0.6; r.health = clamp(r.health - 0.25, 0.05, 1); }
+}
 function punish(w: World, r: Rat, how: string) {
   r.injured = Math.max(r.injured, 0.5); r.emo.fear = 1; r.emo.shame = clamp01(r.emo.shame + 0.5);
   r.beliefs.god = clamp(r.beliefs.god - 0.25, -1, 1);

@@ -2,6 +2,7 @@
 import { Anim, BODY_PARTS, RF } from './contract';
 import { R, RK, chance, clamp, clamp01, day, emit, pick, type Rat, type World } from './state';
 import { addRel, kill, remember } from './rats';
+import { recordCrime } from './justice';
 
 const WEAPON = (r: Rat) => (r.tool === 2 ? 0.25 : r.tool === 3 ? 0.4 : 0) + (r.knows.includes('weapons') ? 0.1 : 0);
 export const power = (r: Rat) => (r.rodentoid ? 0.9 : r.genes.strength * 0.5 + r.skills.fight * 0.4 + r.health * 0.3 + WEAPON(r) - r.injured * 0.4 + (r.flags & RF.blessed ? 0.15 : 0)) * (r.stageN === 0 ? 0.2 : r.stageN === 1 ? 0.6 : r.stageN === 3 ? 0.7 : 1);
@@ -35,6 +36,7 @@ export function fight(w: World, a: Rat, b: Rat, why: string, lethal = false): Ra
   win.skills.fight = Math.min(1, win.skills.fight + 0.03); lose.skills.fight = Math.min(1, lose.skills.fight + 0.015);
   const g = addRel(w, lose, win, -0.4, -0.4, RK.grudge); g.aff = Math.min(g.aff, -0.3);
   if (lose.alive && why !== 'war') emit(w, 'fight', `${win.name} beats ${lose.name} (${why}).`, 0, { rats: [win.id, lose.id], x: lose.x, y: lose.y, mature: ['violence'] });
+  else if (!lose.alive && lethal && why !== 'war') recordCrime(w, win, lose.id, 'murder');
   return lose;
 }
 /** a battle between two groups (holy war, coup, caste war, riot). Pairs off fighters; produces carnage. */

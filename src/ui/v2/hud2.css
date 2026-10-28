@@ -96,7 +96,8 @@
 .h2-ripple { border-left: 3px solid var(--amber); padding: 4px 8px; margin: 8px 0; }
 .h2-ripple .ch { margin-left: calc(var(--d) * 14px); font-size: 15px; color: var(--bone); }
 .h2-web { width: 100%; height: 180px; display: block; background: rgba(0,0,0,.25); border: 2px solid #000; }
-.h2-sel { position: absolute; z-index: 4; transform: translate(-50%, -118%); padding: 2px 6px; background: rgba(8,13,10,.88); border: 2px solid #000; box-shadow: inset 0 0 0 1px var(--amber); font-family: 'Silkscreen', monospace; font-size: 11px; color: var(--amberL); white-space: nowrap; pointer-events: none; }
+.h2-sel { position: absolute; z-index: 4; transform: translate(-50%, -118%); padding: 2px 4px 2px 6px; background: rgba(8,13,10,.88); border: 2px solid #000; box-shadow: inset 0 0 0 1px var(--amber); font-family: 'Silkscreen', monospace; font-size: 11px; color: var(--amberL); white-space: nowrap; pointer-events: none; display: none; align-items: center; gap: 6px; }
+.h2-sel .btn { pointer-events: auto; min-height: 28px; padding: 2px 8px; }
 .h2-board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 8px 0; }
 .h2-sock { min-height: 36px; padding: 2px; font-family: 'Silkscreen', monospace; font-size: 9px; line-height: 1.05; color: var(--grey); background: #0c1210; overflow: hidden; word-break: break-word; }
 .h2-sock.on { color: var(--amberL); background: var(--slate2); box-shadow: inset 0 0 0 1px var(--amber); }

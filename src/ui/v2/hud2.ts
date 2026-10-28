@@ -13,6 +13,10 @@ export const DEFAULT_CONSENT: Consent = { mature: false, gore: 0, sexual: false 
 export function loadConsent(): (Consent & { adult: boolean }) | null { try { const c = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null'); return c && c.adult ? c : null; } catch { return null; } }
 export function saveConsent(c: Consent) { localStorage.setItem(CONSENT_KEY, JSON.stringify({ ...c, adult: true, at: Date.now() })); }
 
+const NOISE = new Set(['chamber_done', 'dig_start', 'dig_done', 'doctrine', 'prayer', 'weather', 'gossip', 'experiment_failed', 'festival', 'home_built', 'courtship', 'god_act', 'fight']);
+/** Dug rooms, weather and sermons are not news. The city shows them by changing. */
+const DROP = new Set(['weather', 'dig_start', 'dig_done', 'chamber_done', 'doctrine', 'gossip', 'experiment_failed']);
+
 export interface Omen { e: SimEvent2; read: boolean; at: number }
 
 export class Hud2 {
@@ -22,7 +26,7 @@ export class Hud2 {
   feedLog: SimEvent2[] = []; notable: SimEvent2[] = []; omens: Omen[] = []; ripples = new Map<number, Ripple>();
   private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
-  readonly god: GodMenu; readonly sheets: Sheets; following = -1; private started = false; private nudgeEls = new Map<number, HTMLElement>();
+  readonly god: GodMenu; readonly sheets: Sheets; following = -1; private cluster: number[] = []; private clusterAt = 0; private started = false; private nudgeEls = new Map<number, HTMLElement>();
   speed = 1; private lastTop = 0; blocking = false; private resume = false;
   constructor(host: HTMLElement, readonly world: World2, readonly sim: SimPort) {
     host.innerHTML = ''; this.el = h(`<div class="h2"></div>`); host.appendChild(this.el);
@@ -84,13 +88,14 @@ export class Hud2 {
         <span class="h2-grace" aria-label="Grace"><span class="lbl2">GRACE</span><i><b style="width:0%"></b></i></span></div>
       <button class="btn h2-iconbtn" data-k="omens" aria-label="Omens inbox">✶<span class="h2-badge hidden">0</span></button></div>`);
     this.pillsEl = h(`<div class="h2-pills"></div>`); this.feedEl = h(`<div class="h2-feed"></div>`); this.nudgeEl = h(`<div class="h2-nudges"></div>`);
-    this.selEl = h(`<div class="h2-sel" style="display:none"></div>`);
+    this.selEl = h(`<div class="h2-sel" style="display:none"><span data-n></span><button class="btn" data-k="look">LOOK</button></div>`);
     this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
       <button class="h2-god" data-k="god" aria-label="Act as god">ACT</button></div>`);
     this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.bottom, this.selEl);
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
     on('god', () => this.god.open()); on('stat', () => this.sheets.society());
+    on('look', () => { const id = this.world.actors.selected; if (id >= 0) this.sheets.rat(id); });
     on('speed', () => { const seq = [1, 2, 4, 8, 16, 0] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
   }
   setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
@@ -111,25 +116,27 @@ export class Hud2 {
   matureHidden(e: SimEvent2) { const t = e.mature ?? []; if (!t.length) return false; if (!this.consent.mature) return true;
     if ((t.includes('gore') || t.includes('torture')) && this.consent.gore < 1) return true; if ((t.includes('sex') || t.includes('incest')) && !this.consent.sexual) return true; return false; }
   event(e: SimEvent2) {
-    if (this.matureHidden(e)) return; // the sim also filters; this is the device-side guarantee
+    if (this.matureHidden(e)) return;
     e = { ...e, text: clean(e.text) };
+    if (DROP.has(e.kind) && (e.sev ?? 0) < 2) return;
     const tier = tierOf(e);
-    if (tier === 'minor') return this.feed(e);
-    if (tier === 'notable') { this.notable.unshift(e); this.notable.length = Math.min(this.notable.length, 120); return this.pill(e); }
+    const quiet = tier === 'minor' || NOISE.has(e.kind) || ((e.kind === 'death' || e.kind === 'murder' || e.kind === 'maimed') && (e.sev ?? 0) < 2);
+    if (quiet) return this.feed(e);
+    if (tier === 'notable') { this.notable.unshift(e); this.notable.length = Math.min(this.notable.length, 40); return this.pill(e); }
     this.omens.unshift({ e, read: false, at: Date.now() }); this.omens.length = Math.min(this.omens.length, 80); this.badge();
     this.majorQ.push(e); this.pumpMajor();
   }
   // minor → ambient feed: wraps, never truncates; tap to open the full log
   private feed(e: SimEvent2) {
     this.feedLog.unshift(e); this.feedLog.length = Math.min(this.feedLog.length, 300);
-    const ln = h(`<div class="ln" role="button" tabindex="0">${esc(e.text)}</div>`); ln.onclick = () => this.sheets.log();
-    this.feedEl.appendChild(ln); while (this.feedEl.children.length > 3) this.feedEl.firstElementChild!.remove();
+    const ln = h(`<div class="ln">${esc(e.text)}</div>`);
+    this.feedEl.appendChild(ln); while (this.feedEl.children.length > 1) this.feedEl.firstElementChild!.remove();
     setTimeout(() => ln.classList.add('old'), 7000); setTimeout(() => ln.remove(), 16000);
   }
   // notable → persistent pill with a portrait and "jump there"
   pill(e: SimEvent2, opts: { label?: string; god?: boolean } = {}) {
-    const por = portraitUrl(this.snap?.rats, e.rats?.[0]);
-    const el = h(`<div class="h2-pill panel${opts.god ? ' k-god' : ''}"><span class="por" style="background-image:url(${por})"></span>
+    const por = e.rats?.[0] != null ? portraitUrl(this.snap?.rats, e.rats[0]) : '';
+    const el = h(`<div class="h2-pill panel${opts.god ? ' k-god' : ''}">${por ? `<span class="por" style="background-image:url(${por})"></span>` : ''}
       <span class="tx"><span class="lbl2">${esc(opts.label ?? e.kind.replace(/_/g, ' '))}</span>${esc(e.text)}</span>
       ${this.canJump(e) ? '<button class="btn go">GO</button>' : ''}<button class="btn x" aria-label="Dismiss">✕</button></div>`);
     (el.querySelector('.x') as HTMLElement).onclick = () => this.dropPill(el);
@@ -139,7 +146,7 @@ export class Hud2 {
   }
   private dropPill(el: HTMLElement) { const i = this.pills.findIndex((p) => p.el === el); if (i < 0) return; this.pills.splice(i, 1); el.remove(); this.layoutPills(); }
   private layoutPills() {
-    this.pillsEl.innerHTML = ''; const show = this.pills.slice(0, 2); for (const p of show) this.pillsEl.appendChild(p.el);
+    this.pillsEl.innerHTML = ''; const show = this.pills.slice(0, 1); for (const p of show) this.pillsEl.appendChild(p.el);
     if (this.pills.length > 2) { const m = h(`<button class="btn h2-more">+${this.pills.length - 2} MORE</button>`); m.onclick = () => this.sheets.omens('notable'); this.pillsEl.appendChild(m); }
     this.pillsEl.querySelectorAll('*').forEach((n) => ((n as HTMLElement).style.pointerEvents = 'auto'));
   }
@@ -149,7 +156,14 @@ export class Hud2 {
     if (id != null && p) { this.followRat(id, z); return; }
     if (e.x != null && e.y != null) { this.following = -1; this.world.cam.follow = null; this.world.cam.flyTo(e.x * PX, e.y * PX, z); }
   }
-  followRat(id: number, z = 2.4) { this.following = id; const a = this.world.actors; a.selected = id; this.world.cam.follow = () => a.posOf(id); const p = a.posOf(id); if (p) this.world.cam.flyTo(p.x, p.y, Math.max(this.world.cam.z, z)); this.sim.send({ t: 'inspect', id }); }
+  followRat(id: number, z?: number) {
+    this.following = id; const a = this.world.actors; a.selected = id;
+    this.world.cam.follow = () => a.posOf(id);
+    const p = a.posOf(id);
+    const want = z ?? (this.world.cam.z < 0.9 ? 1.35 : this.world.cam.z);
+    if (p) this.world.cam.flyTo(p.x, p.y, want);
+    this.sim.send({ t: 'inspect', id });
+  }
   // MAJOR → cinematic: time-slow, camera cut, art card, stinger; kept in the Omens inbox until read
   private pumpMajor() {
     if (this.cine || !this.majorQ.length || !this.started) return; const now = performance.now(); if (now - this.lastMajor < 6000) { setTimeout(() => this.pumpMajor(), 6000 - (now - this.lastMajor)); return; }
@@ -173,17 +187,24 @@ export class Hud2 {
   private godResult(r: GodResult) {
     const info = this.powers.find((p) => p.power === r.power);
     const text = r.ok ? (r.effects.map(clean).join(' · ') || `${info?.label ?? r.power} is done.`) + (r.witnesses ? ` · ${r.witnesses} saw it.` : '') : clean(r.reason ?? 'Nothing answers.');
-    this.pill({ seq: -1, tick: this.snap?.tick ?? 0, kind: 'god_act', text, sev: 1 } as SimEvent2, { label: `${info?.label ?? r.power} · grace ${Math.round(r.grace)}`, god: true });
+    this.feed({ seq: -1, tick: this.snap?.tick ?? 0, kind: 'god_act', text, sev: 0, imp: 'minor' } as SimEvent2);
     if (r.forecast) this.sheets.forecast(r.forecast);
   }
   // ───────── world taps ─────────
   private tapWorld(sx: number, sy: number) {
     const w = this.world.cam.s2w(sx, sy);
-    const slack = 52 / Math.max(0.35, this.world.cam.z);
+    const slack = Math.min(70, Math.max(32, 24 / Math.max(0.4, this.world.cam.z)));
     if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, slack)); return; }
     if (this.blocking) return;
-    const id = this.world.actors.pickAt(w.x, w.y, slack);
-    if (id >= 0) { this.followRat(id); this.sheets.rat(id); } else if (this.following >= 0 || this.world.actors.selected >= 0) { this.following = -1; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); this.sheets.close(); }
+    const ids = this.world.actors.pickAll(w.x, w.y, slack);
+    if (!ids.length) {
+      if (this.following >= 0 || this.world.actors.selected >= 0) { this.following = -1; this.cluster = []; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); }
+      return;
+    }
+    const same = ids.length === this.cluster.length && ids.every((id, i) => id === this.cluster[i]);
+    this.clusterAt = same ? (this.clusterAt + 1) % ids.length : 0;
+    this.cluster = ids;
+    this.followRat(ids[this.clusterAt]);
   }
   chamberAt(wx: number, wy: number) { if (!this.B) return null; let best = null as null | (typeof this.B.chambers)[number], bd = 1e9;
     for (const c of this.B.chambers) { const dx = (wx / PX - c.cx) / Math.max(1, c.rx), dy = (wy / PX - c.cy) / Math.max(1, c.ry); const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } } return bd < 2.5 ? best : null; }
@@ -205,10 +226,12 @@ export class Hud2 {
     const p = this.world.actors.posOf(id);
     if (!p) { this.selEl.style.display = 'none'; return; }
     const sp = this.world.cam.w2s(p.x, p.y - 22);
-    this.selEl.style.display = 'block';
+    this.selEl.style.display = 'flex';
     this.selEl.style.left = `${sp.x}px`;
     this.selEl.style.top = `${sp.y}px`;
-    this.selEl.textContent = this.name(id);
+    const n = this.selEl.querySelector('[data-n]');
+    const name = this.name(id);
+    if (n) n.textContent = this.cluster.length > 1 ? `${name} ${this.clusterAt + 1}/${this.cluster.length}` : name;
   }
   /** diegetic prayer nudges: a small glyph over a praying rat; tap it to hear the plea and see the power it hints at */
   private nudges(s: Snapshot2) {

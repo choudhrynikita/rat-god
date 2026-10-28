@@ -79,14 +79,14 @@ function sermon(w: World) {
   const hall = w.chambers[rel.temples[0]] ?? anyChamber(w, 'shrine') ?? anyChamber(w, 'nest');
   if (!hall) return;
   const priest = w.byId.get(rel.prophet); if (!priest?.alive) return;
-  if (!chance(w, 0.65)) return;
+  if (!chance(w, 0.18)) return;
   for (const id of rel.memberIds) {
     const r = w.byId.get(id); if (!r) continue;
     r.beliefs.god = Math.min(1, r.beliefs.god + 0.04);
     r.emo.fear = Math.max(0, r.emo.fear - 0.05);
   }
   w.faith = Math.min(1, w.faith + 0.02);
-  emit(w, 'doctrine', `${priest.name} preaches in ${hall.name}: "${rel.doctrine[Math.floor(R(w) * rel.doctrine.length)]}"`, 1, { rats: [priest.id], chamber: hall.id, x: hall.cx, y: hall.cy });
+  emit(w, 'doctrine', `${priest.name} preaches in ${hall.name}: "${rel.doctrine[Math.floor(R(w) * rel.doctrine.length)]}"`, 0, { rats: [priest.id], chamber: hall.id, x: hall.cx, y: hall.cy });
 }
 
 function feast(w: World) {

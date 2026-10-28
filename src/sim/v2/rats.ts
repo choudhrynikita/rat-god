@@ -153,6 +153,10 @@ export function kill(w: World, r: Rat, cause: string, by = 0, violent = false) {
   if (r.flags & RF.king) w.kingDied = { id: r.id, cause, by };
   if (r.flags & RF.watched) {}
   const sev = r.flags & RF.king ? 3 : r.flags & (RF.leader | RF.prophet) ? 2 : violent ? 1 : 0;
+  if (violent && cause !== 'smite' && cause !== 'executed') {
+    w.stats.unrest = clamp01(w.stats.unrest + (cause === 'murder' ? 0.08 : 0.03));
+    w.faith = Math.max(0, w.faith - (cause === 'murder' ? 0.02 : 0.005));
+  }
   r.rip = r.rip; // ripple tags stay on the ghost so the death event carries them
   emit(w, cause === 'murder' ? 'murder' : cause === 'executed' ? 'execution' : 'death', deathLine(r, cause, killer?.name), sev as 0 | 1 | 2 | 3, { rats: by ? [r.id, by] : [r.id], x: r.x, y: r.y, sfx: violent ? 'death_violent' : 'death' });
 }
