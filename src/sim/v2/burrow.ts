@@ -218,37 +218,45 @@ function soften(w: World, x: number, y: number, r: number) {
   (T as { matVer?: number }).matVer = ((T as { matVer?: number }).matVer ?? 0) + 1;
 }
 
-/** A short sloped tunnel and a horizontal room. Used when the planner cannot find soil. */
+/** A short sloped tunnel and a horizontal room. Used when the planner cannot find soil.
+ *  Tries both directions and a few reaches so the new room does not swallow the last one. */
 export function layRoom(w: World, from: number, kind: 'nest' | 'cache' | 'midden' | 'throne', name: string): Chamber | null {
   const A = w.nodes[from]; if (!A) return null;
   const T = w.T;
-  const dir = A.x < T.W * 0.55 ? 1 : -1;
-  const reach = kind === 'throne' ? 20 : kind === 'nest' ? 12 : 15;
-  const drop = kind === 'throne' ? 7 : 5;
+  const prefer = A.x < T.W * 0.55 ? 1 : -1;
   const rx = kind === 'throne' ? 7.2 : kind === 'nest' ? 6.4 : 4.8;
   const ry = kind === 'throne' ? 3.6 : kind === 'nest' ? 3.4 : 2.7;
-  const ex = clamp(A.x + dir * reach, 8, T.W - 8);
-  const sy = T.surfaceY[Math.max(0, Math.min(T.W - 1, Math.floor(ex)))] ?? 30;
-  const ey = clamp(A.y + drop, sy + 8, T.H - 16);
-  const steps = 8;
-  for (let i = 0; i <= steps; i++) { const t = i / steps; soften(w, A.x + (ex - A.x) * t, A.y + (ey - A.y) * t, 3.4); }
-  const cx = clamp(ex + dir * rx * 0.5, rx + 4, T.W - rx - 4);
-  soften(w, cx, ey - ry * 0.3, Math.max(rx, ry) + 1.4);
-  const pts: [number, number][] = [];
-  for (let i = 0; i <= steps; i++) { const t = i / steps; pts.push([A.x + (ex - A.x) * t, A.y + (ey - A.y) * t]); }
-  const nE = addNode(w, ex, ey, 'chamber');
-  addEdge(w, from, nE.id, 'tunnel', pts, 2.6);
-  const far = clamp(ex + dir * rx * 1.2, 6, T.W - 6);
-  const nO = addNode(w, far, ey, 'chamber');
-  const ch: Chamber = {
-    id: w.chambers.length, kind, name, cx, cy: ey - ry * 0.35, rx, ry, seed: 11 + w.chambers.length,
-    floorY: ey, floorEdge: -1, entryNode: nE.id, progress: 0, stock: 0, owner: 0, flooded: 0,
-  };
-  w.chambers.push(ch); w.newChambers.push(ch.id);
-  const fe = addEdge(w, nE.id, nO.id, 'floor', [[ex, ey], [(ex + far) / 2, ey + 0.12], [far, ey]], 4.2, ch.id);
-  ch.floorEdge = fe.id;
-  emit(w, 'dig_start', `Rats begin to dig ${ch.name}.`, 0, { chamber: ch.id, x: cx, y: ey });
-  return ch;
+  const fits = (cx: number, cy: number) => !w.chambers.some((c) => Math.abs(c.cx - cx) < c.rx + rx + 5 && Math.abs(c.cy - cy) < c.ry + ry + 4);
+  const tries: { dir: number; reach: number; drop: number }[] = [];
+  for (const dir of [prefer, -prefer]) for (const extra of [0, 12, 22]) tries.push({ dir, reach: (kind === 'throne' ? 22 : kind === 'nest' ? 16 : 18) + extra, drop: kind === 'throne' ? 8 : 6 });
+  tries.push({ dir: prefer, reach: kind === 'throne' ? 20 : 14, drop: kind === 'throne' ? 7 : 5 });
+  for (const t of tries) {
+    const ex = clamp(A.x + t.dir * t.reach, 8, T.W - 8);
+    const sy = T.surfaceY[Math.max(0, Math.min(T.W - 1, Math.floor(ex)))] ?? 30;
+    const ey = clamp(A.y + t.drop, sy + 8, T.H - 16);
+    const cx = clamp(ex + t.dir * rx * 0.55, rx + 4, T.W - rx - 4);
+    const cy = ey - ry * 0.35;
+    if (t !== tries[tries.length - 1] && !fits(cx, cy)) continue;
+    const steps = 8;
+    for (let i = 0; i <= steps; i++) { const u = i / steps; soften(w, A.x + (ex - A.x) * u, A.y + (ey - A.y) * u, 3.4); }
+    soften(w, cx, cy, Math.max(rx, ry) + 1.2);
+    const pts: [number, number][] = [];
+    for (let i = 0; i <= steps; i++) { const u = i / steps; pts.push([A.x + (ex - A.x) * u, A.y + (ey - A.y) * u]); }
+    const nE = addNode(w, ex, ey, 'chamber');
+    addEdge(w, from, nE.id, 'tunnel', pts, 2.4);
+    const far = clamp(ex + t.dir * rx * 1.15, 6, T.W - 6);
+    const nO = addNode(w, far, ey, 'chamber');
+    const ch: Chamber = {
+      id: w.chambers.length, kind, name, cx, cy, rx, ry, seed: 11 + w.chambers.length,
+      floorY: ey, floorEdge: -1, entryNode: nE.id, progress: 0, stock: 0, owner: 0, flooded: 0,
+    };
+    w.chambers.push(ch); w.newChambers.push(ch.id);
+    const fe = addEdge(w, nE.id, nO.id, 'floor', [[ex, ey], [(ex + far) / 2, ey + 0.12], [far, ey]], 3.4, ch.id);
+    ch.floorEdge = fe.id;
+    emit(w, 'dig_start', `Rats begin to dig ${ch.name}.`, 0, { chamber: ch.id, x: cx, y: ey });
+    return ch;
+  }
+  return null;
 }
 
 /** Chew every unfinished tunnel open. Skips edges that have already struck rock. */

@@ -26,7 +26,7 @@ export class Fx {
   constructor(private terrain: Terrain, private cam: Camera2) {}
   initChambers(B: BurrowInit) { for (const s of this.chamberLights) s.destroy(); this.chamberLights = []; for (const c of B.chambers) this.addChamberLight(c); }
   addChamberLight(c: Chamber) {
-    const warm: Record<string, number> = { throne: 0xf2b46a, shrine: 0xf6c992, temple: 0xf6c992, workshop: 0x45eaf0, lab: 0x45eaf0, granary: 0xd5a063, nursery: 0xf2b46a, plaza: 0xe8a54b, market: 0xf2b46a, jail: 0x6070a0, barracks: 0xc46665, home: 0xf2b46a };
+    const warm: Record<string, number> = { nest: 0xc48a62, cache: 0xd5a063, throne: 0xf2b46a, shrine: 0xf6c992, temple: 0xf6c992, workshop: 0x45eaf0, lab: 0x45eaf0, granary: 0xd5a063, nursery: 0xf2b46a, plaza: 0xe8a54b, market: 0xf2b46a, jail: 0x6070a0, barracks: 0xc46665, home: 0xf2b46a, infirmary: 0x9be070 };
     const col = warm[c.kind]; if (!col) return; const L = new Sprite(lightTexture()); L.anchor.set(0.5); L.blendMode = 'add'; L.tint = col;
     L.position.set(c.cx * PX, (c.cy - c.ry * 0.2) * PX); L.scale.set(Math.max(1.4, c.rx * PX / 52)); (L as any).base = 0.75; (L as any).ph = c.id; this.lights.addChild(L); this.chamberLights.push(L);
   }

@@ -6,12 +6,13 @@ import { Post, type Tier } from './post';
 import { Terrain } from './terrain';
 import { Sky } from './sky';
 import { Actors } from './actors';
+import { Interiors } from './interiors';
 import { Fx } from './fx';
 import { Lenses } from './lens';
 import { PX, SKY_PX } from './units';
 
 export class World2 {
-  readonly cam: Camera2; readonly post: Post; readonly terrain = new Terrain(); readonly sky = new Sky(); readonly actors: Actors; readonly fx: Fx; readonly lens = new Lenses(); reduceMotion = false;
+  readonly cam: Camera2; readonly post: Post; readonly terrain = new Terrain(); readonly sky = new Sky(); readonly actors: Actors; readonly rooms = new Interiors(); readonly fx: Fx; readonly lens = new Lenses(); reduceMotion = false;
   T: TerrainInit | null = null; B: BurrowInit | null = null; env: Env | null = null; snap: Snapshot2 | null = null;
   R = 1; cssW = 0; cssH = 0; private last = performance.now(); fps = 60; private fpsAcc: number[] = [];
   onEvent: (e: SimEvent2) => void = () => {}; onTier: (t: Tier) => void = () => {};
@@ -24,19 +25,21 @@ export class World2 {
   constructor(renderer: Renderer, el: HTMLElement) {
     this.cam = new Camera2(el); this.post = new Post(renderer); this.actors = new Actors(this.terrain); this.fx = new Fx(this.terrain, this.cam);
     const P = this.post;
-    P.sceneRoot.addChild(this.sky.back, this.terrain.overview, this.terrain.root, this.actors.back, this.fx.back);
+    P.sceneRoot.addChild(this.sky.back, this.terrain.overview, this.terrain.root, this.rooms.layer, this.actors.back, this.fx.back);
     P.actorRoot.addChild(this.actors.layer, this.fx.front, this.sky.front, this.lens.layer);
     P.lightRoot.addChild(this.sky.lights, this.fx.lights, this.actors.lights);
   }
   handle(m: FromWorker2) {
     if (m.t === 'init') {
       this.T = m.terrain; this.B = m.burrow; this.terrain.init(m.terrain); this.sky.init(m.terrain, m.burrow); this.fx.initChambers(m.burrow);
+      this.rooms.sync(m.burrow.chambers);
       this.colony.ready = false; this.boxSig = '';
       this.cam.setBounds({ x0: -200, y0: -SKY_PX, x1: m.terrain.W * PX + 200, y1: m.terrain.H * PX });
       this.absorbColony(); this.cam.setMinZFloor(this.zoomFloor()); this.jumpColony();
     } else if (m.t === 'worldGrow') {
       const dx = m.dx * PX;
       if (this.B) this.shiftBurrow(m.dx);
+      if (this.B) this.rooms.sync(this.B.chambers);
       if (dx) { this.cam.x += dx; this.actors.shift(dx); if (this.colony.ready) { this.colony.x0 += dx; this.colony.x1 += dx; } }
       this.T = m.terrain;
       this.sky.relayout(m.terrain, dx);
@@ -53,6 +56,11 @@ export class World2 {
         if (s.burrow.newEdges.length) B.edges.push(...s.burrow.newEdges);
         if (s.burrow.newChambers.length) { B.chambers.push(...s.burrow.newChambers); for (const c of s.burrow.newChambers) this.fx.addChamberLight(c); }
         for (const [id, dug] of s.burrow.edgeDug) { const e = B.edges[id]; if (e && e.id === id) e.dug = dug; else { const f = B.edges.find((x) => x.id === id); if (f) f.dug = dug; } }
+        for (const [id, progress, stock, owner, flooded] of s.burrow.chamber ?? []) {
+          const c = B.chambers.find((x) => x.id === id); if (!c) continue;
+          c.progress = progress; c.stock = stock; c.owner = owner; c.flooded = flooded;
+        }
+        this.rooms.sync(B.chambers);
       }
       this.actors.ingest(s, now);
       if (s.consent) { this.fx.gore = s.consent.mature ? s.consent.gore : 0; this.actors.gore = this.fx.gore > 0; }

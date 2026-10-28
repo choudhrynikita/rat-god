@@ -2,7 +2,7 @@
 // by weather, where the camera is, the tech era and what the colony is doing. They sit on the amb bus, which stingers duck.
 import { AUDIO_EXT, getBuses, audioCtx, onAudioReady, onUnlockGesture } from './core';
 
-export const AMB = ['amb_sewer_drips', 'amb_street_rain', 'amb_machine_hum', 'amb_crowd_murmur', 'amb_silence_dread'] as const;
+export const AMB = ['amb_sewer_drips', 'amb_street_rain', 'amb_machine_hum', 'amb_crowd_murmur', 'amb_silence_dread', 'amb_retro_cave'] as const;
 export type AmbId = (typeof AMB)[number];
 export type AmbMix = Partial<Record<AmbId, number>>;
 interface Chan { el: HTMLAudioElement; g: GainNode | null; want: number; id: AmbId }
@@ -34,5 +34,7 @@ export function ambMix(o: { underground: number; /** 0 = street view, 1 = deep *
     amb_machine_hum: o.dead ? 0 : Math.min(0.5, 0.05 + 0.45 * o.machines),
     amb_crowd_murmur: o.dead ? 0 : Math.min(0.55, o.crowd * (o.night ? 0.5 : 1)),
     amb_silence_dread: o.dread || o.dead ? 0.6 : 0,
+    // CC0 chiptune bed (Void Estate). Quiet under the drip bed so the two share the amb bus.
+    amb_retro_cave: o.dead ? 0.04 : 0.08 + 0.1 * o.underground,
   };
 }

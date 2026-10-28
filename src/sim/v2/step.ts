@@ -1,13 +1,14 @@
 /** One tick of the living city. Each system already exists; this only calls them in order. */
 import { Anim, DAY_TICKS, HOUR_TICKS, RF, type Season, type WeatherKind } from './contract';
-import { digEdge, forceOpen, isOpen, layRoom, planChamber, reach } from './burrow';
+import { digEdge, forceOpen, isOpen, layRoom, planChamber } from './burrow';
 import { healDaily } from './combat';
 import { economyDaily } from './economy';
 import { familyDaily } from './family';
 import { justiceHourly } from './justice';
 import { computeLawMods, crown, kingThink, lawsHourly, succession } from './laws2';
 import { nearestOnGraph, pathTo, moveAll } from './move';
-import { anyChamber, maybeExtras, spotIn } from './places';
+import { chooseIntent, pulseLife, study } from './life';
+import { anyChamber, civicStep, maybeExtras, spotIn } from './places';
 import { factionsDaily, partiesDaily } from './politics';
 import { bodySize, kill, newRat, prune, stageOf } from './rats';
 import { socialHourly } from './social';
@@ -34,12 +35,14 @@ function stepOne(w: World) {
   moveAll(w);
   dig(w);
   foundingPulse(w);
+  if (w.tick % 2 === 0) guard('study', () => study(w));
   if (w.kingDied) { const why = w.kingDied.cause; w.kingDied = null; guard('succession', () => succession(w, why)); }
   if (w.tick % HOUR_TICKS === 0) {
     guard('laws', () => lawsHourly(w));
     guard('king', () => kingThink(w));
     guard('justice', () => justiceHourly(w));
     guard('social', () => socialHourly(w));
+    guard('life', () => pulseLife(w));
     guard('lawMods', () => computeLawMods(w));
     w.grace = Math.min(w.graceMax, w.grace + (w.unbound ? 0 : 0.35));
   }
@@ -58,7 +61,7 @@ function stepOne(w: World) {
       emit(w, 'labrats_arrive', `${n} pale rats crawl out of a grate, ear-tagged, blinking.`, 2, { rats: out.map((r) => r.id), card: 'From the White Place' });
       return out;
     }));
-    guard('places', () => maybeExtras(w));
+    guard('places', () => { maybeExtras(w); civicStep(w); });
     tally(w);
     prune(w);
   }
@@ -103,31 +106,19 @@ function bodies(w: World) {
 }
 
 function think(w: World) {
-  const openF = w.edges.filter((e) => isOpen(e) && (e.kind === 'floor' || e.kind === 'tunnel'));
-  if (!openF.length) return;
-  let budget = 5;
+  let budget = 6;
   for (const r of w.rats) {
     if (!r.alive || r.edge < 0) continue;
     const moving = r.path.length > r.pathI && r.speed > 0.02;
-    if (!moving && r.speed < 0.08) {
+    if (!moving && r.speed < 0.08 && r.intent.kind !== 'sleep' && r.intent.kind !== 'eat' && r.intent.kind !== 'throne' && r.intent.kind !== 'nurse') {
       if (r.flags & RF.king) r.anim = Anim.Throne;
       else if (r.flags & RF.jailed) r.anim = Anim.Jailed;
-      else if (r.flags & RF.priest && (w.tick + r.id) % 80 < 2) r.anim = Anim.Pray;
       else if (r.anim === Anim.Walk || r.anim === Anim.Run || r.anim === Anim.Eat) r.anim = Anim.Idle;
     }
     if (moving || w.tick < r.intent.until || budget <= 0) continue;
-    if (r.flags & RF.king) { r.intent.until = w.tick + 80; continue; }
+    if (r.flags & RF.king) { chooseIntent(w, r); continue; }
     budget--;
-    if (chance(w, 0.28)) {
-      r.intent.kind = 'idle'; r.intent.since = w.tick; r.intent.until = w.tick + 15 + Math.floor(R(w) * 50);
-      r.anim = (r.flags & RF.priest) ? Anim.Pray : Anim.Idle; continue;
-    }
-    const e = openF[(r.id + w.tick) % openF.length];
-    const [lo, hi] = reach(e); if (hi - lo < 0.4) { r.intent.until = w.tick + 8; continue; }
-    const s = lo + 0.2 + R(w) * Math.max(0.2, hi - lo - 0.4);
-    r.intent.kind = 'wander'; r.intent.since = w.tick; r.intent.goalEdge = e.id; r.intent.goalS = s;
-    if (pathTo(w, r, { edge: e.id, s })) r.intent.until = w.tick + 50;
-    else { r.intent.kind = 'idle'; r.intent.until = w.tick + 8; }
+    chooseIntent(w, r);
   }
 }
 
@@ -156,7 +147,7 @@ function dig(w: World) {
 
 function planFounding(w: World, kind: 'cache' | 'midden' | 'throne', from: number | undefined, name: string, attempt: number) {
   const nest = w.chambers.find((c) => c.kind === 'nest');
-  const near = nest ? { x: nest.cx + ((attempt % 7) - 3) * 14, y: nest.cy + 6 + (attempt % 5) * 5 } : undefined;
+  const near = nest ? { x: nest.cx + ((attempt % 2 === 0 ? 1 : -1) * (24 + (attempt % 4) * 10)), y: nest.cy + 5 + (attempt % 3) * 6 } : undefined;
   return planChamber(w, kind, { from: attempt > 4 ? undefined : from, near, name, fit: 'modest' });
 }
 

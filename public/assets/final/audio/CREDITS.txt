@@ -1,0 +1,11 @@
+CC0 ambience used by Rat God. Do not replace these with generated audio.
+
+amb_sewer_drips
+  Loopable Dungeon Ambience by JaggedStone
+  https://opengameart.org/content/loopable-dungeon-ambience
+  CC0
+
+amb_retro_cave
+  Void Estate (haunting chiptune loop) by Zane Little
+  https://opengameart.org/content/haunting-chiptune-loop-void-estate
+  CC0

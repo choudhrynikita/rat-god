@@ -68,6 +68,7 @@ export function createWorld(opts: NewGameOpts): World {
     w.founding = { leader: leader.id, stage: 'nest', wait: 0 };
     emit(w, 'founding', `${leader.name} leads them. No crown yet. The first room is only a hole.`, 1, { rats: [leader.id], x: leader.x, y: leader.y });
   }
+  for (const r of w.rats) { const nest = w.chambers.find((c) => c.kind === 'nest'); if (nest) r.homeNest = nest.id; }
   w.granary = city ? 70 : 18;
   w.foodOnSurface = city ? 36 : 10;
   const gran = w.chambers.find((c) => c.kind === 'granary'); if (gran) gran.stock = w.granary;

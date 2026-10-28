@@ -89,4 +89,17 @@ describe('v2 loop', () => {
     expect(w2.byId.get(w2.rats[0].id)?.name).toBe(w.rats[0].name);
     expect(w2.rats.filter((r) => r.alive).length).toBe(w.rats.filter((r) => r.alive).length);
   });
+
+  it('turns a pregnancy into pups and plans another room after the throne', () => {
+    const w = createWorld({ seed: 7, scenario: 'founding', founders: 10 });
+    const mom = w.rats.find((r) => r.alive && r.female && r.stageN >= 2)!;
+    const dad = w.rats.find((r) => r.alive && !r.female && r.stageN >= 2)!;
+    mom.pregnant = 1; mom.pregFather = dad.id;
+    stepWorld(w, 2920);
+    expect(w.rats.some((r) => r.mother === mom.id)).toBe(true);
+    expect(mom.pregnant).toBe(0);
+    stepWorld(w, 2 * 960);
+    const kinds = new Set(w.chambers.map((c) => c.kind));
+    expect(kinds.has('latrine') || kinds.has('granary') || kinds.has('gallery') || kinds.has('nursery') || kinds.has('midden')).toBe(true);
+  });
 });
