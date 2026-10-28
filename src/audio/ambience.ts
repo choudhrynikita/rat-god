@@ -34,7 +34,7 @@ export function ambMix(o: { underground: number; /** 0 = street view, 1 = deep *
     amb_machine_hum: o.dead ? 0 : Math.min(0.5, 0.05 + 0.45 * o.machines),
     amb_crowd_murmur: o.dead ? 0 : Math.min(0.55, o.crowd * (o.night ? 0.5 : 1)),
     amb_silence_dread: o.dread || o.dead ? 0.6 : 0,
-    // CC0 chiptune bed (Void Estate). Quiet under the drip bed so the two share the amb bus.
-    amb_retro_cave: o.dead ? 0.04 : 0.08 + 0.1 * o.underground,
+    // CC0 chiptune bed (Void Estate). Kept under the drip bed, and ducked when the street is loud, so it does not fight music or rain.
+    amb_retro_cave: o.dead ? 0.03 : (0.06 + 0.08 * o.underground) * (1 - 0.45 * o.crowd),
   };
 }

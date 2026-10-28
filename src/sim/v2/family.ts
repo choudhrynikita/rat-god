@@ -31,9 +31,13 @@ const OCC_RANK: Record<string, number> = { crown: 0, priest: 1, boss: 1, scholar
 
 // ───────────── the housing era ─────────────
 function housingReady(w: World) {
-  const pop = w.rats.filter((r) => !r.rodentoid).length; if (pop < 40) return false;
-  const nests = chambersOf(w, 'nest').length; const bonded = w.rats.some((r) => r.spouse || [...r.rel.values()].some((x) => x.k & RK.bond));
-  return bonded && nests >= 2 && w.granary / pop > 0.8 && w.stats.unrest < 0.75 && (has(w, 'tools') || has(w, 'shoring') || pop > 70);
+  const pop = w.rats.filter((r) => r.alive && !r.rodentoid).length;
+  // bible: about 40, once a second nest and a surplus exist. Day 12 stands in for tools the colony has not named yet.
+  if (pop < 36) return false;
+  const nests = chambersOf(w, 'nest').length;
+  const bonded = w.rats.some((r) => r.spouse || [...r.rel.values()].some((x) => x.k & RK.bond));
+  const surplus = w.granary > 6 || w.granary / Math.max(1, pop) > 0.35;
+  return bonded && (nests >= 2 || pop >= 48) && surplus && w.stats.unrest < 0.8 && (has(w, 'tools') || has(w, 'shoring') || day(w) >= 12);
 }
 
 /** one wedding: rite chosen by the couple's faith and culture; guests are kin and friends */

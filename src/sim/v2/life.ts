@@ -8,6 +8,7 @@ import { pathTo } from './move';
 import { anyChamber, chambersOf, nearestChamber, spotIn } from './places';
 import { newRat } from './rats';
 import { court, interact } from './social';
+import { FIRM_SPEC } from './economy';
 import { R, chance, emit, type Rat, type World } from './state';
 import { has, researchTick } from './tech';
 
@@ -55,6 +56,7 @@ export function chooseIntent(w: World, r: Rat) {
   if (r.stageN >= 2 && (r.genes.curiosity > 0.62 || r.labrat) && chance(w, 0.2)) {
     r.intent.kind = 'research'; r.anim = Anim.Idle; r.intent.until = w.tick + 40; return;
   }
+  if (r.stageN >= 2 && workAt(w, r)) return;
   wander(w, r);
 }
 
@@ -111,6 +113,34 @@ function pocketFood(w: World, r: Rat) {
   const bite = Math.min(0.5, w.foodOnSurface);
   w.foodOnSurface -= bite; r.food += bite * 0.6; w.granary += bite * 0.4; r.needs.hunger = Math.max(0, r.needs.hunger - 0.12);
   const gran = anyChamber(w, 'granary') ?? anyChamber(w, 'cache'); if (gran) gran.stock += bite * 0.4;
+}
+
+const POST: Partial<Record<string, ChamberKind[]>> = {
+  store: ['granary', 'cache'],
+  heal: ['infirmary', 'nest'],
+  craft: ['workshop', 'lab'],
+  trade: ['market', 'plaza'],
+  patrol: ['barracks', 'plaza'],
+  write: ['archive', 'council'],
+  scavenge: ['midden', 'slum'],
+  build: ['workshop', 'gallery'],
+};
+function workAt(w: World, r: Rat): boolean {
+  if (r.flags & (RF.priest | RF.prophet) || (r.religion && chance(w, 0.4))) {
+    if (goChamber(w, r, ['temple', 'shrine', 'nest'])) { r.anim = Anim.Pray; r.intent.kind = 'pray'; r.intent.until = w.tick + 36; return true; }
+  }
+  const fest = w.festivals.find((f) => f.endsAt > w.tick);
+  if (fest && chance(w, 0.45)) {
+    const ch = w.chambers[fest.chamber];
+    if (ch && ch.progress > 0.4 && goChamber(w, r, [ch.kind])) { r.anim = Anim.Cheer; r.intent.kind = 'festival'; r.intent.until = w.tick + 40; return true; }
+  }
+  const firm = r.firm ? w.firms.find((f) => f.id === r.firm) : undefined;
+  if (!firm || firm.status === 'strike' || firm.status === 'bust') return false;
+  const task = FIRM_SPEC[firm.kind]?.task;
+  if (!task || task === 'forage' || task === 'dig') return false;
+  const kinds = POST[task]; if (!kinds || !chance(w, 0.65)) return false;
+  if (goChamber(w, r, kinds)) { r.anim = Anim.Idle; r.intent.kind = 'work'; r.intent.until = w.tick + 42; return true; }
+  return false;
 }
 
 function wander(w: World, r: Rat) {
@@ -191,6 +221,7 @@ function pray(w: World) {
   else if (r.disease || r.injured > 0.3) { kind = 'heal'; plea = 'The sickness is in the bedding. Take it back.'; suggest = 'miracle'; }
   else if (r.female && r.spouse && !r.pregnant) { kind = 'child'; plea = 'A litter, if the nest can hold one.'; suggest = 'bless'; }
   else if (r.beliefs.god > 0.5 || r.flags & RF.priest) { kind = 'sign'; plea = 'Speak, so the others stop laughing.'; suggest = 'voice'; r.anim = Anim.Pray; }
+  r.beliefs.god = Math.min(1, r.beliefs.god + 0.04);
   const p: Prayer = { ratId: r.id, name: r.name, plea, kind, tick: w.tick, x: r.x, y: r.y, suggest };
   w.prayers.push(p);
   emit(w, 'prayer', `${r.name} prays: ${plea}`, 0, { rats: [r.id], x: r.x, y: r.y });

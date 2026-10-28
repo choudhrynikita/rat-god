@@ -1,7 +1,7 @@
 /** Chamber lookup & planning on demand */
 import type { Chamber, ChamberKind } from './contract';
 import { R, day, type Rat, type World } from './state';
-import { planChamber, planBolthole, planDeadEnd, isOpen } from './burrow';
+import { planChamber, planBolthole, planDeadEnd, isOpen, stampRoom } from './burrow';
 import { reach } from './burrow';
 import { has } from './tech';
 
@@ -71,6 +71,7 @@ export function civicStep(w: World) {
     const near = nest ? { x: nest.cx + Math.cos(ang) * (26 + (i % 4) * 8), y: nest.cy + 6 + Math.sin(ang) * 10 } : undefined;
     const from = nest?.entryNode ?? w.entrances[0];
     if (planChamber(w, step.kind, { from, near, fit: 'modest' })) return;
+    if (from != null && stampRoom(w, step.kind, from, near)) return;
   }
 }
 export { isOpen };

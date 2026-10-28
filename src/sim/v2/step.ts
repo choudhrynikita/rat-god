@@ -3,6 +3,7 @@ import { Anim, DAY_TICKS, HOUR_TICKS, RF, type Season, type WeatherKind } from '
 import { digEdge, forceOpen, isOpen, layRoom, planChamber } from './burrow';
 import { healDaily } from './combat';
 import { economyDaily } from './economy';
+import { faithDaily } from './faith';
 import { familyDaily } from './family';
 import { justiceHourly } from './justice';
 import { computeLawMods, crown, kingThink, lawsHourly, succession } from './laws2';
@@ -50,6 +51,7 @@ function stepOne(w: World) {
     w.stats.births = 0; w.stats.deaths = 0;
     guard('economy', () => economyDaily(w));
     guard('family', () => familyDaily(w));
+    guard('faith', () => faithDaily(w));
     guard('factions', () => factionsDaily(w));
     guard('parties', () => partiesDaily(w));
     guard('heal', () => healDaily(w));

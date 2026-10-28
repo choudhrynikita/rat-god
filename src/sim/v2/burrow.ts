@@ -259,6 +259,51 @@ export function layRoom(w: World, from: number, kind: 'nest' | 'cache' | 'midden
   return null;
 }
 
+/** When the soil planner cannot find a route, still cut a room that does not swallow its neighbours.
+ *  Softens the path to loam so later civic rooms are not stuck on pipe and rock. */
+export function stampRoom(w: World, kind: ChamberKind, from: number, hint?: { x: number; y: number }): Chamber | null {
+  if (kind === 'entrance' || kind === 'bolthole' || kind === 'deadend') return null;
+  const A = w.nodes[from]; if (!A) return null;
+  const T = w.T;
+  const sp = KIND_SPEC[kind];
+  const rx = Math.min(7, sp.rx[0]);
+  const ry = Math.min(3.6, Math.max(2.2, sp.ry[0]));
+  const prefer = hint && hint.x < A.x - 1 ? -1 : 1;
+  const fits = (cx: number, cy: number) => !w.chambers.some((c) => Math.abs(c.cx - cx) < c.rx + rx + 6 && Math.abs(c.cy - cy) < c.ry + ry + 5);
+  const tries: { dir: number; reach: number; drop: number }[] = [];
+  for (const dir of [prefer, -prefer]) for (const extra of [0, 16, 30]) tries.push({ dir, reach: 22 + extra, drop: 6 + (extra % 5) });
+  tries.push({ dir: prefer, reach: 48, drop: 10 });
+  for (const t of tries) {
+    const ex = clamp(A.x + t.dir * t.reach, 8, T.W - 8);
+    const col = Math.max(0, Math.min(T.W - 1, Math.floor(ex)));
+    const sy = T.surfaceY[col] ?? 30;
+    const ey = clamp(A.y + t.drop, sy + 8, T.H - 16);
+    const cx = clamp(ex + t.dir * rx * 0.65, rx + 4, T.W - rx - 4);
+    const cy = ey - ry * 0.15;
+    if (t !== tries[tries.length - 1] && !fits(cx, cy)) continue;
+    const steps = 8;
+    for (let i = 0; i <= steps; i++) { const u = i / steps; soften(w, A.x + (ex - A.x) * u, A.y + (ey - A.y) * u, 3.2); }
+    soften(w, cx, cy, Math.max(rx, ry) + 1.1);
+    const pts: [number, number][] = [];
+    for (let i = 0; i <= steps; i++) { const u = i / steps; pts.push([A.x + (ex - A.x) * u, A.y + (ey - A.y) * u]); }
+    const nE = addNode(w, ex, ey, 'chamber');
+    addEdge(w, from, nE.id, 'tunnel', pts, kind === 'plaza' || kind === 'market' ? 2.6 : 2.2);
+    const far = clamp(ex + t.dir * rx * 1.2, 6, T.W - 6);
+    const nO = addNode(w, far, ey, 'chamber');
+    const name = `THE ${FLAVOUR[Math.floor(R(w) * FLAVOUR.length)]} ${sp.label.toUpperCase()}`;
+    const ch: Chamber = {
+      id: w.chambers.length, kind, name, cx, cy, rx, ry, seed: 40 + w.chambers.length * 17,
+      floorY: ey, floorEdge: -1, entryNode: nE.id, progress: 0, stock: 0, owner: 0, flooded: 0,
+    };
+    w.chambers.push(ch); w.newChambers.push(ch.id);
+    const fe = addEdge(w, nE.id, nO.id, 'floor', [[ex, ey], [(ex + far) / 2, ey + 0.1], [far, ey]], Math.max(2.4, ry), ch.id);
+    ch.floorEdge = fe.id;
+    emit(w, 'dig_start', `Rats begin to dig ${ch.name}.`, 0, { chamber: ch.id, x: cx, y: ey });
+    return ch;
+  }
+  return null;
+}
+
 /** Chew every unfinished tunnel open. Skips edges that have already struck rock. */
 export function forceOpen(w: World) {
   const ids = w.edges.map((e) => e.id);

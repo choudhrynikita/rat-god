@@ -102,4 +102,20 @@ describe('v2 loop', () => {
     const kinds = new Set(w.chambers.map((c) => c.kind));
     expect(kinds.has('latrine') || kinds.has('granary') || kinds.has('gallery') || kinds.has('nursery') || kinds.has('midden')).toBe(true);
   });
+
+  it('keeps later rooms apart and founds a faith once the hall is crowned', () => {
+    const w = createWorld({ seed: 7, scenario: 'founding', founders: 10 });
+    stepWorld(w, 6 * 960);
+    const rooms = w.chambers.filter((c) => c.kind !== 'bolthole' && c.kind !== 'deadend');
+    const kinds = new Set(rooms.map((c) => c.kind));
+    expect(kinds.has('nest') && kinds.has('throne')).toBe(true);
+    expect(['latrine', 'gallery', 'granary', 'nursery', 'midden', 'shrine'].filter((k) => kinds.has(k as never)).length).toBeGreaterThan(1);
+    for (let i = 0; i < rooms.length; i++) for (let j = i + 1; j < rooms.length; j++) {
+      const a = rooms[i], b = rooms[j];
+      const piled = Math.abs(a.cx - b.cx) < (a.rx + b.rx) * 0.35 && Math.abs(a.cy - b.cy) < (a.ry + b.ry) * 0.35;
+      expect(piled).toBe(false);
+    }
+    expect(w.religions.length).toBeGreaterThan(0);
+    expect(w.religions[0].members).toBeGreaterThan(0);
+  });
 });
