@@ -8,7 +8,9 @@ const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 export class Camera2 {
   x = 0; y = 0; z = 1;
   vw = 390; vh = 844;            // viewport css px
-  minZ = 0.1; maxZ = 3.5;
+  minZ = 0.5; maxZ = 3.2;
+  /** widest pinch. The whole cross-section is not a useful view. */
+  minZFloor = 0.64;
   bounds: CamBounds = { x0: 0, y0: 0, x1: 1000, y1: 1000 };
   private vx = 0; private vy = 0; // inertia (world px / ms)
   private fly: { x: number; y: number; z: number; k: number } | null = null;
@@ -39,13 +41,20 @@ export class Camera2 {
   }
   resize(w: number, h: number) { this.vw = w; this.vh = h; this.fitLimits(); }
   setBounds(b: CamBounds) { this.bounds = b; this.fitLimits(); }
-  private fitLimits() { const b = this.bounds; this.minZ = Math.min(this.vw / (b.x1 - b.x0), this.vh / (b.y1 - b.y0)) * 0.98; }
+  setMinZFloor(z: number) { this.minZFloor = z; this.fitLimits(); }
+  private fitLimits() {
+    const b = this.bounds;
+    const fitAll = Math.min(this.vw / Math.max(1, b.x1 - b.x0), this.vh / Math.max(1, b.y1 - b.y0)) * 0.98;
+    this.minZ = Math.max(fitAll, this.minZFloor);
+  }
   s2w(sx: number, sy: number) { return { x: this.x + (sx - this.vw / 2) / this.z, y: this.y + (sy - this.vh / 2) / this.z }; }
   w2s(wx: number, wy: number) { return { x: (wx - this.x) * this.z + this.vw / 2, y: (wy - this.y) * this.z + this.vh / 2 }; }
   view(margin = 0) { const hw = this.vw / 2 / this.z + margin, hh = this.vh / 2 / this.z + margin; return { x0: this.x - hw, y0: this.y - hh, x1: this.x + hw, y1: this.y + hh }; }
   get busy() { return this.ptrs.size > 0; }
   get flying() { return this.fly != null; }
   get touching() { return this.ptrs.size > 0; }
+  /** pinch, pan or wheel — the painter should not start a full chunk this frame */
+  get gesturing() { return this.ptrs.size > 0 || performance.now() < this.wheelUntil; }
   // ───── gestures ─────
   private down(e: PointerEvent) {
     try { this.el.setPointerCapture(e.pointerId); } catch { /* */ }
@@ -115,7 +124,7 @@ export class Camera2 {
     if (instant) { this.x = nx; this.y = ny; this.z = z; this.fly = null; } else this.flyTo(nx, ny, z, 7);
     this.follow = null;
   }
-  zoomOut() { const b = this.bounds; this.follow = null; this.flyTo((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, this.minZ, 4); }
+  zoomOut() { this.follow = null; this.lastUser = performance.now(); this.flyTo(this.x, this.y, Math.max(this.minZ, this.z * 0.72), 6); }
   flyTo(x: number, y: number, z = this.z, k = 5) { this.fly = { x, y, z: clamp(z, this.minZ, this.maxZ), k }; this.vx = this.vy = 0; }
   jumpTo(x: number, y: number, z = this.z) { this.x = x; this.y = y; this.z = clamp(z, this.minZ, this.maxZ); this.fly = null; }
   shake(amount: number) { this.trauma = Math.min(1, this.trauma + amount); }

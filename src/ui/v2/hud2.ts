@@ -193,7 +193,7 @@ export class Hud2 {
     const s = this.snap; if (!s) return; const now = performance.now();
     if (now - this.lastTop > 250) { this.lastTop = now; const env = s.env, st = s.stats;
       const clock = this.top.querySelector('.clock')!, pop = this.top.querySelector('.pop')!, g = this.top.querySelector<HTMLElement>('.h2-grace b')!;
-      const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day} · ${hh}:00 · ${env.weather.toUpperCase()}`; pop.textContent = `${st.pop} RATS`;
+      const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day + 1} · ${hh}:00 · ${env.weather.toUpperCase()}`; pop.textContent = `${st.pop} RATS`;
       g.style.width = `${Math.round((st.grace / Math.max(1, st.graceMax)) * 100)}%`; }
     this.nudges(s);
     this.tagSelected();

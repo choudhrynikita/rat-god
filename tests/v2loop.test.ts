@@ -62,6 +62,19 @@ describe('v2 loop', () => {
     expect(w.chambers.find((c) => c.id === nest.id)!.cx).toBeCloseTo(ox + g.dx, 5);
     expect(w.T.W).toBeGreaterThan(320);
     expect(w.T.surfaceY[0]).toBeGreaterThan(10);
+    for (const e of w.edges) {
+      if (e.kind === 'surface' || e.pts.length < 2) continue;
+      const a = w.nodes[e.a], b = w.nodes[e.b];
+      expect(Math.hypot(e.pts[0][0] - a.x, e.pts[0][1] - a.y)).toBeLessThan(0.05);
+      const last = e.pts[e.pts.length - 1];
+      expect(Math.hypot(last[0] - b.x, last[1] - b.y)).toBeLessThan(0.05);
+    }
+  });
+
+  it('does not widen the crust just because the street crosses it', () => {
+    const w = createWorld({ seed: 7, scenario: 'founding', founders: 10 });
+    for (let i = 0; i < 6; i++) maybeGrow(w);
+    expect(w.T.W).toBeLessThanOrEqual(320 + 128);
   });
 
   it('saves the gnawed ground and the day', () => {

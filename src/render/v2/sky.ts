@@ -72,6 +72,42 @@ export class Sky {
     for (let x = 120, i = 0; x < this.W; x += 260 + ((i * 97) % 180), i++) { const L = new Sprite(lightTexture()); L.anchor.set(0.5); L.blendMode = 'add'; L.position.set(x, this.surf - 120 - ((i * 53) % 380)); L.scale.set(3 + (i % 3)); L.tint = LCOL[i % LCOL.length]; (L as any).ph = i; this.lights.addChild(L); this.lamps.push(L); }
     this.head.texture = lightTexture(); this.head.anchor.set(0.5); this.head.blendMode = 'add'; this.head.scale.set(7, 2.2); this.head.tint = 0xf6c992; this.head.visible = false; this.lights.addChild(this.head);
   }
+  /** the crust widened. Keep the street art; do not rebuild blur passes or the rain pool. */
+  relayout(T: TerrainInit, dx: number) {
+    if (!this.W) return;
+    this.W = T.W * PX;
+    let s = 0; for (let x = 0; x < T.W; x++) s += T.surfaceY[x];
+    const surf = (s / Math.max(1, T.W)) * PX;
+    this.surf = surf;
+    if (dx) {
+      for (const r of this.rays) r.x += dx;
+      for (const L of this.lamps) L.x += dx;
+      for (const st of this.stars.children) st.x += dx;
+    }
+    this.grad.position.set(-400, -SKY_PX); this.grad.width = this.W + 800; this.grad.height = SKY_PX + surf + 40;
+    if (this.far) {
+      this.far.position.set(-800, surf - this.far.height - 260); this.far.width = this.W + 1600;
+      if (this.farB) { this.farB.position.copyFrom(this.far.position); this.farB.width = this.far.width; }
+      if (dx && this.far.tileScale.x) {
+        const slide = dx / this.far.tileScale.x;
+        this.far.tilePosition.x += slide;
+        if (this.farB) this.farB.tilePosition.x += slide;
+      }
+    }
+    if (this.mid) {
+      this.mid.position.set(-800, surf - this.mid.height + 4 * STREET_SCALE); this.mid.width = this.W + 1600;
+      if (this.midB) { this.midB.position.copyFrom(this.mid.position); this.midB.width = this.mid.width; }
+      if (this.sheen) { this.sheen.position.set(-800, surf - 7 * STREET_SCALE + 4); this.sheen.width = this.mid.width; }
+      if (dx && this.mid.tileScale.x) {
+        const slide = dx / this.mid.tileScale.x;
+        this.mid.tilePosition.x += slide;
+        if (this.midB) this.midB.tilePosition.x += slide;
+        if (this.sheen) this.sheen.tilePosition.x += slide;
+      }
+    }
+    this.sunRect.position.set(-800, -SKY_PX); this.sunRect.width = this.W + 1600; this.sunRect.height = SKY_PX + surf - 10;
+    this.sunFade.position.set(-800, surf - 10); this.sunFade.width = this.W + 1600;
+  }
   /** per frame; returns the post env (grade, ambient, fog...) */
   update(env: Env | null, cam: { x: number; y: number; z: number }, view: { x0: number; y0: number; x1: number; y1: number }, now: number, dt: number, quality: number): PostEnv {
     const tod = env?.tod ?? 0.5; const w = env?.weather ?? 'clear'; const I = env?.intensity ?? 0; const rainA = Math.max(env?.rain ?? 0, w === 'rain' || w === 'storm' ? I : 0);

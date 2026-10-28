@@ -51,10 +51,11 @@ export class Terrain {
   T!: TerrainInit; W = 0; H = 0; pxW = 0; pxH = 0;
   readonly root = new Container({ label: 'terrain' });
   readonly overview = new Sprite();
-  private chunks = new Map<number, { spr: Sprite; cv: HTMLCanvasElement; g: CanvasRenderingContext2D; tex: Texture }>();
+  private chunks = new Map<number, { spr: Sprite; cv: HTMLCanvasElement; g: CanvasRenderingContext2D; tex: Texture; sharp: boolean; rows: number }>();
   private dirty = new Map<number, [number, number, number, number]>(); // chunk key → dirty rect in chunk px
   private ov!: { cv: HTMLCanvasElement; g: CanvasRenderingContext2D; img: ImageData; tex: Texture };
-  private ovDirty = false;
+  private ovDirty = false; private ovAt = 0; private ovRow = 0;
+  private refine: number[] = [];
   private pipeSeg: { ax: number; ay: number; bx: number; by: number; r: number }[] = [];
   private rootSeg: { ax: number; ay: number; bx: number; by: number; r: number }[] = [];
   /** fresh carve events (world px) for dust/dirt particles */
@@ -62,13 +63,14 @@ export class Terrain {
   init(T: TerrainInit) {
     this.T = T; this.W = T.W; this.H = T.H; this.pxW = T.W * PX; this.pxH = T.H * PX;
     for (const c of this.chunks.values()) { c.spr.destroy(); c.tex.destroy(true); } this.chunks.clear(); this.root.removeChildren();
+    this.dirty.clear(); this.refine = []; this.ovDirty = false;
     this.pipeSeg = T.pipes.map((p) => ({ ax: p.x0 * PX, ay: p.y0 * PX, bx: p.x1 * PX, by: p.y1 * PX, r: p.r * PX }));
     this.rootSeg = []; for (const r of T.roots) for (let i = 0; i < r.pts.length - 1; i++) this.rootSeg.push({ ax: r.pts[i][0] * PX, ay: r.pts[i][1] * PX, bx: r.pts[i + 1][0] * PX, by: r.pts[i + 1][1] * PX, r: Math.max(1.2, r.r * PX * 0.35 * (1 - i / r.pts.length)) });
-    // overview LOD: 2 texels per tile
+    // far-zoom stand-in. Painted a few rows at a time, and only once the camera is actually that far out.
     const ow = T.W * 2, oh = T.H * 2; const cv = document.createElement('canvas'); cv.width = ow; cv.height = oh;
     const g = cv.getContext('2d', { willReadFrequently: true })!; const img = g.createImageData(ow, oh);
     this.ov = { cv, g, img, tex: Texture.from(cv) }; this.ov.tex.source.scaleMode = 'linear';
-    this.paintOverview(0, 0, ow, oh); g.putImageData(img, 0, 0); this.ov.tex.source.update();
+    this.ovRow = 0; this.ovDirty = false;
     this.overview.texture = this.ov.tex; this.overview.scale.set(PX / 2); this.overview.visible = false;
   }
   // ───────────── field sampling ─────────────
@@ -98,6 +100,9 @@ export class Terrain {
   // ───────────── painting ─────────────
   private paintRegion(x0: number, y0: number, w: number, h: number, out: Uint8ClampedArray, ow: number, ox: number, oy: number) {
     const T = this.T; const B = 2, DB = 16; // border for lips, extra rows below for floor distance
+    const x1b = x0 + w, y1b = y0 + h;
+    const pipes = this.pipeSeg.filter((s) => Math.max(s.ax, s.bx) >= x0 - 20 && Math.min(s.ax, s.bx) <= x1b + 20 && Math.max(s.ay, s.by) >= y0 - 20 && Math.min(s.ay, s.by) <= y1b + 20);
+    const roots = this.rootSeg.filter((s) => Math.max(s.ax, s.bx) >= x0 - 8 && Math.min(s.ax, s.bx) <= x1b + 8 && Math.max(s.ay, s.by) >= y0 - 8 && Math.min(s.ay, s.by) <= y1b + 8);
     const ew = w + B * 2, eh = h + B + DB + B;
     const open = new Uint8Array(ew * eh); const mats = new Uint8Array(ew * eh); const oval = new Float32Array(ew * eh);
     for (let y = 0; y < eh; y++) { const wy = y0 - B + y; for (let x = 0; x < ew; x++) {
@@ -157,7 +162,7 @@ export class Terrain {
             r = grass[0]; g = grass[1]; b = grass[2]; v = -9;
           }
           if (m === Mat.Pipe) { // shade across the pipe axis
-            let best = 1e9, sh = 0; for (const s of this.pipeSeg) { const dx = s.bx - s.ax, dy = s.by - s.ay, L2 = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((wx - s.ax) * dx + (wy - s.ay) * dy) / L2)); const px = s.ax + dx * t, py = s.ay + dy * t; const d = Math.hypot(wx - px, wy - py); if (d < best) { best = d; const nxp = -dy / Math.sqrt(L2), nyp = dx / Math.sqrt(L2); sh = ((wx - px) * nxp + (wy - py) * nyp) / s.r; } }
+            let best = 1e9, sh = 0; for (const s of pipes) { const dx = s.bx - s.ax, dy = s.by - s.ay, L2 = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((wx - s.ax) * dx + (wy - s.ay) * dy) / L2)); const px = s.ax + dx * t, py = s.ay + dy * t; const d = Math.hypot(wx - px, wy - py); if (d < best) { best = d; const nxp = -dy / Math.sqrt(L2), nyp = dx / Math.sqrt(L2); sh = ((wx - px) * nxp + (wy - py) * nyp) / s.r; } }
             v = 1.6 - sh * 1.6; if (hash(wx >> 2, wy >> 2) > 0.93) { const rc = hex(0x864f4d); r = rc[0]; g = rc[1]; b = rc[2]; v = -9; }
           } else if (m === Mat.Concrete) v = 1.5 + nz(N4, wx, wy) * 0.9 + ((wx % 40 === 0 || wy % 24 === 0) ? -1.2 : 0);
           else if (m === Mat.Rock) v = 1.3 + nz(N8, wx * 2, wy * 2) * 1.8 + (mats[k - ew] !== m ? 1.2 : 0) + (mats[k + ew] !== m ? -0.8 : 0);
@@ -165,7 +170,7 @@ export class Terrain {
           // pebbles & specks in soft soils
           if ((m === Mat.Loam || m === Mat.Clay || m === Mat.Topsoil) && hash(wx >> 1, wy >> 1) > 0.992) { const c = hex(0x907d78); r = c[0]; g = c[1]; b = c[2]; }
           // roots (overlay inside soil)
-          if (m !== Mat.Pipe && m !== Mat.Concrete) for (const s of this.rootSeg) { if (wx < Math.min(s.ax, s.bx) - 6 || wx > Math.max(s.ax, s.bx) + 6 || wy < Math.min(s.ay, s.by) - 6 || wy > Math.max(s.ay, s.by) + 6) continue;
+          if (m !== Mat.Pipe && m !== Mat.Concrete) for (const s of roots) { if (wx < Math.min(s.ax, s.bx) - 6 || wx > Math.max(s.ax, s.bx) + 6 || wy < Math.min(s.ay, s.by) - 6 || wy > Math.max(s.ay, s.by) + 6) continue;
             const dx = s.bx - s.ax, dy = s.by - s.ay, L2 = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((wx - s.ax) * dx + (wy - s.ay) * dy) / L2)); const d = Math.hypot(wx - s.ax - dx * t, wy - s.ay - dy * t) + nz(N4, wx, wy) * 1.5;
             if (d < s.r) { const c = RAMPC[Mat.Roots][d < s.r * 0.4 ? 3 : d < s.r * 0.8 ? 2 : 0]; r = c[0]; g = c[1]; b = c[2]; } }
           // crumbling, half-gnawed dig face
@@ -209,13 +214,44 @@ export class Terrain {
       img.data[p] = c[0] * f; img.data[p + 1] = c[1] * f; img.data[p + 2] = c[2] * f; img.data[p + 3] = 255;
     }
   }
+  private tileColor(tx: number, ty: number): number | null {
+    const T = this.T;
+    if (tx < 0 || ty < 0 || tx >= T.W || ty >= T.H) return null;
+    const i = ty * T.W + tx; const m = T.mat[i]; const carve = T.carve[i];
+    if (m === Mat.Air) { const above = T.surfaceY[Math.max(0, Math.min(T.W - 1, tx))] - ty; return above > 0 && above < 3 ? 0x3a4448 : null; }
+    if (carve >= PASSABLE && m !== Mat.Rock && m !== Mat.Pipe && m !== Mat.Concrete) return 0x14151a;
+    const depth = ty - T.surfaceY[Math.max(0, Math.min(T.W - 1, tx))];
+    if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) return hash(tx, ty) > 0.55 ? 0x6d8f4a : 0x3f5c32;
+    const R = RAMPC[m] ?? RAMPC[Mat.Loam]; const c = R[(hash(tx, ty) * 3) | 0];
+    return (c[0] << 16) | (c[1] << 8) | c[2];
+  }
+  /** block colours, same frame the chunk appears. The slow per-pixel paint comes later, one chunk at a time. */
+  private blitTiles(cx: number, cy: number, g: CanvasRenderingContext2D) {
+    g.clearRect(0, 0, CH, CH);
+    const x0 = cx * CH, y0 = cy * CH;
+    const tx0 = Math.floor(x0 / PX), ty0 = Math.floor(y0 / PX), tx1 = Math.ceil((x0 + CH) / PX), ty1 = Math.ceil((y0 + CH) / PX);
+    for (let ty = ty0; ty < ty1; ty++) for (let tx = tx0; tx < tx1; tx++) {
+      const col = this.tileColor(tx, ty); if (col == null) continue;
+      g.fillStyle = '#' + col.toString(16).padStart(6, '0');
+      g.fillRect(tx * PX - x0, ty * PX - y0, PX, PX);
+    }
+  }
+  /** a few rows of the slow paint per frame, so a pinch never waits on a whole chunk */
+  private sharpenSome(c: { g: CanvasRenderingContext2D; tex: Texture; sharp: boolean; rows: number }, cx: number, cy: number, rows = 20): boolean {
+    const y = c.rows; const h = Math.min(rows, CH - y); if (h <= 0) { c.sharp = true; return true; }
+    const img = c.g.createImageData(CH, h);
+    this.paintRegion(cx * CH, cy * CH + y, CH, h, img.data, CH, 0, 0);
+    c.g.putImageData(img, 0, y); c.rows = y + h; c.tex.source.update();
+    if (c.rows >= CH) { c.sharp = true; return true; }
+    return false;
+  }
   private chunk(cx: number, cy: number) {
     const key = cy * 4096 + cx; let c = this.chunks.get(key); if (c) return c;
-    const cv = document.createElement('canvas'); cv.width = CH; cv.height = CH; const g = cv.getContext('2d', { willReadFrequently: true })!;
-    const img = g.createImageData(CH, CH); this.paintRegion(cx * CH, cy * CH, CH, CH, img.data, CH, 0, 0); g.putImageData(img, 0, 0);
+    const cv = document.createElement('canvas'); cv.width = CH; cv.height = CH; const g = cv.getContext('2d')!;
+    this.blitTiles(cx, cy, g);
     const tex = Texture.from(cv); tex.source.scaleMode = 'nearest';
     const spr = new Sprite(tex); spr.position.set(cx * CH, cy * CH); spr.roundPixels = true; this.root.addChild(spr);
-    c = { spr, cv, g, tex }; this.chunks.set(key, c); return c;
+    c = { spr, cv, g, tex, sharp: false, rows: 0 }; this.chunks.set(key, c); this.refine.push(key); return c;
   }
   /** apply a sim delta: update fields, queue local repaints, collect dig particles */
   applyDelta(d: TerrainDelta) {
@@ -237,21 +273,62 @@ export class Terrain {
       const ox0 = Math.max(0, (tx - 2) * 2), oy0 = Math.max(0, (ty - 2) * 2); this.paintOverview(ox0, oy0, Math.min(T.W * 2 - ox0, 10), Math.min(T.H * 2 - oy0, 10)); this.ovDirty = true;
     }
   }
-  /** per-frame: make visible chunks exist, flush dirty repaints (time-boxed), toggle LOD */
-  update(view: { x0: number; y0: number; x1: number; y1: number }, lod: boolean, budgetMs = 6) {
-    const t0 = performance.now();
-    this.overview.visible = lod; this.root.visible = !lod;
-    if (this.ovDirty) { this.ov.g.putImageData(this.ov.img, 0, 0); this.ov.tex.source.update(); this.ovDirty = false; }
-    if (lod) return;
-    const cx0 = Math.max(0, Math.floor(view.x0 / CH)), cy0 = Math.max(0, Math.floor(view.y0 / CH)), cx1 = Math.min(Math.ceil(this.pxW / CH) - 1, Math.floor(view.x1 / CH)), cy1 = Math.min(Math.ceil(this.pxH / CH) - 1, Math.floor(view.y1 / CH));
-    for (const [key, c] of this.chunks) { const cx = key % 4096, cy = Math.floor(key / 4096); c.spr.visible = cx >= cx0 - 1 && cx <= cx1 + 1 && cy >= cy0 - 1 && cy <= cy1 + 1; }
-    for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) { if (!this.chunks.has(cy * 4096 + cx)) { this.chunk(cx, cy); if (performance.now() - t0 > budgetMs * 3) return; } }
+  /** per-frame: cheap tiles immediately. The slow paint waits until the pinch has settled, one strip at a time. */
+  update(view: { x0: number; y0: number; x1: number; y1: number }, zoom = 1, quiet = false) {
+    const now = performance.now();
+    this.overview.visible = zoom < 0.72; this.root.visible = true;
+    if (this.overview.visible && this.ov && this.ovRow < this.H * 2 && !quiet) {
+      const rows = Math.min(8, this.H * 2 - this.ovRow);
+      this.paintOverview(0, this.ovRow, this.W * 2, rows); this.ovRow += rows; this.ovDirty = true;
+    }
+    if (this.ovDirty && this.overview.visible && now - this.ovAt > 120) {
+      this.ov.g.putImageData(this.ov.img, 0, 0); this.ov.tex.source.update(); this.ovDirty = false; this.ovAt = now;
+    }
+    const cx0 = Math.max(0, Math.floor(view.x0 / CH)), cy0 = Math.max(0, Math.floor(view.y0 / CH));
+    const cx1 = Math.min(Math.ceil(this.pxW / CH) - 1, Math.floor(view.x1 / CH)), cy1 = Math.min(Math.ceil(this.pxH / CH) - 1, Math.floor(view.y1 / CH));
+    for (const [key, c] of this.chunks) { const cx = key % 4096, cy = (key / 4096) | 0; c.spr.visible = cx >= cx0 - 1 && cx <= cx1 + 1 && cy >= cy0 - 1 && cy <= cy1 + 1; }
+    let made = 0, stop = false;
+    for (let cy = cy0; cy <= cy1 && !stop; cy++) for (let cx = cx0; cx <= cx1; cx++) {
+      if (!this.chunks.has(cy * 4096 + cx)) { this.chunk(cx, cy); if (++made >= 6) { stop = true; break; } }
+    }
+    if (!quiet && zoom >= 0.82 && this.refine.length) {
+      let picked = -1;
+      const limit = Math.min(this.refine.length, 40);
+      for (let n = 0; n < limit; n++) {
+        const key = this.refine[n]; const cx = key % 4096, cy = (key / 4096) | 0;
+        if (cx >= cx0 && cx <= cx1 && cy >= cy0 && cy <= cy1) { picked = n; break; }
+      }
+      if (picked < 0) {
+        if (this.refine.length > 16) this.refine = this.refine.filter((key) => {
+          const cx = key % 4096, cy = (key / 4096) | 0;
+          return cx >= cx0 - 1 && cx <= cx1 + 1 && cy >= cy0 - 1 && cy <= cy1 + 1;
+        });
+      } else {
+        const key = this.refine[picked]; const c = this.chunks.get(key);
+        const cx = key % 4096, cy = (key / 4096) | 0;
+        if (!c || c.sharp || this.sharpenSome(c, cx, cy, 12)) this.refine.splice(picked, 1);
+      }
+    }
+    if (quiet) return;
     for (const [key, r] of this.dirty) {
-      const c = this.chunks.get(key)!; const cx = key % 4096, cy = Math.floor(key / 4096); const w = r[2] - r[0], h = r[3] - r[1];
-      const img = c.g.createImageData(w, h); this.paintRegion(cx * CH + r[0], cy * CH + r[1], w, h, img.data, w, 0, 0); c.g.putImageData(img, r[0], r[1]); c.tex.source.update();
-      this.dirty.delete(key); if (performance.now() - t0 > budgetMs) break;
+      const c = this.chunks.get(key); const cx = key % 4096, cy = (key / 4096) | 0;
+      if (!c) { this.dirty.delete(key); continue; }
+      if (cx < cx0 - 1 || cx > cx1 + 1 || cy < cy0 - 1 || cy > cy1 + 1) continue;
+      if (!c.sharp) { this.blitTiles(cx, cy, c.g); c.rows = 0; c.tex.source.update(); this.dirty.delete(key); break; }
+      let y0 = r[1], y1 = r[3]; const partial = y1 - y0 > 24;
+      if (partial) y1 = y0 + 24;
+      const w = Math.max(1, r[2] - r[0]), h = Math.max(1, y1 - y0);
+      const img = c.g.createImageData(w, h); this.paintRegion(cx * CH + r[0], cy * CH + y0, w, h, img.data, w, 0, 0);
+      c.g.putImageData(img, r[0], y0); c.tex.source.update();
+      if (partial) this.dirty.set(key, [r[0], y1, r[2], r[3]]); else this.dirty.delete(key);
+      break;
     }
   }
   /** pre-paint every chunk (used by verification and to avoid pop-in on slow phones when idle) */
-  paintAll() { for (let cy = 0; cy < Math.ceil(this.pxH / CH); cy++) for (let cx = 0; cx < Math.ceil(this.pxW / CH); cx++) this.chunk(cx, cy); }
+  paintAll() {
+    for (let cy = 0; cy < Math.ceil(this.pxH / CH); cy++) for (let cx = 0; cx < Math.ceil(this.pxW / CH); cx++) {
+      const c = this.chunk(cx, cy); while (!c.sharp) this.sharpenSome(c, cx, cy, CH);
+    }
+    this.refine = [];
+  }
 }

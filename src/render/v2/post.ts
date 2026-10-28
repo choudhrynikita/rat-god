@@ -128,7 +128,7 @@ export class Post {
     this.sceneRT.resize(w, h); this.actorRT.resize(w, h); this.lightRT.resize(lw, lh); this.bloomRT.resize(lw, lh);
   }
   /** render everything. cam: world x,y at the screen centre; zd: device px per world px; shake in device px */
-  render(cam: { x: number; y: number; zd: number; shakeX: number; shakeY: number }, devW: number, devH: number, cssW: number, cssH: number, env: PostEnv, surfY: number, timeS: number) {
+  render(cam: { x: number; y: number; zd: number; shakeX: number; shakeY: number }, devW: number, devH: number, cssW: number, cssH: number, env: PostEnv, surfY: number, timeS: number, fast = false) {
     const r = this.renderer; this.resize(devW, devH);
     const zd = cam.zd; this.lod = zd < 1; const k = zd >= 1 ? Math.min(Math.floor(zd), 4) : zd; const s = zd / k; this.k = k; this.s = s;
     const PAD = 4; const ox = cam.x * k - devW / s / 2, oy = cam.y * k - devH / s / 2; const ix = Math.floor(ox), iy = Math.floor(oy);
@@ -138,7 +138,7 @@ export class Post {
     r.render({ container: this.sceneHold, target: this.sceneRT, clear: true, clearColor: [0.03, 0.04, 0.04, 1] });
     r.render({ container: this.actorHold, target: this.actorRT, clear: true, clearColor: [0, 0, 0, 0] });
     if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] * 0.35, amb[1] * 0.32, amb[2] * 0.38, 0] });
-    const bloomOn = T.bloom && this.tier !== 'low';
+    const bloomOn = T.bloom && this.tier !== 'low' && !fast;
     if (bloomOn) { this.bloomSprite.texture = this.sceneRT; this.bloomSprite.scale.set(LS); this.blur.quality = this.tier === 'high' ? 2 : 1; r.render({ container: this.bloomHold, target: this.bloomRT, clear: true, clearColor: [0, 0, 0, 1] }); }
     const U = this.U;
     U.uRT[0] = this.alloc.w; U.uRT[1] = this.alloc.h; U.uLRT[0] = this.alloc.lw; U.uLRT[1] = this.alloc.lh; U.uScreen[0] = devW; U.uScreen[1] = devH;

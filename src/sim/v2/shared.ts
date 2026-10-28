@@ -42,6 +42,8 @@ export function densify(pts: [number, number][]): Dense {
   return { xs, ys, cum, len: cum[m - 1] };
 }
 export function denseOf(e: Pick<NavEdge, 'pts'>): Dense { let d = denseCache.get(e.pts); if (!d) { d = densify(e.pts); denseCache.set(e.pts, d); } return d; }
+/** control points moved (a column shift). The cached spline would otherwise stay on the old ground. */
+export function forgetDense(pts: object) { denseCache.delete(pts); }
 export interface Pose { x: number; y: number; heading: number }
 /** Point at arc length s (clamped) along the edge, with the tangent heading (radians, direction a→b). */
 export function sampleDense(d: Dense, s: number, out: Pose = { x: 0, y: 0, heading: 0 }): Pose {

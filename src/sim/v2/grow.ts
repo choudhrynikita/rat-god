@@ -3,6 +3,7 @@
  *  so idx = y*W+x stays true. New columns are hashed from the seed, not from the sim RNG. */
 import { Mat } from './contract';
 import { clamp, type Terrain, type World } from './state';
+import { forgetDense } from './shared';
 import { tileStab, vnoise1 } from './terrain';
 
 const CHUNK_X = 64;
@@ -16,8 +17,9 @@ export function maybeGrow(w: World): { dx: number; grew: boolean } {
   let minX = T.W, maxX = 0, maxY = 0, any = false;
   const consider = (x: number, y: number) => { any = true; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y > maxY) maxY = y; };
   for (const c of w.chambers) if (c.progress > 0.02) { consider(c.cx - c.rx, c.cy - c.ry); consider(c.cx + c.rx, c.cy + c.ry); }
-  for (const e of w.edges) if (e.dug > 0.4) for (const p of e.pts) consider(p[0], p[1]);
-  for (const n of w.nodes) if (n.kind === 'entrance' || n.kind === 'surface') consider(n.x, n.y);
+  // the street walkway is born spanning the whole map; it must not drag the crust wider every tick
+  for (const e of w.edges) if (e.kind !== 'surface' && e.dug > 0.4) for (const p of e.pts) consider(p[0], p[1]);
+  for (const n of w.nodes) if (n.kind === 'entrance') consider(n.x, n.y);
   if (w.view) { consider(w.view.x0, w.view.y0); consider(w.view.x1, w.view.y1); }
   if (!any) return { dx: 0, grew: false };
   const origW = T.W, origH = T.H;
@@ -128,7 +130,11 @@ function moistOf(m: Mat, d: number) {
 function shiftWorldX(w: World, dx: number, oldW: number) {
   const newW = w.T.W;
   for (const n of w.nodes) n.x += dx;
-  for (const e of w.edges) for (const p of e.pts) p[0] += dx;
+  const seen = new WeakSet<[number, number]>();
+  for (const e of w.edges) {
+    for (const p of e.pts) { if (seen.has(p)) continue; seen.add(p); p[0] += dx; }
+    forgetDense(e.pts);
+  }
   for (const c of w.chambers) c.cx += dx;
   for (const r of w.rats) r.x += dx;
   for (const r of w.ghosts.values()) r.x += dx;
