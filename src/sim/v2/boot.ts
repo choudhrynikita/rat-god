@@ -1,6 +1,6 @@
 /** Founding: fill a World, cut the first burrow, wake the rats. The systems in this folder do the rest. */
 import { Anim, RF, TILE_CM, type ChamberKind, type Consent, type NewGameOpts } from './contract';
-import { addEntrance, addNode, addEdge, digEdge, initSurface, isOpen, planChamber } from './burrow';
+import { addEntrance, forceOpen, initSurface, isOpen, layRoom, planChamber } from './burrow';
 import { addRel, newRat } from './rats';
 import { setPose } from './move';
 import { crown } from './laws2';
@@ -79,41 +79,10 @@ export function createWorld(opts: NewGameOpts): World {
   return w;
 }
 
-function openQueued(w: World) {
-  const ids = w.edges.map((e) => e.id);
-  for (const id of ids) {
-    const e = w.edges[id];
-    if (!e || e.kind === 'surface' || isOpen(e)) continue;
-    let guard = 0;
-    while (!isOpen(e) && !(e as { dead?: boolean }).dead && guard++ < 6) {
-      const before = e.dug;
-      digEdge(w, e, 8000);
-      if (e.dug <= before + 1e-4) break;
-    }
-  }
-}
+function openQueued(w: World) { forceOpen(w); }
 
 function emergencyNest(w: World, from: number) {
-  const T = w.T; const A = w.nodes[from]; const x = clamp(Math.floor(A.x), 4, T.W - 12);
-  const pts: [number, number][] = [[A.x, A.y]];
-  let y = A.y;
-  for (let i = 0; i < 16; i++) {
-    y += 2.2;
-    if (y >= T.H - 14) break;
-    pts.push([x + 0.5, y]);
-  }
-  const end = pts[pts.length - 1];
-  const n = addNode(w, end[0], end[1], 'chamber');
-  addEdge(w, from, n.id, 'shaft', pts, 2.4);
-  const n2 = addNode(w, end[0] + 10, end[1], 'chamber');
-  const chId = w.chambers.length;
-  const fePts: [number, number][] = [[end[0], end[1]], [end[0] + 5, end[1] + 0.15], [end[0] + 10, end[1]]];
-  w.chambers.push({
-    id: chId, kind: 'nest', name: 'THE FIRST NEST', cx: end[0] + 5, cy: end[1] - 2.2, rx: 6, ry: 3.4,
-    seed: 3, floorY: end[1], floorEdge: -1, entryNode: n.id, progress: 0, stock: 0, owner: 0, flooded: 0,
-  });
-  const fe = addEdge(w, n.id, n2.id, 'floor', fePts, 3.4, chId);
-  w.chambers[chId].floorEdge = fe.id;
+  layRoom(w, from, 'nest', 'THE FIRST NEST');
   openQueued(w);
 }
 

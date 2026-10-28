@@ -5,7 +5,7 @@ import { R, clamp, type Terrain, type World } from './state';
 
 export const W0 = 320, H0 = 180;
 
-function vnoise1(seed: number, x: number, scale: number) {
+export function vnoise1(seed: number, x: number, scale: number) {
   const h = (i: number) => { let v = Math.imul((i + seed) | 0, 0x27d4eb2d); v ^= v >>> 15; v = Math.imul(v, 0x85ebca6b); v ^= v >>> 13; return ((v >>> 0) % 10000) / 10000; };
   const xi = Math.floor(x / scale), t = x / scale - xi, f = t * t * (3 - 2 * t);
   return h(xi) * (1 - f) + h(xi + 1) * f;

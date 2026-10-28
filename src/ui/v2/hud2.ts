@@ -23,7 +23,7 @@ export class Hud2 {
   private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
   readonly god: GodMenu; readonly sheets: Sheets; following = -1; private started = false; private nudgeEls = new Map<number, HTMLElement>();
-  speed = 1; private lastTop = 0; blocking = false;
+  speed = 1; private lastTop = 0; blocking = false; private resume = false;
   constructor(host: HTMLElement, readonly world: World2, readonly sim: SimPort) {
     host.innerHTML = ''; this.el = h(`<div class="h2"></div>`); host.appendChild(this.el);
     this.god = new GodMenu(this); this.sheets = new Sheets(this);
@@ -34,10 +34,21 @@ export class Hud2 {
   }
   start() {
     this.build();
-    const go = () => { const q = new URLSearchParams(location.search); const scenario = q.get('scenario') === 'city' ? 'city' : 'founding'; this.sim.send({ t: 'new', opts: { seed: Number(q.get('seed') ?? Date.now() % 100000), scenario, founders: scenario === 'city' ? 48 : 10 } }); this.sendConsent(); this.opening(); };
+    const go = () => {
+      const q = new URLSearchParams(location.search);
+      const saved = q.has('new') ? null : localStorage.getItem('rg2.burrow');
+      if (saved) { this.resume = true; this.sim.send({ t: 'load', state: saved }); }
+      else this.fresh();
+      this.sendConsent(); this.opening();
+    };
     if (loadConsent() && !new URLSearchParams(location.search).has('consent')) go(); else this.gate(go);
   }
   sendConsent() { this.sim.send({ t: 'consent', consent: this.consent }); this.world.fx.gore = this.consent.mature ? this.consent.gore : 0; this.world.actors.gore = this.world.fx.gore > 0; }
+  fresh() {
+    const q = new URLSearchParams(location.search);
+    const scenario = q.get('scenario') === 'city' ? 'city' : 'founding';
+    this.sim.send({ t: 'new', opts: { seed: Number(q.get('seed') ?? Date.now() % 100000), scenario, founders: scenario === 'city' ? 48 : 10 } });
+  }
   // ───────── first launch: rating & consent ─────────
   gate(done: () => void) {
     const c = { ...this.consent };
@@ -80,14 +91,13 @@ export class Hud2 {
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
     on('god', () => this.god.open()); on('stat', () => this.sheets.society());
-    on('speed', () => { const seq = [1, 2, 4, 8, 0, 0.5] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
+    on('speed', () => { const seq = [1, 2, 4, 8, 16, 0] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
   }
   setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
   // ───────── sim messages ─────────
   handle(m: FromWorker2) {
-    if (m.t === 'init') { this.powers = m.powers; this.B = m.burrow; this.laws = m.laws; }
+    if (m.t === 'init') { this.resume = false; this.powers = m.powers; this.B = m.burrow; this.laws = m.laws; }
     else if (m.t === 'snap') { this.snap = m.snap; if (m.inspect) { this.detail = m.inspect; this.names.set(m.inspect.id, m.inspect.name); this.sheets.refreshRat(m.inspect); }
-      if (m.snap.burrow) this.B && this.B.chambers.push(...m.snap.burrow.newChambers);
       for (const p of m.snap.prayers) this.names.set(p.ratId, p.name);
       for (const r of m.snap.ripples ?? []) this.ripples.set(r.id, r);
       if (m.snap.king) this.names.set(m.snap.king.id, m.snap.king.name);
@@ -95,7 +105,8 @@ export class Hud2 {
     else if (m.t === 'godResult') this.godResult(m);
     else if (m.t === 'story') { this.names.set(m.id, m.detail.name); this.sheets.story(m.detail); }
     else if (m.t === 'chronicle') this.sheets.chronicle(m.data);
-    else if (m.t === 'error') console.warn('[sim]', m.msg);
+    else if (m.t === 'saved') { try { localStorage.setItem('rg2.burrow', m.state); } catch { /* the bottle did not fit; the burrow still runs */ } }
+    else if (m.t === 'error') { console.warn('[sim]', m.msg); if (this.resume) { this.resume = false; try { localStorage.removeItem('rg2.burrow'); } catch { /* */ } this.fresh(); } }
   }
   matureHidden(e: SimEvent2) { const t = e.mature ?? []; if (!t.length) return false; if (!this.consent.mature) return true;
     if ((t.includes('gore') || t.includes('torture')) && this.consent.gore < 1) return true; if ((t.includes('sex') || t.includes('incest')) && !this.consent.sexual) return true; return false; }

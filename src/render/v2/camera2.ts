@@ -13,6 +13,8 @@ export class Camera2 {
   private vx = 0; private vy = 0; // inertia (world px / ms)
   private fly: { x: number; y: number; z: number; k: number } | null = null;
   follow: (() => { x: number; y: number } | null) | null = null;
+  /** last time a finger, mouse or wheel moved the camera */
+  lastUser = 0;
   trauma = 0; hitStop = 0; shakeX = 0; shakeY = 0;
   private ptrs = new Map<number, Ptr>();
   private pinch: { d0: number; z0: number; wx: number; wy: number } | null = null;
@@ -32,7 +34,7 @@ export class Camera2 {
     window.addEventListener('pointermove', (e) => this.move(e), { passive: true });
     window.addEventListener('pointerup', (e) => this.up(e));
     window.addEventListener('pointercancel', (e) => this.up(e, true));
-    el.addEventListener('wheel', (e) => { e.preventDefault(); this.wheelUntil = performance.now() + 220; this.zoomAt(e.offsetX, e.offsetY, this.z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)), true); }, { passive: false });
+    el.addEventListener('wheel', (e) => { e.preventDefault(); this.lastUser = performance.now(); this.wheelUntil = this.lastUser + 220; this.zoomAt(e.offsetX, e.offsetY, this.z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)), true); }, { passive: false });
     el.addEventListener('contextmenu', (e) => e.preventDefault());
   }
   resize(w: number, h: number) { this.vw = w; this.vh = h; this.fitLimits(); }
@@ -42,11 +44,13 @@ export class Camera2 {
   w2s(wx: number, wy: number) { return { x: (wx - this.x) * this.z + this.vw / 2, y: (wy - this.y) * this.z + this.vh / 2 }; }
   view(margin = 0) { const hw = this.vw / 2 / this.z + margin, hh = this.vh / 2 / this.z + margin; return { x0: this.x - hw, y0: this.y - hh, x1: this.x + hw, y1: this.y + hh }; }
   get busy() { return this.ptrs.size > 0; }
+  get flying() { return this.fly != null; }
+  get touching() { return this.ptrs.size > 0; }
   // ───── gestures ─────
   private down(e: PointerEvent) {
     try { this.el.setPointerCapture(e.pointerId); } catch { /* */ }
     const p: Ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now() };
-    this.ptrs.set(e.pointerId, p); this.vx = this.vy = 0; this.fly = null;
+    this.ptrs.set(e.pointerId, p); this.vx = this.vy = 0; this.fly = null; this.lastUser = p.t;
     clearTimeout(this.lp);
     if (this.ptrs.size === 1) { this.dragging = true; this.moved = 0; const r = this.el.getBoundingClientRect(), sx = e.clientX - r.left, sy = e.clientY - r.top;
       this.lp = window.setTimeout(() => { if (this.ptrs.size === 1 && this.moved < 10) { this.dragging = false; this.vx = this.vy = 0; this.onLongPress(sx, sy); } }, 520); }
@@ -106,7 +110,7 @@ export class Camera2 {
   }
   // ───── programmatic ─────
   zoomAt(sx: number, sy: number, z: number, instant = false) {
-    z = clamp(z, this.minZ, this.maxZ); const w = this.s2w(sx, sy);
+    z = clamp(z, this.minZ, this.maxZ); const w = this.s2w(sx, sy); this.lastUser = performance.now();
     const nx = w.x - (sx - this.vw / 2) / z, ny = w.y - (sy - this.vh / 2) / z;
     if (instant) { this.x = nx; this.y = ny; this.z = z; this.fly = null; } else this.flyTo(nx, ny, z, 7);
     this.follow = null;

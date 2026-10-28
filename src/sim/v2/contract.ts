@@ -10,14 +10,14 @@ export const CONTRACT_VERSION = '2.2.0';
 // ───────────────────────────── units & time ─────────────────────────────
 /** 1 terrain tile = 4 cm. An adult rat body (no tail) is ~5 tiles long, ~1.5 tiles tall. Tunnels are ~2–3 tiles wide. */
 export const TILE_CM = 4;
-/** Sim tick = 0.25 s of wall time at 1× speed. */
-export const TICK_MS_1X = 250;
-/** One sim day = 960 ticks (4 min at 1×, 30 s at 8×). 40 ticks per sim hour. */
+/** Sim tick = 80 ms of wall time at 1×. One day is about 77 seconds. 16× is under 5 seconds a day. */
+export const TICK_MS_1X = 80;
+/** One sim day = 960 ticks (~77 s at 1×, ~5 s at 16×). 40 ticks per sim hour. */
 export const DAY_TICKS = 960;
 export const HOUR_TICKS = 40;
 /** 4 seasons × 10 days = a 40-day year. */
 export const SEASON_DAYS = 10;
-export type Speed2 = 0 | 0.25 | 0.5 | 1 | 2 | 4 | 8;
+export type Speed2 = 0 | 0.25 | 0.5 | 1 | 2 | 4 | 8 | 16;
 
 // ───────────────────────────── terrain ─────────────────────────────
 /** Material of a tile. Hardness/permeability are in shared.ts MATERIALS. */
@@ -514,6 +514,7 @@ export type ToWorker2 =
   | { t: 'omens' } | { t: 'omensRead'; seqs: number[] } | { t: 'ledger' } /* 2.2 final */;
 export type FromWorker2 =
   | { t: 'init'; contract: string; terrain: TerrainInit; burrow: BurrowInit; powers: GodPowerInfo[]; laws: { id: string; name: string; prop: string; category?: string }[]; contentSettings?: Consent }
+  | { t: 'worldGrow'; terrain: TerrainInit; dx: number }
   | { t: 'snap'; snap: Snapshot2; inspect: RatDetail | null }
   | GodResult
   | { t: 'story'; id: number; detail: RatDetail }

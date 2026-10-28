@@ -7,6 +7,8 @@ import { loadSprites } from './render/v2/sprites';
 import { Post } from './render/v2/post';
 import { MockSim } from './render/mock/mocksim';
 import type { FromWorker2, ToWorker2 } from './sim/v2/contract';
+import { TICK_MS_1X } from './sim/v2/contract';
+import { PX } from './render/v2/units';
 import { Hud2 } from './ui/v2/hud2';
 
 const params = new URLSearchParams(location.search);
@@ -25,9 +27,11 @@ function makeSim(): SimPort {
         on: (f) => ls.push(f),
         tick: (ms) => {
           if (!speed) return;
-          acc += ms * speed; let n = 0;
-          while (acc >= 250 && n < 8) { acc -= 250; n++; }
-          if (n === 8) acc = 0;
+          acc += ms * speed;
+          let n = 0;
+          const cap = Math.max(8, Math.ceil(speed * 4));
+          while (acc >= TICK_MS_1X && n < cap) { acc -= TICK_MS_1X; n++; }
+          if (acc > TICK_MS_1X) acc = TICK_MS_1X;
           if (n) w.postMessage({ t: 'advance', ticks: n });
         },
       };
@@ -54,7 +58,20 @@ async function boot() {
   hud.start();
   (window as any).__rg = { world, sim, hud };
   let last = performance.now();
-  const loop = () => { const now = performance.now(); const dt = Math.min(250, now - last); last = now; sim.tick(dt * world.timeScale); world.frame(); hud.frame(); requestAnimationFrame(loop); };
+  let saveAcc = 0, viewAcc = 0;
+  const loop = () => {
+    const now = performance.now(); const dt = Math.min(100, now - last); last = now;
+    sim.tick(dt);
+    saveAcc += dt; viewAcc += dt;
+    if (saveAcc > 15000) { saveAcc = 0; sim.send({ t: 'save' }); }
+    if (viewAcc > 400 && world.T) {
+      viewAcc = 0; const v = world.cam.view(48);
+      sim.send({ t: 'view', x0: v.x0 / PX, y0: v.y0 / PX, x1: v.x1 / PX, y1: v.y1 / PX });
+    }
+    world.frame(); hud.frame(); requestAnimationFrame(loop);
+  };
+  addEventListener('visibilitychange', () => { if (document.hidden) sim.send({ t: 'save' }); });
+  addEventListener('pagehide', () => sim.send({ t: 'save' }));
   requestAnimationFrame(loop);
   document.getElementById('boot')?.remove();
 }

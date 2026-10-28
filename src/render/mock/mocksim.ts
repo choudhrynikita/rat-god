@@ -78,7 +78,8 @@ export class MockSim {
     if (!this.terrain || this.speed === 0) return;
     this.acc += ms * this.speed;
     let n = 0;
-    while (this.acc >= TICK_MS_1X && n < 8) { this.acc -= TICK_MS_1X; this.step(); n++; if (n === 8) this.acc = 0; }
+    while (this.acc >= TICK_MS_1X && n < 48) { this.acc -= TICK_MS_1X; this.step(); n++; }
+    if (this.acc > TICK_MS_1X) this.acc = TICK_MS_1X;
     if (n) this.snap();
   }
   get tickMs() { return TICK_MS_1X / Math.max(0.25, this.speed); }

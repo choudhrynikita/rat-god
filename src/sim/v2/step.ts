@@ -1,6 +1,6 @@
 /** One tick of the living city. Each system already exists; this only calls them in order. */
 import { Anim, DAY_TICKS, HOUR_TICKS, RF, type Season, type WeatherKind } from './contract';
-import { digEdge, isOpen, planChamber, reach } from './burrow';
+import { digEdge, forceOpen, isOpen, layRoom, planChamber, reach } from './burrow';
 import { healDaily } from './combat';
 import { economyDaily } from './economy';
 import { familyDaily } from './family';
@@ -141,7 +141,7 @@ function dig(w: World) {
   }
   const e = w.edges[w.digQueue[0]];
   if (!e || isOpen(e)) return;
-  digEdge(w, e, w.founding && w.founding.stage !== 'done' ? 2.4 : 0.85);
+  digEdge(w, e, w.founding && w.founding.stage !== 'done' ? 0.7 : 0.85);
   if ((w.tick + e.id) % 16 !== 0) return;
   const adults = w.rats.filter((r) => r.alive && !(r.flags & (RF.king | RF.jailed)) && r.stageN >= 2);
   if (!adults.length) return;
@@ -170,16 +170,26 @@ function foundingPulse(w: World) {
   const done = (k: 'nest' | 'cache' | 'midden' | 'granary' | 'throne') => w.chambers.some((c) => c.kind === k && c.progress >= 0.999);
   const nest = w.chambers.find((c) => c.kind === 'nest');
   const from = nest?.entryNode ?? w.entrances[0];
+  const due = 2 * DAY_TICKS + (w.seed % 900);
+  // a seed that cannot find soil still finishes the hall before the button's day
+  if (w.tick >= due - 480 && f.stage !== 'clear') {
+    if (from != null) {
+      if (!w.chambers.some((c) => c.kind === 'cache' || c.kind === 'midden')) layRoom(w, from, 'cache', 'THE FIRST CACHE');
+      if (!w.chambers.some((c) => c.kind === 'throne')) layRoom(w, from, 'throne', 'THE FIRST THRONE');
+    }
+    forceOpen(w);
+    if (done('throne')) { f.stage = 'clear'; f.wait = w.tick; }
+  }
   if (f.stage === 'nest') {
     if (!done('nest') || from == null) return;
     const ch = planFounding(w, 'cache', from, 'THE FIRST CACHE', f.wait) ?? planFounding(w, 'midden', from, 'THE FIRST MIDDEN', f.wait);
     if (ch) { f.stage = 'cache'; f.wait = 0; emit(w, 'dig_start', `${leader.name} sends them to chew a store.`, 1, { rats: [leader.id], chamber: ch.id, x: ch.cx, y: ch.cy }); }
-    else f.wait++;
+    else if (++f.wait >= 4 && from != null) { const laid = layRoom(w, from, 'cache', 'THE FIRST CACHE'); if (laid) { f.stage = 'cache'; f.wait = 0; } }
   } else if (f.stage === 'cache') {
     if (!done('cache') && !done('midden') && !done('granary')) return;
     const hall = planFounding(w, 'throne', from, 'THE FIRST THRONE', f.wait);
     if (hall) { f.stage = 'throne'; f.wait = 0; emit(w, 'dig_start', `They start a hall for ${leader.name}. The crown waits on the far wall.`, 1, { rats: [leader.id], chamber: hall.id, x: hall.cx, y: hall.cy }); }
-    else f.wait++;
+    else if (++f.wait >= 4 && from != null) { const laid = layRoom(w, from, 'throne', 'THE FIRST THRONE'); if (laid) { f.stage = 'throne'; f.wait = 0; } }
   } else if (f.stage === 'throne') {
     const hall = anyChamber(w, 'throne'); if (!hall) return;
     f.stage = 'clear'; f.wait = w.tick;
@@ -196,6 +206,7 @@ function foundingPulse(w: World) {
       if (nestSpot && !(r.path.length > r.pathI)) pathTo(w, r, nestSpot);
     }
     if (others > 0 && w.tick - f.wait < 160) return;
+    if (w.tick < due) return;
     crown(w, leader, 'the finished hall');
     leader.tool = 8; leader.anim = Anim.Throne;
     f.stage = 'done'; w.founding = null;

@@ -43,7 +43,7 @@ function noiseTable(seed: number, cell: number): Float32Array {
   }
   return out;
 }
-const N8 = noiseTable(11, 8), N16 = noiseTable(23, 16), N32 = noiseTable(37, 32), N4 = noiseTable(51, 4), N64 = noiseTable(71, 64);
+const N8 = noiseTable(11, 8), N16 = noiseTable(23, 16), N4 = noiseTable(51, 4);
 const nz = (t: Float32Array, x: number, y: number) => t[((y & 255) << 8) | (x & 255)];
 const hash = (x: number, y: number) => { let h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
@@ -115,7 +115,18 @@ export class Terrain {
       for (let x = 0; x < w; x++) {
         const wx = x0 + x; const ex = x + B; const k = ey * ew + ex; const o = open[k];
         const p = ((oy + y) * ow + (ox + x)) * 4;
-        if (o === 2) { out[p + 3] = 0; continue; }
+        if (o === 2) {
+          const col = Math.max(0, Math.min(T.W - 1, Math.floor(wx / PX)));
+          const sy = T.surfaceY[col] * PX;
+          const above = sy - wy;
+          if (above > 0 && above < 22) {
+            const tx = Math.floor(wx / 4);
+            const cob = hash(tx, 2) > 0.45 ? 0x2c3338 : 0x1a2024;
+            const c = hex(above < 3 ? 0x3a4448 : cob);
+            out[p] = c[0]; out[p + 1] = c[1]; out[p + 2] = c[2]; out[p + 3] = above < 3 ? 255 : 210;
+          } else out[p + 3] = 0;
+          continue;
+        }
         const moist = this.bil(T.moist, wx, wy) / 255; let r = 0, g = 0, b = 0;
         if (o === 1) {
           // tunnel back wall, AO toward walls, a darker ceiling band, scratch marks
@@ -135,8 +146,16 @@ export class Terrain {
               const c2 = sur ? (hash(wx, 7) > 0.5 ? WATER_TOP : WATER_HI) : WATER; const a = sur ? 0.9 : 0.62; r = r * (1 - a) + c2[0] * a; g = g * (1 - a) + c2[1] * a; b = b * (1 - a) + c2[2] * a; } }
         } else {
           const m = mats[k]; const R = RAMPC[m] ?? RAMPC[Mat.Loam];
-          // strata bands + 2-octave texture, ordered dithering between ramp steps
-          let v = 1.5 + nz(N32, wx, wy * 3) * 1.6 + nz(N8, wx, wy) * 1.1 + Math.sin(wy * 0.09 + nz(N64, wx, 0) * 6) * 0.35;
+          const tx = Math.floor(wx / PX), ty = Math.floor(wy / PX);
+          const cell = hash(tx, ty);
+          // one value per tile, like a placed block, plus a little grain — not a sine-wave stripe
+          let v = 1.15 + (cell - 0.5) * 1.7 + nz(N8, wx, wy) * 0.35;
+          const col = Math.max(0, Math.min(T.W - 1, tx));
+          const depth = ty - T.surfaceY[col];
+          if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) {
+            const grass = hex(cell > 0.55 ? 0x6d8f4a : 0x3f5c32);
+            r = grass[0]; g = grass[1]; b = grass[2]; v = -9;
+          }
           if (m === Mat.Pipe) { // shade across the pipe axis
             let best = 1e9, sh = 0; for (const s of this.pipeSeg) { const dx = s.bx - s.ax, dy = s.by - s.ay, L2 = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((wx - s.ax) * dx + (wy - s.ay) * dy) / L2)); const px = s.ax + dx * t, py = s.ay + dy * t; const d = Math.hypot(wx - px, wy - py); if (d < best) { best = d; const nxp = -dy / Math.sqrt(L2), nyp = dx / Math.sqrt(L2); sh = ((wx - px) * nxp + (wy - py) * nyp) / s.r; } }
             v = 1.6 - sh * 1.6; if (hash(wx >> 2, wy >> 2) > 0.93) { const rc = hex(0x864f4d); r = rc[0]; g = rc[1]; b = rc[2]; v = -9; }
@@ -170,10 +189,22 @@ export class Terrain {
     const T = this.T; const img = this.ov.img; const ow = T.W * 2; const s = PX / 2;
     for (let y = ty0; y < ty0 + th; y++) for (let x = tx0; x < tx0 + tw; x++) {
       const wx = x * s + s / 2, wy = y * s + s / 2; const p = (y * ow + x) * 4; const m = this.tile(T.mat, Math.floor(wx / PX), Math.floor(wy / PX));
-      if (m === Mat.Air) { img.data[p + 3] = 0; continue; }
+      if (m === Mat.Air) {
+        const col = Math.max(0, Math.min(T.W - 1, Math.floor(wx / PX)));
+        const above = T.surfaceY[col] * PX - wy;
+        if (above > 0 && above < 22) { const c = hex(above < 6 ? 0x3a4448 : hash(x, 2) > 0.45 ? 0x2c3338 : 0x1a2024); img.data[p] = c[0]; img.data[p + 1] = c[1]; img.data[p + 2] = c[2]; img.data[p + 3] = 230; }
+        else img.data[p + 3] = 0;
+        continue;
+      }
       let c: readonly [number, number, number];
       if (this.openness(wx, wy) > 0.5 && m !== Mat.Rock && m !== Mat.Pipe && m !== Mat.Concrete) { const wl = this.tile(T.water, Math.floor(wx / PX), Math.floor(wy / PX)); c = wl > 60 ? WATER : BACK[1]; }
-      else { const R = RAMPC[m] ?? RAMPC[Mat.Loam]; c = R[Math.max(0, Math.min(3, Math.round(1.5 + nz(N32, wx, wy * 3) * 1.6)))]; }
+      else {
+        const tx = Math.floor(wx / PX), ty = Math.floor(wy / PX);
+        const col = Math.max(0, Math.min(T.W - 1, tx));
+        const depth = ty - T.surfaceY[col];
+        if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) c = hex(hash(tx, ty) > 0.55 ? 0x6d8f4a : 0x3f5c32);
+        else { const R = RAMPC[m] ?? RAMPC[Mat.Loam]; c = R[(hash(tx, ty) * 4) | 0]; }
+      }
       const moist = this.tile(T.moist, Math.floor(wx / PX), Math.floor(wy / PX)) / 255; const f = moist > 0.25 ? 1 - (moist - 0.25) * 0.35 : 1;
       img.data[p] = c[0] * f; img.data[p + 1] = c[1] * f; img.data[p + 2] = c[2] * f; img.data[p + 3] = 255;
     }

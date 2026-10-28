@@ -106,7 +106,8 @@ export function routeSoil(w: World, sx: number, sy: number, gx: number, gy: numb
       if (!nearEnds && (yy < T.surfaceY[xx] + 3 || clr[i] < need)) continue;
       if (T.mat[i] !== Mat.Air && !diggable(T, i)) continue;
       let cost = (dx && dy ? 1.414 : 1) * (1 + MATERIALS[T.mat[i] as Mat].hardness / 12 + T.moist[i] / 600);
-      if (dy && !dx) cost *= 1.8; // prefer sloped tunnels to vertical shafts
+      if (dy && !dx) cost *= 4.2; // a shaft is a last resort — tunnels should slope into rooms
+      else if (Math.abs(dy) > Math.abs(dx)) cost *= 1.8;
       if (T.carve[i] > 0 && T.mat[i] !== Mat.Air && !nearEnds) cost += 25; // don't plough through other tunnels
       if (clr[i] < need + 2) cost += 1.5;
       const ng = g[c] + cost; if (ng < g[n]) { g[n] = ng; par[n] = c; push(n, ng + Math.hypot(xx - gx, yy - gy) * 1.05); }
@@ -203,6 +204,68 @@ export function planChamber(w: World, kind: ChamberKind, o: PlanOpts = {}): Cham
   emit(w, 'dig_start', `Rats begin to dig ${ch.name}.`, 0, { chamber: ch.id, x: cx, y: cy });
   return ch;
 }
+
+/** Turn rock, pipe and concrete into loam so a founding room can actually be chewed. */
+function soften(w: World, x: number, y: number, r: number) {
+  const T = w.T; const r2 = r * r;
+  for (let yy = Math.floor(y - r); yy <= y + r; yy++) for (let xx = Math.floor(x - r); xx <= x + r; xx++) {
+    if (xx < 0 || yy < 0 || xx >= T.W || yy >= T.H) continue;
+    const dx = xx + 0.5 - x, dy = yy + 0.5 - y; if (dx * dx + dy * dy > r2) continue;
+    const i = yy * T.W + xx; const m = T.mat[i];
+    if (m === Mat.Air || m === Mat.Topsoil || m === Mat.Loam || m === Mat.Clay || m === Mat.Gravel || m === Mat.Roots) continue;
+    T.mat[i] = Mat.Loam; T.moist[i] = Math.min(T.moist[i], 90); T.stab[i] = 200;
+  }
+  (T as { matVer?: number }).matVer = ((T as { matVer?: number }).matVer ?? 0) + 1;
+}
+
+/** A short sloped tunnel and a horizontal room. Used when the planner cannot find soil. */
+export function layRoom(w: World, from: number, kind: 'nest' | 'cache' | 'midden' | 'throne', name: string): Chamber | null {
+  const A = w.nodes[from]; if (!A) return null;
+  const T = w.T;
+  const dir = A.x < T.W * 0.55 ? 1 : -1;
+  const reach = kind === 'throne' ? 20 : kind === 'nest' ? 12 : 15;
+  const drop = kind === 'throne' ? 7 : 5;
+  const rx = kind === 'throne' ? 7.2 : kind === 'nest' ? 6.4 : 4.8;
+  const ry = kind === 'throne' ? 3.6 : kind === 'nest' ? 3.4 : 2.7;
+  const ex = clamp(A.x + dir * reach, 8, T.W - 8);
+  const sy = T.surfaceY[Math.max(0, Math.min(T.W - 1, Math.floor(ex)))] ?? 30;
+  const ey = clamp(A.y + drop, sy + 8, T.H - 16);
+  const steps = 8;
+  for (let i = 0; i <= steps; i++) { const t = i / steps; soften(w, A.x + (ex - A.x) * t, A.y + (ey - A.y) * t, 3.4); }
+  const cx = clamp(ex + dir * rx * 0.5, rx + 4, T.W - rx - 4);
+  soften(w, cx, ey - ry * 0.3, Math.max(rx, ry) + 1.4);
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) { const t = i / steps; pts.push([A.x + (ex - A.x) * t, A.y + (ey - A.y) * t]); }
+  const nE = addNode(w, ex, ey, 'chamber');
+  addEdge(w, from, nE.id, 'tunnel', pts, 2.6);
+  const far = clamp(ex + dir * rx * 1.2, 6, T.W - 6);
+  const nO = addNode(w, far, ey, 'chamber');
+  const ch: Chamber = {
+    id: w.chambers.length, kind, name, cx, cy: ey - ry * 0.35, rx, ry, seed: 11 + w.chambers.length,
+    floorY: ey, floorEdge: -1, entryNode: nE.id, progress: 0, stock: 0, owner: 0, flooded: 0,
+  };
+  w.chambers.push(ch); w.newChambers.push(ch.id);
+  const fe = addEdge(w, nE.id, nO.id, 'floor', [[ex, ey], [(ex + far) / 2, ey + 0.12], [far, ey]], 4.2, ch.id);
+  ch.floorEdge = fe.id;
+  emit(w, 'dig_start', `Rats begin to dig ${ch.name}.`, 0, { chamber: ch.id, x: cx, y: ey });
+  return ch;
+}
+
+/** Chew every unfinished tunnel open. Skips edges that have already struck rock. */
+export function forceOpen(w: World) {
+  const ids = w.edges.map((e) => e.id);
+  for (const id of ids) {
+    const e = w.edges[id];
+    if (!e || e.kind === 'surface' || isOpen(e) || (e as { dead?: boolean }).dead) continue;
+    let guard = 0;
+    while (!isOpen(e) && !(e as { dead?: boolean }).dead && guard++ < 10) {
+      const before = e.dug;
+      digEdge(w, e, 8000);
+      if (e.dug <= before + 1e-4) break;
+    }
+  }
+}
+
 /** an exploratory tunnel from node `from` that ends blind (realistic dead end / escape pocket) */
 export function planDeadEnd(w: World, from: number): boolean {
   const A = w.nodes[from]; const ang = Math.PI * (0.1 + 0.8 * R(w)); const L = 10 + R(w) * 16;

@@ -42,8 +42,14 @@ export class Actors {
   private hz = new Map<number, { s: Sprite; px: number; py: number; cx: number; cy: number }>();
   private itemSpr = new Map<string, Sprite>();
   constructor(private terrain: Terrain) {}
+  /** world grew to the left: keep sprites under the same tiles */
+  shift(dxPx: number) {
+    if (!dxPx) return;
+    for (const v of this.rv.values()) { v.px += dxPx; v.cx += dxPx; v.x += dxPx; }
+    for (const h of this.hz.values()) { h.px += dxPx; h.cx += dxPx; h.s.x += dxPx; }
+  }
   ingest(s: Snapshot2, now: number) {
-    const R = s.rats; this.tickMs = Math.max(30, s.tickMs || 250);
+    const R = s.rats; this.tickMs = Math.max(4, s.tickMs || 80);
     const alive = new Set<number>();
     for (let i = 0; i < R.n; i++) {
       const id = R.id[i]; alive.add(id); let v = this.rv.get(id);
@@ -137,11 +143,12 @@ export class Actors {
         let probe = v.y;
         if (!this.terrain.isOpenPx(v.x, probe)) {
           let y = Math.floor(probe);
-          for (let k = 0; k < 32 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
+          for (let k = 0; k < 18 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
           probe = y;
         }
-        const fl = this.terrain.floorBelow(v.x, probe - 2, 42);
-        if (fl - (probe - 2) <= 42) fy = fl;
+        // a floor is the dirt under their feet, not the bottom of an open shaft
+        const fl = this.terrain.floorBelow(v.x, probe + 1, 12);
+        if (fl - probe >= -1 && fl - probe <= 12) fy = fl;
       }
       const gap = fy - v.snapY;
       if (Math.abs(gap) > 12) v.snapY = fy; else v.snapY += gap * 0.72;
