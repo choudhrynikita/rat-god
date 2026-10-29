@@ -22,6 +22,7 @@ export function feel(w: World) {
     }
   }
   meet(w, alive);
+  audience(w, alive);
 }
 
 function madden(w: World, r: Rat, alive: Rat[]) {
@@ -69,10 +70,25 @@ function meet(w: World, alive: Rat[]) {
       const d = Math.hypot(o.x - a.x, o.y - a.y);
       if (d < bd) { bd = d; b = o; }
     }
-    if (!b) continue;
+    if (!b) {
+      if ((w.tick + a.id * 17) % 160 === 0 && a.intent.kind !== 'dig' && a.intent.kind !== 'flee' && a.intent.kind !== 'eat' && a.intent.kind !== 'sleep') {
+        let near: Rat | null = null; let nd = 6;
+        for (const o of alive) {
+          if (o === a || o.stageN < 2 || mad(o) || o.flags & RF.jailed) continue;
+          const d = Math.hypot(o.x - a.x, o.y - a.y);
+          if (d < nd) { nd = d; near = o; }
+        }
+        if (near && near.edge >= 0) {
+          pathTo(w, a, { edge: near.edge, s: near.s });
+          a.intent.kind = 'socialize'; a.intent.until = w.tick + 24; a.anim = Anim.Walk; a.target = near.id;
+        }
+      }
+      continue;
+    }
     if (w.tick - ((b as { met?: number }).met ?? -999) < 80) continue;
     used.add(a.id); used.add(b.id); n++;
     (a as { met?: number }).met = w.tick; (b as { met?: number }).met = w.tick;
+    face(a, b); face(b, a); a.target = b.id; b.target = a.id;
     const aff = a.rel.get(b.id)?.aff ?? 0;
     if ((a.emo.anger > 0.62 || b.emo.anger > 0.62) && aff < -0.05) {
       fight(w, a, b, 'a grudge', false);
@@ -87,34 +103,82 @@ function meet(w: World, alive: Rat[]) {
       if (aff > -0.15) {
         giver.food -= bite; taker.food += bite; taker.needs.hunger = clamp01(taker.needs.hunger - 0.22);
         giver.emo.joy = clamp01(giver.emo.joy + 0.05); taker.emo.love = clamp01(taker.emo.love + 0.08);
-        giver.anim = Anim.Talk; taker.anim = Anim.Eat;
+        giver.anim = Anim.Groom; taker.anim = Anim.Eat;
       } else {
         giver.food = Math.max(0, giver.food - bite); taker.food += bite;
         giver.emo.anger = 1; taker.emo.shame = clamp01(taker.emo.shame + 0.35); taker.emo.fear = clamp01(taker.emo.fear + 0.2);
         giver.anim = Anim.Fight; taker.anim = Anim.Flee;
         w.stats.unrest = clamp01(w.stats.unrest + 0.02);
       }
-      giver.intent.until = w.tick + 16; taker.intent.until = w.tick + 16;
+      giver.intent.until = w.tick + 28; taker.intent.until = w.tick + 28;
+      giver.intent.kind = 'socialize'; taker.intent.kind = 'socialize';
+      hold(giver); hold(taker);
       continue;
     }
     if ((a.emo.fear > 0.55 || b.emo.fear > 0.55) && aff >= 0) {
       const scared = a.emo.fear >= b.emo.fear ? a : b; const calm = scared === a ? b : a;
       scared.emo.fear = clamp01(scared.emo.fear - 0.18); scared.emo.joy = clamp01(scared.emo.joy + 0.06);
-      calm.emo.love = clamp01(calm.emo.love + 0.04); calm.anim = Anim.Groom; scared.anim = Anim.Talk;
-      calm.intent.until = w.tick + 16; scared.intent.until = w.tick + 16;
+      calm.emo.love = clamp01(calm.emo.love + 0.04); calm.anim = Anim.Groom; scared.anim = Anim.Cower;
+      calm.intent.kind = 'socialize'; scared.intent.kind = 'socialize';
+      calm.intent.until = w.tick + 28; scared.intent.until = w.tick + 28;
+      hold(calm); hold(scared);
       continue;
     }
     if (aff > 0.05 || a.spouse === b.id) {
       const close = a.spouse === b.id;
-      a.anim = close ? Anim.Mate : Anim.Talk; b.anim = a.anim;
+      a.anim = close ? Anim.Mate : Anim.Groom; b.anim = a.anim;
       a.emo.joy = clamp01(a.emo.joy + 0.04); b.emo.joy = clamp01(b.emo.joy + 0.04);
       if (close) { a.emo.love = clamp01(a.emo.love + 0.06); b.emo.love = clamp01(b.emo.love + 0.06); }
       const rl = a.rel.get(b.id); if (rl) rl.aff = clamp(rl.aff + 0.02, -1, 1);
       a.needs.social = Math.max(0, a.needs.social - 0.1); b.needs.social = Math.max(0, b.needs.social - 0.1);
-      a.intent.until = w.tick + 14; b.intent.until = w.tick + 14;
+      a.intent.kind = 'socialize'; b.intent.kind = 'socialize';
+      a.intent.until = w.tick + 32; b.intent.until = w.tick + 32;
+      hold(a); hold(b);
+    } else if (aff < -0.2) {
+      a.anim = Anim.Protest; b.anim = Anim.Protest;
+      a.intent.kind = 'socialize'; b.intent.kind = 'socialize';
+      a.intent.until = w.tick + 22; b.intent.until = w.tick + 22;
+      hold(a); hold(b);
     }
   }
 }
+
+/** Someone comes to the throne. The king turns, and speaks. The others look. */
+function audience(w: World, alive: Rat[]) {
+  const king = alive.find((r) => r.flags & RF.king);
+  if (!king) return;
+  const hall = w.chambers.find((c) => c.kind === 'throne' && c.progress >= 0.45 && c.floorEdge >= 0);
+  if (!hall) return;
+  let closest: Rat | null = null; let cd = 6;
+  for (const r of alive) {
+    if (r === king || r.stageN < 2 || r.flags & RF.jailed) continue;
+    if (r.curses.some((c) => String(c).includes('madness'))) continue;
+    const d = Math.hypot(r.x - king.x, r.y - king.y);
+    if (d > 10) continue;
+    face(r, king);
+    if (d < cd) { cd = d; closest = r; }
+    if (d < 5 && d > 2.2 && (r.intent.kind === 'idle' || r.intent.kind === 'wander' || r.intent.kind === 'socialize')) r.anim = Anim.Cheer;
+  }
+  if (closest && cd < 3.2 && closest.intent.kind !== 'dig' && closest.intent.kind !== 'fight') {
+    face(king, closest); face(closest, king);
+    king.anim = Anim.Preach; king.target = closest.id; closest.target = king.id;
+    king.intent.kind = 'throne'; king.intent.until = Math.max(king.intent.until, w.tick + 30);
+    closest.anim = closest.emo.fear > 0.5 ? Anim.Cower : Anim.Kneel;
+    closest.intent.kind = 'socialize'; closest.intent.until = w.tick + 30;
+    hold(closest);
+    return;
+  }
+  if (w.tick % 140 !== 0 || king.edge < 0) return;
+  const pet = alive.find((r) => r !== king && r.stageN >= 2 && !(r.flags & (RF.jailed | RF.asleep)) && r.intent.kind !== 'dig' && r.intent.kind !== 'fight' && r.intent.kind !== 'flee' && Math.hypot(r.x - king.x, r.y - king.y) > 3.2);
+  if (!pet) return;
+  pathTo(w, pet, { edge: king.edge, s: king.s });
+  pet.intent.kind = 'socialize'; pet.intent.until = w.tick + 48; pet.anim = Anim.Walk; pet.target = king.id;
+}
+
+function face(a: Rat, b: Rat) {
+  if (b.x > a.x + 0.15) a.facing = 1; else if (b.x < a.x - 0.15) a.facing = -1;
+}
+function hold(r: Rat) { r.path = []; r.pathI = 0; r.speed = 0; }
 
 function scare(w: World, r: Rat, alive: Rat[]) {
   const threat = nearest(r, alive, (o) => o !== r && (mad(o) || o.emo.anger > 0.7 || o.anim === Anim.Fight));

@@ -18,7 +18,7 @@ const MAP: Record<number, string[]> = {
   [Anim.Squeeze]: ['squeeze', 'walk'], [Anim.Swim]: ['swim', 'walk'], [Anim.Dig]: ['dig', 'dig_founder', 'work_gnaw'], [Anim.Haul]: ['haul', 'walk'],
   [Anim.Gnaw]: ['work_gnaw', 'eat'], [Anim.Craft]: ['work_gnaw', 'build_founder'], [Anim.Eat]: ['eat', 'eat_scraps', 'feast', 'suckle'], [Anim.Drink]: ['drink', 'eat'],
   [Anim.Sleep]: ['sleep'], [Anim.Groom]: ['groom', 'idle'], [Anim.Nurse]: ['nurse', 'suckle'], [Anim.Mate]: ['court'], [Anim.Play]: ['play', 'cheer'],
-  [Anim.Talk]: ['idle', 'announce'], [Anim.Trade]: ['idle'], [Anim.Fight]: ['fight', 'beat'], [Anim.Flee]: ['run', 'walk'], [Anim.Cower]: ['cower', 'idle'],
+  [Anim.Talk]: ['groom', 'cheer', 'announce', 'idle'], [Anim.Trade]: ['groom', 'idle'], [Anim.Fight]: ['fight', 'beat'], [Anim.Flee]: ['run', 'walk'], [Anim.Cower]: ['cower', 'idle'],
   [Anim.Pray]: ['pray', 'cower'], [Anim.Preach]: ['preach', 'announce', 'decree', 'cheer'], [Anim.Mourn]: ['sick_idle', 'idle_cough', 'idle'], [Anim.Sick]: ['sick_idle', 'sick', 'idle_cough'],
   [Anim.Shiver]: ['shake', 'sick_idle'], [Anim.Protest]: ['protest', 'cheer'], [Anim.Vote]: ['vote'], [Anim.Cheer]: ['cheer'], [Anim.Steal]: ['steal', 'walk'],
   [Anim.Patrol]: ['patrol', 'walk'], [Anim.Guard]: ['idle'], [Anim.Throne]: ['idle_throne', 'idle'], [Anim.Press]: ['press_law', 'decree'], [Anim.Feast]: ['feast', 'indulge', 'eat'],
@@ -124,7 +124,11 @@ export class Actors {
       }
       v.body.texture = c.frames[f]; v.body.anchor.set(c.ax, c.ay);
       // facing: squash-flip turn
-      const fc = R.facing[i] || 1; if (fc !== v.facing) v.facing = fc;
+      const fc0 = R.facing[i] || 1;
+      const tid = R.target[i];
+      const turned = tid > 0 && (anim === Anim.Talk || anim === Anim.Groom || anim === Anim.Kneel || anim === Anim.Preach || anim === Anim.Cheer || anim === Anim.Pray || anim === Anim.Mate || anim === Anim.Cower);
+      const other = turned ? this.rv.get(tid) : undefined;
+      const fc = other ? (other.x >= v.x ? 1 : -1) : fc0; if (fc !== v.facing) v.facing = fc;
       v.flip += (v.facing - v.flip) * Math.min(1, dt / 70); if (Math.abs(v.flip - v.facing) < 0.02) v.flip = v.facing;
       const sx = Math.sign(v.flip || v.facing) * Math.max(0.15, Math.abs(v.flip));
       // slope / climb rotation from heading (sprite space: positive = clockwise)
@@ -253,7 +257,7 @@ export class Actors {
       const anim = R.anim[i];
       const hate = anim === Anim.Fight || anim === Anim.Flee || anim === Anim.Protest;
       const love = anim === Anim.Mate || anim === Anim.Kiss || anim === Anim.Nurse || anim === Anim.Groom;
-      const talk = anim === Anim.Talk || anim === Anim.Trade || anim === Anim.Preach || anim === Anim.Vote;
+      const talk = anim === Anim.Talk || anim === Anim.Trade || anim === Anim.Preach || anim === Anim.Vote || anim === Anim.Kneel || anim === Anim.Cheer || anim === Anim.Pray;
       if (!hate && !love && !talk) continue;
       const dx = o.x - v.x, dy = o.snapY - v.snapY; if (dx * dx + dy * dy > 110 * 110) continue;
       drawn.add(key); n++;

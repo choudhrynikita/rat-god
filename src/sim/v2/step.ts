@@ -114,10 +114,10 @@ function think(w: World) {
   for (const r of w.rats) {
     if (!r.alive || r.edge < 0) continue;
     const moving = r.path.length > r.pathI && r.speed > 0.02;
-    if (!moving && r.speed < 0.08 && r.intent.kind !== 'sleep' && r.intent.kind !== 'eat' && r.intent.kind !== 'throne' && r.intent.kind !== 'nurse') {
+    if (!moving && r.speed < 0.08 && r.intent.kind !== 'sleep' && r.intent.kind !== 'eat' && r.intent.kind !== 'throne' && r.intent.kind !== 'nurse' && r.intent.kind !== 'socialize' && r.intent.kind !== 'court' && r.intent.kind !== 'pray') {
       if (r.flags & RF.king) r.anim = Anim.Throne;
       else if (r.flags & RF.jailed) r.anim = Anim.Jailed;
-      else if (r.anim === Anim.Walk || r.anim === Anim.Run || r.anim === Anim.Eat) r.anim = Anim.Idle;
+      else if (r.anim === Anim.Walk || r.anim === Anim.Run) r.anim = Anim.Idle;
     }
     if (moving || w.tick < r.intent.until || budget <= 0) continue;
     if (r.flags & RF.king) { chooseIntent(w, r); continue; }
