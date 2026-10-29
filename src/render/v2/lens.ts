@@ -5,14 +5,15 @@ import { RF, type Snapshot2 } from '../../sim/v2/contract';
 import type { Actors } from './actors';
 import { PX } from './units';
 
-export type LensId = 'needs' | 'mood' | 'faith' | 'wealth' | 'disease' | 'giants';
+export type LensId = 'needs' | 'mood' | 'faith' | 'caste' | 'wealth' | 'disease' | 'giants';
 export const LENSES: { id: LensId; label: string; legend: string }[] = [
-  { id: 'needs', label: 'NEEDS', legend: '▼ desperate (starving, hurt) · ■ wanting · ● content' },
+  { id: 'needs', label: 'NEEDS', legend: '▼ desperate · ■ wanting · ● content' },
   { id: 'mood', label: 'MOOD', legend: '▼ miserable · ■ getting by · ● happy' },
-  { id: 'faith', label: 'FAITH', legend: '▼ no faith · ■ believer · ● devout (priests, prophets, zealots)' },
-  { id: 'wealth', label: 'WEALTH', legend: '▼ poor or cast out · ■ middling · ● rich (crown, bosses, leaders)' },
-  { id: 'disease', label: 'DISEASE', legend: '▼ healthy · ■ hurt · ● sick and contagious' },
-  { id: 'giants', label: 'GIANT ATTENTION', legend: '▼ hidden deep · ■ could be noticed · ● exposed to the Giants and hunters' },
+  { id: 'faith', label: 'FAITH', legend: '▼ no faith · ■ believer · ● devout' },
+  { id: 'caste', label: 'CASTE', legend: '● highest caste · ■ middle · ▼ lowest · grey = none yet' },
+  { id: 'wealth', label: 'WEALTH', legend: '▼ poor or cast out · ■ middling · ● rich' },
+  { id: 'disease', label: 'DISEASE', legend: '▼ healthy · ■ hurt · ● sick' },
+  { id: 'giants', label: 'GIANTS', legend: '▼ hidden · ■ could be noticed · ● exposed to the Giants' },
 ];
 // cividis anchors (dark blue → grey → yellow), readable for all common colour-vision types
 const RAMP = [[0x00, 0x22, 0x4e], [0x57, 0x5c, 0x6d], [0x8a, 0x87, 0x79], [0xc3, 0xb3, 0x69], [0xfd, 0xea, 0x45]];
@@ -39,10 +40,24 @@ export class Lenses {
   update(actors: Actors, s: Snapshot2 | null, zd: number, surfY: (x: number) => number) {
     const g = this.layer; g.clear(); if (!this.mode || !s) return;
     const r = Math.max(3, 7 / Math.max(0.2, zd)); const R = s.rats;
-    for (let i = 0; i < R.n; i++) { const p = actors.posOf(R.id[i]); if (!p) continue; const v = this.value(s, i, surfY); const col = ramp(v);
+    for (let i = 0; i < R.n; i++) {
+      const p = actors.posOf(R.id[i]); if (!p) continue;
       const x = p.x, y = p.y - 18 / Math.max(0.6, zd) - r;
+      if (this.mode === 'caste') {
+        const id = R.caste?.[i] ?? 0; const cs = id ? s.castes?.find((c) => c.id === id) : undefined;
+        const nC = Math.max(1, (s.castes?.length ?? 1) - 1);
+        const t = cs ? cs.rank / nC : 0.5;
+        const col = cs ? cs.color : 0x575c6d;
+        if (!cs || t > 0.66) g.poly([x - r, y - r * 0.8, x + r, y - r * 0.8, x, y + r]);
+        else if (t > 0.33) g.rect(x - r * 0.8, y - r * 0.8, r * 1.6, r * 1.6);
+        else g.circle(x, y, r);
+        g.fill({ color: col }).stroke({ width: Math.max(1, r * 0.3), color: 0x000000 });
+        continue;
+      }
+      const v = this.value(s, i, surfY); const col = ramp(v);
       if (v < 0.34) g.poly([x - r, y - r * 0.8, x + r, y - r * 0.8, x, y + r]); else if (v < 0.67) g.rect(x - r * 0.8, y - r * 0.8, r * 1.6, r * 1.6); else g.circle(x, y, r);
-      g.fill({ color: col }).stroke({ width: Math.max(1, r * 0.3), color: 0x000000 }); }
+      g.fill({ color: col }).stroke({ width: Math.max(1, r * 0.3), color: 0x000000 });
+    }
   }
   static surfFn(surfaceY: Int16Array | undefined) { return (x: number) => surfaceY ? surfaceY[Math.max(0, Math.min(surfaceY.length - 1, Math.floor(x)))] : 0; }
   get px() { return PX; }

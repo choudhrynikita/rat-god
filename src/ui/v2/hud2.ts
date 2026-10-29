@@ -4,6 +4,8 @@ import type { FromWorker2, Snapshot2, SimEvent2, GodPowerInfo, RatDetail, Consen
 import type { World2 } from '../../render/v2/world2';
 import type { SimPort } from '../../main2';
 import { PX } from '../../render/v2/units';
+import { RF } from '../../sim/v2/contract';
+import { LENSES, type LensId } from '../../render/v2/lens';
 import { esc, h, clean, tierOf, cardFor, portraitUrl, loadCardList } from './util2';
 import { GodMenu } from './god2';
 import { Sheets } from './sheets2';
@@ -27,7 +29,9 @@ export class Hud2 {
   private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
   readonly god: GodMenu; readonly sheets: Sheets; following = -1; private cluster: number[] = []; private clusterAt = 0; private started = false; private nudgeEls = new Map<number, HTMLElement>();
-  speed = 1; private lastTop = 0; blocking = false; private resume = false;
+  speed = 1; private lastTop = 0; blocking = false; private resume = false; private lensEl!: HTMLElement; private lensAt = 0;
+  private static readonly LENS: (LensId | null)[] = [null, 'needs', 'mood', 'faith', 'caste', 'wealth', 'disease', 'giants'];
+  private static readonly LENS_BTN = ['SEE', 'NEED', 'MOOD', 'FAITH', 'CASTE', 'RICH', 'SICK', 'GIANT'];
   constructor(host: HTMLElement, readonly world: World2, readonly sim: SimPort) {
     host.innerHTML = ''; this.el = h(`<div class="h2"></div>`); host.appendChild(this.el);
     this.god = new GodMenu(this); this.sheets = new Sheets(this);
@@ -88,17 +92,29 @@ export class Hud2 {
         <span class="h2-grace" aria-label="Grace"><span class="lbl2">GRACE</span><i><b style="width:0%"></b></i></span></div>
       <button class="btn h2-iconbtn" data-k="omens" aria-label="Omens inbox">✶<span class="h2-badge hidden">0</span></button></div>`);
     this.pillsEl = h(`<div class="h2-pills"></div>`); this.feedEl = h(`<div class="h2-feed"></div>`); this.nudgeEl = h(`<div class="h2-nudges"></div>`);
+    this.lensEl = h(`<div class="h2-lens" style="display:none"></div>`);
     this.selEl = h(`<div class="h2-sel" style="display:none"><span data-n></span><button class="btn" data-k="look">LOOK</button></div>`);
-    this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
+    this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="see" aria-label="See the city">SEE</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
       <button class="h2-god" data-k="god" aria-label="Act as god">ACT</button></div>`);
-    this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.bottom, this.selEl);
+    this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.lensEl, this.bottom, this.selEl);
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
-    on('god', () => this.god.open()); on('stat', () => this.sheets.society());
+    on('god', () => this.god.open()); on('stat', () => this.sheets.society()); on('see', () => this.cycleLens());
     on('look', () => { const id = this.world.actors.selected; if (id >= 0) this.sheets.rat(id); });
     on('speed', () => { const seq = [1, 2, 4, 8, 16, 0] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
   }
   setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
+  private cycleLens() {
+    this.lensAt = (this.lensAt + 1) % Hud2.LENS.length;
+    const mode = Hud2.LENS[this.lensAt];
+    this.world.lens.mode = mode;
+    const b = this.el.querySelector<HTMLElement>('[data-k="see"]');
+    if (b) b.textContent = Hud2.LENS_BTN[this.lensAt];
+    const meta = mode ? LENSES.find((l) => l.id === mode) : null;
+    if (!meta) { this.lensEl.style.display = 'none'; this.feedEl.style.visibility = ''; return; }
+    this.lensEl.style.display = 'block'; this.lensEl.textContent = `${meta.label} · ${meta.legend}`;
+    this.feedEl.style.visibility = 'hidden';
+  }
   // ───────── sim messages ─────────
   handle(m: FromWorker2) {
     if (m.t === 'init') { this.resume = false; this.powers = m.powers; this.B = m.burrow; this.laws = m.laws; }
@@ -209,12 +225,35 @@ export class Hud2 {
   chamberAt(wx: number, wy: number) { if (!this.B) return null; let best = null as null | (typeof this.B.chambers)[number], bd = 1e9;
     for (const c of this.B.chambers) { const dx = (wx / PX - c.cx) / Math.max(1, c.rx), dy = (wy / PX - c.cy) / Math.max(1, c.ry); const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } } return bd < 2.5 ? best : null; }
   name(id: number) { return this.names.get(id) ?? `rat #${id}`; }
+  /** What you are looking at, in one word, so a tap tells you the role before you open a sheet. */
+  private markOf(id: number): string {
+    const s = this.snap; if (!s) return '';
+    const R = s.rats; let i = -1;
+    for (let k = 0; k < R.n; k++) if (R.id[k] === id) { i = k; break; }
+    if (i < 0) return '';
+    const f = R.flags[i];
+    if (f & RF.king) return 'KING';
+    if (f & RF.prophet) return 'PROPHET';
+    if (f & RF.priest) return 'PRIEST';
+    if (f & RF.enforcer) return 'ENFORCER';
+    if (f & RF.herald) return 'HERALD';
+    if (f & RF.healer) return 'HEALER';
+    if (f & RF.outcast) return 'OUTCAST';
+    if (f & RF.jailed) return 'JAILED';
+    if (f & RF.founder) return 'FOUNDER';
+    if (R.stage[i] === 0) return 'PUP';
+    const cid = R.caste?.[i] ?? 0;
+    const cs = cid ? s.castes?.find((c) => c.id === cid) : undefined;
+    return cs ? cs.name : '';
+  }
   // ───────── per-frame ─────────
   frame() {
     const s = this.snap; if (!s) return; const now = performance.now();
     if (now - this.lastTop > 250) { this.lastTop = now; const env = s.env, st = s.stats;
       const clock = this.top.querySelector('.clock')!, pop = this.top.querySelector('.pop')!, g = this.top.querySelector<HTMLElement>('.h2-grace b')!;
-      const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day + 1} · ${hh}:00 · ${env.weather.toUpperCase()}`; pop.textContent = `${st.pop} RATS`;
+      const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day + 1} · ${hh}:00 · ${env.weather.toUpperCase()}`;
+      const beat = s.gathering ? ` · ${s.gathering.kind.replace(/_/g, ' ').toUpperCase()}` : (st.techEra ? ` · ERA ${st.techEra}` : '');
+      pop.textContent = `${st.pop} RATS${beat}`;
       g.style.width = `${Math.round((st.grace / Math.max(1, st.graceMax)) * 100)}%`; }
     this.nudges(s);
     this.tagSelected();
@@ -231,7 +270,8 @@ export class Hud2 {
     this.selEl.style.top = `${sp.y}px`;
     const n = this.selEl.querySelector('[data-n]');
     const name = this.name(id);
-    if (n) n.textContent = this.cluster.length > 1 ? `${name} ${this.clusterAt + 1}/${this.cluster.length}` : name;
+    const mark = this.markOf(id);
+    if (n) n.textContent = (this.cluster.length > 1 ? `${name} ${this.clusterAt + 1}/${this.cluster.length}` : name) + (mark ? ` · ${mark}` : '');
   }
   /** diegetic prayer nudges: a small glyph over a praying rat; tap it to hear the plea and see the power it hints at */
   private nudges(s: Snapshot2) {

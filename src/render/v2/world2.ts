@@ -26,7 +26,7 @@ export class World2 {
   constructor(renderer: Renderer, el: HTMLElement) {
     this.cam = new Camera2(el); this.post = new Post(renderer); this.actors = new Actors(this.terrain); this.fx = new Fx(this.terrain, this.cam);
     const P = this.post;
-    P.sceneRoot.addChild(this.sky.back, this.terrain.overview, this.terrain.root, this.rooms.layer, this.actors.back, this.fx.back);
+    P.sceneRoot.addChild(this.sky.back, this.terrain.overview, this.terrain.root, this.rooms.layer, this.rooms.life, this.actors.back, this.fx.back);
     P.actorRoot.addChild(this.actors.layer, this.fx.front, this.sky.front, this.lens.layer);
     P.lightRoot.addChild(this.sky.lights, this.fx.lights, this.actors.lights);
   }
@@ -63,6 +63,7 @@ export class World2 {
         }
         this.rooms.sync(B.chambers, s.env.day);
       }
+      this.paintCivic(s);
       this.actors.ingest(s, now);
       if (s.consent) { this.fx.gore = s.consent.mature ? s.consent.gore : 0; this.actors.gore = this.fx.gore > 0; }
       for (const e of s.events) { this.fx.event(e, (id) => this.actors.posOf(id)); this.onEvent(e); }
@@ -94,6 +95,18 @@ export class World2 {
     this.post.render({ x: this.cam.x, y: this.cam.y, zd, shakeX: this.cam.shakeX * this.R, shakeY: this.cam.shakeY * this.R }, Math.round(this.cssW * this.R), Math.round(this.cssH * this.R), this.cssW, this.cssH, penv, this.sky.surfaceY(), now / 1000, fast);
     this.fpsAcc.push(dt); if (this.fpsAcc.length >= 30) { this.fps = 1000 / (this.fpsAcc.reduce((a, b) => a + b, 0) / this.fpsAcc.length); this.fpsAcc.length = 0; }
     const t = this.post.sample(dt); if (t) this.onTier(t);
+  }
+  private paintCivic(s: Snapshot2) {
+    const known = new Set<string>();
+    for (const t of s.tech ?? []) if (t.knowers > 0 && t.status !== 'lost' && t.status !== 'banned') known.add(t.id);
+    const color = new Map((s.castes ?? []).map((c) => [c.id, c.color]));
+    this.rooms.civic({
+      laws: s.king?.laws.length ?? 0,
+      reaching: !!s.king?.reaching,
+      known,
+      gathering: s.gathering ? { kind: s.gathering.kind, chamber: s.gathering.chamber } : null,
+      hearths: (s.hearths ?? []).map((h) => ({ chamber: h.chamber, state: h.state, color: color.get(h.caste) ?? 0xc4a060 })),
+    });
   }
   get skyTop() { return -SKY_PX; }
   private shiftBurrow(dx: number) {

@@ -2,7 +2,7 @@
 // (no foot slide), non-locomotion loops run at their own fps; turns squash-flip, anim changes crossfade, bodies tilt with
 // the slope and rotate onto walls when climbing, feet are snapped to the painted floor so rats never float, and far zoom
 // switches to cheap static impostors.
-import { Container, Sprite, Texture } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { Anim, Carry, RF, Stage, type Snapshot2, type Hazard, type Corpse, type Item, type Poster } from '../../sim/v2/contract';
 import { STRIDE_TILES } from '../../sim/v2/shared';
 import { clip, has, type Clip } from './sprites';
@@ -29,7 +29,7 @@ const MAP: Record<number, string[]> = {
 };
 const COAT = [0xffffff, 0xc9c6cc, 0x8a8790, 0xffffff, 0xfff0d8, 0xe8d4b8, 0xfff6f6, 0xe6e0e0];
 const TIER = (r: number) => r;
-interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null;
+interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null; sash: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
   snapY: number; rot: number; facing: number; flip: number; clipId: string; fade: number; seen: number; t0: number; off: number; i: number; lastAnim: number;
   fyX: number; fyY: number; fyHold: number }
@@ -38,6 +38,7 @@ export class Actors {
   readonly layer = new Container({ label: 'rats', sortableChildren: false });
   readonly back = new Container({ label: 'actor-back' });   // items, corpses, posters (scene layer)
   readonly lights = new Container({ label: 'actor-lights' });
+  readonly bonds = new Graphics();
   rv = new Map<number, RV>(); private snap: Snapshot2 | null = null; private snapAt = 0; private tickMs = 250;
   gore = true; selected = -1; private frameNo = 0;
   private hz = new Map<number, { s: Sprite; px: number; py: number; cx: number; cy: number }>();
@@ -69,7 +70,7 @@ export class Actors {
   private make(id: number, x: number, y: number): RV {
     const root = new Container(); const body = new Sprite(); const ghost = new Sprite(); const tool = new Sprite(); tool.visible = false; ghost.visible = false;
     root.addChild(ghost, body, tool); this.layer.addChild(root);
-    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, pip: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1, fyX: 1e9, fyY: 1e9, fyHold: y };
+    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, pip: null, sash: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1, fyX: 1e9, fyY: 1e9, fyHold: y };
     this.rv.set(id, v); return v;
   }
   private character(flags: number, stage: number): string {
@@ -207,7 +208,29 @@ export class Actors {
         v.pip.visible = true; v.pip.texture = pipTex(mood);
         v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(1.6);
       } else if (v.pip) v.pip.visible = false;
+      const casteId = R.caste?.[i] ?? 0;
+      const cs = casteId ? s.castes?.find((c) => c.id === casteId) : undefined;
+      let sashCol = cs?.color ?? 0;
+      if (!sashCol) {
+        if (flags & RF.king) sashCol = 0xf2b46a;
+        else if (flags & RF.prophet) sashCol = 0xfff2c0;
+        else if (flags & RF.priest) sashCol = 0xf6c992;
+        else if (flags & RF.enforcer) sashCol = 0xc46665;
+        else if (flags & RF.herald) sashCol = 0xd8b040;
+        else if (flags & RF.founder) sashCol = 0xe8dcc8;
+        else if (flags & RF.outcast) sashCol = 0x505048;
+        else if (flags & RF.jailed) sashCol = 0x6070a0;
+        else if (flags & RF.sick) sashCol = 0x6a8a48;
+        else if (flags & RF.blessed) sashCol = 0xffe08a;
+        else if (flags & RF.cursed) sashCol = 0x8060a0;
+      }
+      if (sashCol && stage !== Stage.Pup && !impostor) {
+        if (!v.sash) { v.sash = new Sprite(sashTex()); v.sash.anchor.set(0.5, 0.5); v.root.addChild(v.sash); }
+        v.sash.visible = true; v.sash.tint = sashCol;
+        v.sash.position.set(0, -c.top * sc * 0.42); v.sash.rotation = -v.rot; v.sash.scale.set(1.7 * Math.max(0.85, sc));
+      } else if (v.sash) v.sash.visible = false;
     }
+    this.drawBonds(zd);
     this.updateHazards(now);
   }
   /** nearest rat to a world point. r is a horizontal slack; the body is a column from the feet up. */
@@ -228,6 +251,28 @@ export class Actors {
     return hits.map((h) => h.id);
   }
   posOf(id: number) { const v = this.rv.get(id); return v ? { x: v.x, y: v.snapY - 14 } : null; }
+  /** A short line between two rats who are actually dealing with each other. Only when you are close enough to see it. */
+  private drawBonds(zd: number) {
+    const g = this.bonds; g.clear(); this.layer.addChild(g);
+    const s = this.snap; if (!s || zd < 0.7) return;
+    const R = s.rats; const drawn = new Set<string>(); let n = 0;
+    for (const v of this.rv.values()) {
+      if (n >= 40 || !v.root.visible) continue;
+      const i = v.i; if (R.id[i] !== v.id) continue;
+      const tid = R.target[i]; if (tid <= 0) continue;
+      const o = this.rv.get(tid); if (!o?.root.visible) continue;
+      const key = v.id < tid ? v.id + ':' + tid : tid + ':' + v.id;
+      if (drawn.has(key)) continue;
+      const anim = R.anim[i];
+      const hate = anim === Anim.Fight || anim === Anim.Flee || anim === Anim.Protest;
+      const love = anim === Anim.Mate || anim === Anim.Kiss || anim === Anim.Nurse || anim === Anim.Groom;
+      const talk = anim === Anim.Talk || anim === Anim.Trade || anim === Anim.Preach || anim === Anim.Vote;
+      if (!hate && !love && !talk) continue;
+      const dx = o.x - v.x, dy = o.snapY - v.snapY; if (dx * dx + dy * dy > 110 * 110) continue;
+      drawn.add(key); n++;
+      g.moveTo(v.x, v.snapY - 14).lineTo(o.x, o.snapY - 14).stroke({ width: 2, color: hate ? 0xe84b5a : love ? 0xf2b46a : 0x8a9aa0, alpha: 0.9 });
+    }
+  }
   // ───── hazards, corpses, items, posters ─────
   private syncHazards(H: Hazard[], now: number) {
     const keep = new Set<number>();
@@ -261,6 +306,13 @@ export class Actors {
     for (const p of P) put('p' + p.id, p.torn ? 'prop_law_poster_torn' : 'prop_law_poster_fresh', p.x * PX, p.y * PX, 0xffffff, 0.6);
     for (const [k, s] of this.itemSpr) if (!keep.has(k)) { s.destroy(); this.itemSpr.delete(k); }
   }
+}
+let _sash: Texture | null = null;
+function sashTex() {
+  if (_sash) return _sash;
+  const c = document.createElement('canvas'); c.width = 7; c.height = 3; const g = c.getContext('2d')!;
+  g.fillStyle = '#000'; g.fillRect(0, 0, 7, 3); g.fillStyle = '#fff'; g.fillRect(1, 1, 5, 1);
+  _sash = Texture.from(c); _sash.source.scaleMode = 'nearest'; return _sash;
 }
 let _mark: Texture | null = null;
 function markTexture() { if (_mark) return _mark; const c = document.createElement('canvas'); c.width = 9; c.height = 7; const g = c.getContext('2d')!;

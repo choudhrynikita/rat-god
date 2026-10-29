@@ -391,6 +391,8 @@ export interface Snapshot2 {
   consent?: Consent;
   // 2.2 final
   omensUnread?: number;      // MAJOR events not yet opened (full list via { t: 'omens' })
+  /** one hearth per family home, so the room can show who lives there */
+  hearths?: { chamber: number; state: 'building' | 'lived' | 'mourning' | 'abandoned' | 'ruined'; caste: number }[];
 }
 /** 2.2: what the player has consented to see. The sim words events accordingly; the render hides tagged fx/items. Default all off. */
 export interface Consent { mature: boolean; gore: 0 | 1 | 2; /** 0 none, 1 blood, 2 full carnage */ sexual: boolean }

@@ -209,6 +209,10 @@ const ART: Record<string, string[]> = {
   bowl: ['.bbbb.', 'bddddb', '.ssss.'],
   spear: ['..y..', '..s..', '..s..', '..s..', '..k..'],
   cot: ['wwwwwwww', 'wGGGGGGw', 'kk....kk'],
+  wheel: ['..sss..', '.s.Y.s.', 'ss.s.ss', '.s.Y.s.', '..sss..'],
+  coil: ['..CC..', '.C..C.', 'C.CC.C', '.C..C.', '..ss..'],
+  hearth: ['..RR..', '.RYYR.', 'RYYYYR', '.RyyR.', '..ss..', '..kk..'],
+  drum: ['.RRR.', 'RsssR', 'RYYYR', '.sss.', '..kk.'],
 };
 
 const FLOOR: Record<string, number> = {
@@ -273,20 +277,51 @@ function stageOf(p: number): number {
   if (p < 0.999) return 3;
   return 4;
 }
+function boxOf(c: Chamber) {
+  const rw = Math.max(18, c.rx * PX * 0.92);
+  const rh = Math.max(10, c.ry * PX * 0.62);
+  return { rw, rh, ox: c.cx * PX, fy: c.floorY * PX };
+}
 function h01(n: number): number {
   n = (Math.imul(n, 1664525) + 1013904223) >>> 0;
   return n / 4294967296;
 }
 
+export interface CivicLook {
+  laws: number;
+  reaching: boolean;
+  known: Set<string>;
+  gathering: { kind: string; chamber: number } | null;
+  hearths: { chamber: number; state: string; color: number }[];
+}
+
+/** Tech the player can see as a new object, once the room is furnished. */
+const ERA_PROP: [string, string, string][] = [
+  ['fire', 'nest', 'hearth'], ['fire', 'throne', 'hearth'],
+  ['wheel', 'workshop', 'wheel'], ['metalwork', 'workshop', 'spear'], ['automata', 'workshop', 'wheel'],
+  ['lanterns', 'gallery', 'lantern'], ['lanterns', 'plaza', 'lantern'], ['lanterns', 'entrance', 'lantern'],
+  ['weapons', 'barracks', 'spear'], ['pottery', 'granary', 'sack'],
+  ['sparks', 'lab', 'coil'], ['sparks', 'workshop', 'coil'], ['glow', 'plaza', 'coil'],
+  ['writing', 'archive', 'archive'], ['music', 'plaza', 'drum'], ['medicine', 'infirmary', 'cot'],
+  ['rodentoids', 'lab', 'cot'],
+];
+
 export class Interiors {
   readonly layer = new Container({ label: 'rooms' });
+  readonly life = new Container({ label: 'civic' });
   private sig = '';
+  private lifeSig = '';
+  private look: CivicLook | null = null;
+  private chambers: Chamber[] = [];
   /** Day a finished room was first seen. 0 means it was already standing when the burrow loaded. */
   private born = new Map<number, number>();
   private primed = false;
   private fronds: { s: Sprite; y: number; ph: number }[] = [];
 
-  reset() { this.born.clear(); this.primed = false; this.sig = ''; this.fronds.length = 0; }
+  reset() {
+    this.born.clear(); this.primed = false; this.sig = ''; this.lifeSig = ''; this.look = null; this.fronds.length = 0; this.chambers = [];
+    for (const ch of this.life.removeChildren()) ch.destroy();
+  }
 
   sway(now: number) {
     for (const p of this.fronds) p.s.y = p.y + Math.sin(now / 700 + p.ph) * 1.6;
@@ -303,6 +338,7 @@ export class Interiors {
 
   sync(chambers: Chamber[], day = 0, fresh = false) {
     if (fresh) this.reset();
+    this.chambers = chambers;
     if (!this.primed) {
       for (const c of chambers) if (c.progress >= 0.999) this.born.set(c.id, 0);
       this.primed = true;
@@ -311,10 +347,15 @@ export class Interiors {
     const sig = chambers.map((c) => `${c.id}:${stageOf(c.progress)}:${this.lived(c, day)}:${c.kind}:${c.flooded > 0.25 ? 1 : 0}:${c.cx | 0}`).join('|');
     if (sig === this.sig) return;
     this.sig = sig;
+    this.lifeSig = '';
     this.fronds.length = 0;
     for (const ch of this.layer.removeChildren()) ch.destroy();
     for (const c of chambers) this.draw(c, day);
+    if (this.look) this.paintCivic();
   }
+
+  /** Laws, hearths, gatherings and tools. Rebuilt only when the city actually changes. */
+  civic(look: CivicLook) { this.look = look; this.paintCivic(); }
 
   private draw(c: Chamber, day: number) {
     const stage = stageOf(c.progress);
@@ -380,13 +421,91 @@ export class Interiors {
     }
   }
 
-  private place(kind: string, x: number, y: number, wide: number, sway: boolean) {
+  private place(kind: string, x: number, y: number, wide: number, sway: boolean, into: Container = this.layer, tint = 0xffffff) {
     const tex = dress(kind); if (!tex) return;
     const s = new Sprite(tex);
     s.anchor.set(0.5, 0.92);
     s.scale.set(wide / tex.width);
     s.position.set(x, y);
-    this.layer.addChild(s);
-    if (sway) this.fronds.push({ s, y, ph: x * 0.013 + kind.length });
+    s.tint = tint;
+    into.addChild(s);
+    if (sway && into === this.layer) this.fronds.push({ s, y, ph: x * 0.013 + kind.length });
+  }
+
+  private paintCivic() {
+    const look = this.look; if (!look) return;
+    const chambers = this.chambers;
+    const sig = [
+      look.laws, look.reaching ? 1 : 0,
+      [...look.known].sort().join(','),
+      look.gathering ? `${look.gathering.kind}@${look.gathering.chamber}` : '',
+      look.hearths.map((h) => `${h.chamber}:${h.state}:${h.color}`).join(','),
+      chambers.map((c) => `${c.id}:${c.cx | 0}:${stageOf(c.progress)}`).join('|'),
+    ].join('#');
+    if (sig === this.lifeSig) return;
+    this.lifeSig = sig;
+    for (const ch of this.life.removeChildren()) ch.destroy();
+    const throne = chambers.filter((c) => c.kind === 'throne' && c.progress >= 0.45).sort((a, b) => b.progress - a.progress)[0];
+    if (throne) this.lawWheel(throne, look.laws, look.reaching);
+    for (const h of look.hearths) {
+      const c = chambers.find((x) => x.id === h.chamber); if (!c || c.progress < 0.2) continue;
+      const box = boxOf(c);
+      const g = new Graphics();
+      const a = h.state === 'lived' ? 0.5 : h.state === 'mourning' ? 0.34 : h.state === 'building' ? 0.2 : 0.1;
+      g.ellipse(0, 0, box.rw * 0.5, box.rh * 0.26).fill({ color: h.color, alpha: a });
+      g.position.set(box.ox, box.fy - box.rh * 0.12);
+      this.life.addChild(g);
+      const prop = h.state === 'lived' ? 'hearth' : h.state === 'mourning' ? 'candle' : h.state === 'building' ? 'stake' : 'rubble';
+      this.place(prop, box.ox, box.fy - 2, h.state === 'lived' ? 30 : 18, false, this.life);
+    }
+    for (const [tech, kind, prop] of ERA_PROP) {
+      if (!look.known.has(tech)) continue;
+      for (const c of chambers) {
+        if (c.kind !== kind || c.progress < 0.72) continue;
+        const box = boxOf(c);
+        const j = (c.seed + tech.length * 13) % 5;
+        const tint = tech === 'rodentoids' ? 0x9fb8c8 : 0xffffff;
+        this.place(prop, box.ox + (j - 2) * box.rw * 0.16, box.fy - 2, prop === 'archive' ? 40 : 24, false, this.life, tint);
+      }
+    }
+    if (look.gathering) {
+      const c = chambers.find((x) => x.id === look.gathering!.chamber);
+      if (c && c.progress > 0.15) this.eventMark(c, look.gathering.kind);
+    }
+  }
+
+  private lawWheel(c: Chamber, laws: number, reaching: boolean) {
+    const box = boxOf(c);
+    const g = new Graphics();
+    const cell = 4, gap = 1, n = 6;
+    const span = n * cell + (n - 1) * gap;
+    g.rect(-3, -3, span + 6, span + 6).fill({ color: 0x080d0a });
+    g.rect(-1, -1, span + 2, span + 2).fill({ color: 0x3a3532 });
+    const nLaws = Math.max(0, Math.min(36, laws));
+    for (let i = 0; i < 36; i++) {
+      const col = i % 6, row = (i / 6) | 0;
+      const next = reaching && i === nLaws && nLaws < 36;
+      const color = next ? 0x45eaf0 : i < nLaws ? 0xf2b46a : 0x1a1410;
+      g.rect(col * (cell + gap), row * (cell + gap), cell, cell).fill({ color });
+    }
+    const sc = Math.max(1.5, Math.min(box.rw * 0.7, 96) / span);
+    g.scale.set(sc);
+    g.position.set(box.ox - (span * sc) / 2, box.fy - box.rh * 0.78);
+    this.life.addChild(g);
+  }
+
+  private eventMark(c: Chamber, kind: string) {
+    const box = boxOf(c);
+    const hot = /riot|coup|holy|protest|strike/.test(kind);
+    const fest = kind === 'festival' || kind === 'election';
+    const solemn = kind === 'sermon' || kind === 'funeral' || kind === 'trial';
+    const g = new Graphics();
+    g.ellipse(0, 0, box.rw * 0.78, box.rh * 0.48).fill({ color: hot ? 0x8a1818 : fest ? 0xc48a40 : solemn ? 0x2a2428 : 0x1a4060, alpha: hot ? 0.5 : 0.34 });
+    g.position.set(box.ox, box.fy - box.rh * 0.2);
+    this.life.addChild(g);
+    const prop = hot ? 'banner' : solemn ? 'candle' : fest ? 'drum' : 'bowl';
+    this.place(prop, box.ox, box.fy - 4, Math.min(box.rw * 0.72, 78), false, this.life);
+    if (hot) this.place('rubble', box.ox + box.rw * 0.28, box.fy - 2, 30, false, this.life);
+    if (solemn) this.place('candle', box.ox - box.rw * 0.3, box.fy - 2, 20, false, this.life);
   }
 }

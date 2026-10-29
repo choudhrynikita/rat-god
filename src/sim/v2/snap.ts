@@ -7,6 +7,7 @@ import { occupation } from './family';
 import { available } from './laws2';
 import { ageDays, getRat } from './rats';
 import { clamp, type World } from './state';
+import { era } from './tech';
 
 export function terrainInit(w: World): TerrainInit {
   const T = w.T;
@@ -78,13 +79,15 @@ export function society(w: World): SocietyStats {
   }
   let devout = 0, believer = 0, doubter = 0, atheist = 0;
   for (const r of alive) { const g = r.beliefs.god; if (g > 0.55) devout++; else if (g > 0.15) believer++; else if (g < -0.4) atheist++; else doubter++; }
+  let readers = 0;
+  for (const r of alive) if (r.knows.includes('writing') || r.knows.includes('marks')) readers++;
   return {
     pop: alive.length, adults, pups, elders, births: w.stats.births, deaths: w.stats.deaths,
     food: w.granary + w.foodOnSurface, granary: w.granary, scrap: w.scrapPool, foodPrice: w.market.price,
     gini: w.stats.gini, legitimacy: w.stats.legitimacy, trust: w.stats.trust, unrest: w.stats.unrest, faith: w.faith,
     cohesion: w.stats.cohesion, crime: w.stats.crime, disease: sick / n, hunger: hunger / n,
     classes: { court, clergy, guild: w.firms.length, workers, poor, outcasts: alive.filter((r) => r.flags & (1 << 10)).length },
-    unemployment: w.stats.unemployment, wages: w.stats.wages, joy: w.stats.joy, techEra: 0, rodentoids: bots, jailed, literacy: 0,
+    unemployment: w.stats.unemployment, wages: w.stats.wages, joy: w.stats.joy, techEra: era(w), rodentoids: bots, jailed, literacy: readers / n,
     grace: w.grace, graceMax: w.graceMax,
     faithDist: { devout: devout / n, believer: believer / n, doubter: doubter / n, atheist: atheist / n },
     godRejection: w.godRejection, married: wed, homes: w.homes.length, casteTension: 0, ga: w.env.ga,
@@ -118,6 +121,7 @@ export function buildSnap(w: World, sinceSeq: number): Snapshot2 {
     religions: w.religions, justice: w.justice, festivals: w.festivals,
     ripples: w.ripples.slice(-12), homes: null, castes: w.castes, consent: w.consent,
     omensUnread: w.events.filter((e) => (e.sev ?? 0) >= 2).length,
+    hearths: w.homes.map((h) => ({ chamber: h.chamber, state: h.state, caste: h.caste })),
   };
 }
 

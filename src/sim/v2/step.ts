@@ -15,7 +15,7 @@ import { bodySize, kill, newRat, prune, stageOf } from './rats';
 import { socialHourly } from './social';
 import { R, chance, clamp01, day, emit, pick, type World } from './state';
 import { feel } from './feelings';
-import { techDaily } from './tech';
+import { era, techDaily } from './tech';
 
 const failed = new Set<string>();
 function guard(name: string, fn: () => void) {
@@ -227,7 +227,7 @@ function tally(w: World) {
   w.stats.unemployment = adults ? idle / adults : 0;
   w.stats.gini = clamp01(w.stats.gini);
   if (pop > w.chron.peakPop) w.chron.peakPop = pop;
-  w.chron.history.push({ day: day(w), pop, food: w.granary, gini: w.stats.gini, legitimacy: w.stats.legitimacy, faith: w.faith, unrest: w.stats.unrest, joy: w.stats.joy, era: 0 });
+  w.chron.history.push({ day: day(w), pop, food: w.granary, gini: w.stats.gini, legitimacy: w.stats.legitimacy, faith: w.faith, unrest: w.stats.unrest, joy: w.stats.joy, era: era(w) });
   if (w.chron.history.length > 400) w.chron.history.shift();
   void pups; void elders; void sick; void jailed; void bots; void wed;
 }
