@@ -285,9 +285,8 @@ export class Hud2 {
   }
   private prayerCard(p: Snapshot2['prayers'][number]) {
     const info = this.powers.find((x) => x.power === p.suggest);
-    this.sheets.open(`${esc(p.name)} PRAYS`, `<p class="h2-p">“${esc(clean(p.plea))}”</p>
-      ${info ? `<p class="h2-p" style="color:var(--grey)">You sense what would answer it: <b style="color:var(--amberL)">${esc(info.label)}</b> — ${esc(info.blurb)}</p>` : ''}
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${info ? `<button class="btn rust" data-answer>${esc(info.label)} · ${info.cost} GRACE</button>` : ''}<button class="btn" data-watch>WATCH ${esc(p.name)}</button><button class="btn" data-ignore>LET IT BE</button></div>`, (root) => {
+    this.sheets.open(esc(p.name), `<p class="h2-p">“${esc(clean(p.plea))}”</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${info ? `<button class="btn rust" data-answer>ANSWER · ${info.cost} GRACE</button>` : ''}<button class="btn" data-watch>ONLY WATCH</button><button class="btn" data-ignore>LOOK AWAY</button></div>`, (root) => {
       root.querySelector<HTMLElement>('[data-answer]')?.addEventListener('click', () => { this.sheets.close(); this.god.begin(p.suggest as GodPower, { rat: p.ratId, x: p.x, y: p.y }); });
       root.querySelector<HTMLElement>('[data-watch]')?.addEventListener('click', () => { this.sheets.close(); this.followRat(p.ratId); });
       root.querySelector<HTMLElement>('[data-ignore]')?.addEventListener('click', () => this.sheets.close()); });

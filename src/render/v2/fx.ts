@@ -22,6 +22,7 @@ export class Fx {
   private ps: P[] = []; private free: Sprite[] = []; private beams: { g: Graphics; t: number; max: number; L?: Sprite }[] = [];
   private flashes: { s: Sprite; t: number; max: number; sc: number }[] = [];
   private chamberLights: Sprite[] = [];
+  private scars: { g: Graphics; life: number; max: number }[] = [];
   gore = 0; budget = 1400;
   constructor(private terrain: Terrain, private cam: Camera2) {}
   initChambers(B: BurrowInit) { for (const s of this.chamberLights) s.destroy(); this.chamberLights = []; for (const c of B.chambers) this.addChamberLight(c); }
@@ -54,6 +55,31 @@ export class Fx {
     const hidden = (e.mature ?? []).some((t) => (t === 'gore' || t === 'torture') ? this.gore < 1 : false);
     const fx = e.fx ?? (e.kind === 'smite' ? 'lightning' : e.kind === 'blessed' ? 'halo' : e.kind === 'cursed' ? 'curse' : e.kind === 'risen' ? 'risen' : e.kind === 'collapse' ? 'dust_burst' : e.kind === 'flood' ? 'splash' : e.kind === 'plague' ? 'miasma' : e.kind === 'god_punish' ? 'punish' : e.kind === 'defiance' || e.kind === 'war_on_god' ? 'defy' : e.kind === 'miracle' ? 'miracle' : e.kind === 'discovery' ? 'discovery' : (e.kind === 'battle' || e.kind === 'murder' || e.kind === 'maimed') ? 'blood' : e.kind === 'marriage' || e.kind === 'courtship' ? 'love' : e.kind === 'festival' ? 'fanfare' : '');
     this.play(fx, x, y, hidden);
+    this.remember(e.kind, fx, x, y, e.sev);
+  }
+  /** The room keeps a few pixels of what happened. The log is not the story. */
+  private remember(kind: string, fx: string, x: number, y: number, sev: number) {
+    const mark = kind === 'birth' ? 'straw'
+      : kind === 'flood' || fx === 'splash' ? 'stain'
+      : kind === 'plague' || fx === 'miasma' ? 'sick'
+      : kind === 'marriage' ? 'bond'
+      : kind === 'blessed' || kind === 'miracle' || fx === 'halo' || fx === 'bless' ? 'ash'
+      : kind === 'cursed' || kind === 'smite' || kind === 'god_punish' || fx === 'curse' || fx === 'punish' ? 'scorch'
+      : '';
+    if (!mark || sev < 1) return;
+    if (this.scars.length > 32) { const old = this.scars.shift(); old?.g.destroy(); }
+    const g = new Graphics();
+    const px = (dx: number, dy: number, c: number) => { g.rect(dx, dy, 2, 2).fill({ color: c }); };
+    if (mark === 'ash') { px(-3, 0, 0xf2b46a); px(0, -1, 0xf6c992); px(2, 1, 0x8a6040); }
+    else if (mark === 'scorch') { px(-2, 0, 0x1a1210); px(1, -1, 0x2a1814); px(3, 1, 0x0a0808); px(0, 2, 0x3a2018); }
+    else if (mark === 'straw') { px(-4, 0, 0xc4a060); px(-1, 1, 0x8a7040); px(2, 0, 0xd8b070); }
+    else if (mark === 'stain') { px(-3, 1, 0x23434c); px(0, 0, 0x1a3038); px(3, 1, 0x2a4450); }
+    else if (mark === 'bond') { px(-2, 0, 0xe84b5a); px(2, 0, 0xf2b46a); }
+    else { px(-2, 0, 0x6a8a48); px(1, 1, 0x4a6a30); px(3, 0, 0x3a4a28); }
+    g.position.set(Math.round(x), Math.round(y));
+    this.back.addChild(g);
+    const stay = mark === 'scorch' || mark === 'ash' || sev >= 2;
+    this.scars.push({ g, life: stay ? 240000 : 90000, max: stay ? 240000 : 90000 });
   }
   play(fx: string, x: number, y: number, hideGore = false) {
     switch (fx) {
@@ -96,6 +122,11 @@ export class Fx {
       if ((b.g as any).ring) { b.g.scale.set(1 + (1 - f) * 4); b.g.alpha = f; } else b.g.alpha = f > 0.6 ? (Math.random() < 0.7 ? 1 : 0.4) : f / 0.6;
       if (b.t <= 0) { b.g.destroy(); this.beams.splice(i, 1); } }
     for (let i = this.flashes.length - 1; i >= 0; i--) { const f = this.flashes[i]; f.t -= dt; const k = f.t / f.max; f.s.scale.set(f.sc * (0.6 + 0.4 * k)); f.s.alpha = k; if (f.t <= 0) { f.s.destroy(); this.flashes.splice(i, 1); } }
+    for (let i = this.scars.length - 1; i >= 0; i--) {
+      const s = this.scars[i]; s.life -= dt;
+      s.g.alpha = s.life > s.max * 0.25 ? 0.9 : Math.max(0, s.life / (s.max * 0.25));
+      if (s.life <= 0) { s.g.destroy(); this.scars.splice(i, 1); }
+    }
     for (const L of this.chamberLights) L.alpha = (L as any).base * (0.9 + Math.sin(now * 0.003 + (L as any).ph) * 0.06 + Math.sin(now * 0.017 + (L as any).ph * 3) * 0.04);
   }
   get count() { return this.ps.length; }

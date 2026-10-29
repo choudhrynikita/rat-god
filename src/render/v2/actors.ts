@@ -163,13 +163,13 @@ export class Actors {
       let squash = 1, lift = 0;
       if (LOCO.has(anim) && moving && anim !== Anim.Swim) {
         const phase = ((f + 0.5) / Math.max(1, n)) * Math.PI * 2;
-        squash = 1 + Math.sin(phase) * 0.08;
-        lift = Math.abs(Math.sin(phase)) * 3.4 * sc;
-      }
+        squash = 1 + Math.sin(phase) * 0.22;
+        lift = Math.abs(Math.sin(phase)) * 2.4;
+        v.body.position.set(c.dx[f] * v.facing * sc + Math.sin(phase) * v.facing * 1.6, c.dy[f] * sc);
+      } else v.body.position.set(c.dx[f] * v.facing * sc, c.dy[f] * sc);
       if (anim === Anim.Squeeze && !c.id.includes('squeeze')) v.body.scale.set((sx * sc) / squash, sc * squash * 0.8);
       else v.body.scale.set((sx * sc) / squash, sc * squash);
       v.ghost.scale.copyFrom(v.body.scale);
-      v.body.position.set(c.dx[f] * v.facing * sc, c.dy[f] * sc);
       let tint = COAT[R.coat[i] & 7];
       if (flags & RF.rodentoid && ch !== 'rodentoid') tint = 0x9fb8c8;
       else if (flags & RF.labrat && ch !== 'labrat') tint = 0xfff8f8;
@@ -207,6 +207,12 @@ export class Actors {
         v.pip.visible = true; v.pip.texture = pipTex(mood);
         v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(1.6);
       } else if (v.pip) v.pip.visible = false;
+      const badge = (flags & RF.prophet) || (flags & RF.priest) ? 'faith' : flags & RF.sick ? 'sick' : flags & RF.cursed ? 'curse' : '';
+      if (badge && zd > 0.85 && !impostor) {
+        if (!v.sash) { v.sash = new Sprite(pipTex(badge)); v.sash.anchor.set(0.5, 1); v.root.addChild(v.sash); }
+        v.sash.visible = true; v.sash.texture = pipTex(badge);
+        v.sash.position.set(0, -c.top * sc - 3); v.sash.rotation = -v.rot; v.sash.scale.set(1);
+      } else if (v.sash) v.sash.visible = false;
     }
     this.drawBonds(zd);
     this.updateHazards(now);
@@ -307,6 +313,9 @@ function pipTex(kind: string) {
   const px = (x: number, y: number, col: string) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
   if (kind === 'anger') { px(1, 0, '#e84b5a'); px(3, 0, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#fff2c0'); px(4, 2, '#e84b5a'); px(1, 4, '#e84b5a'); px(3, 4, '#e84b5a'); }
   else if (kind === 'fear') { px(1, 0, '#45eaf0'); px(3, 0, '#45eaf0'); px(2, 2, '#d8d0c4'); px(1, 4, '#45eaf0'); px(3, 4, '#45eaf0'); }
+  else if (kind === 'faith') { px(2, 0, '#f6c992'); px(1, 1, '#f2b46a'); px(2, 1, '#fff2c0'); px(3, 1, '#f2b46a'); px(2, 2, '#f2b46a'); }
+  else if (kind === 'sick') { px(1, 1, '#9be070'); px(3, 1, '#6a8a48'); px(2, 3, '#9be070'); }
+  else if (kind === 'curse') { px(1, 0, '#8060a0'); px(3, 0, '#8060a0'); px(2, 2, '#c8a8d0'); px(2, 4, '#8060a0'); }
   else { px(1, 1, '#e84b5a'); px(3, 1, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#e84b5a'); px(4, 2, '#e84b5a'); px(1, 3, '#e84b5a'); px(3, 3, '#e84b5a'); px(2, 4, '#e84b5a'); }
   const t = Texture.from(c); t.source.scaleMode = 'nearest'; _pip.set(kind, t); return t;
 }
