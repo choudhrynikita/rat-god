@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cuePool, eventAudio, pickEvents, godPowerStinger, eraCue, deriveFromSim2 } from '../src/audio/state';
+import { cuePool, eventAudio, pickEvents, godPowerStinger, deriveFromSim2 } from '../src/audio/state';
 import { VoiceManager } from '../src/audio/voices';
 import { ambMix } from '../src/audio/ambience';
 import { RECIPES } from '../src/audio/chip';
@@ -12,11 +12,12 @@ function snap(o: Record<string, unknown> = {}, stats: Record<string, unknown> = 
     stats: { pop: 50, pups: 3, births: 1, deaths: 0, food: 100, hunger: 0.1, disease: 0, unrest: 0.1, legitimacy: 0.8, faith: 0.3, techEra: 0, rodentoids: 0, jailed: 0, joy: 0.5, ...stats }, ...o } as unknown as Snapshot2;
 }
 describe('audio state mapping', () => {
-  it('calm day/night pools rotate prosperity with the era theme', () => {
-    expect(cuePool('calm', { night: false, era: 0, faith: 0 })).toEqual(['loop_prosperity_day', 'loop_era_primitive']);
-    expect(cuePool('calm', { night: true, era: 5, faith: 0 })).toEqual(['loop_prosperity_night', 'loop_era_ri']);
-    expect([0, 1, 2, 3, 4, 5].map(eraCue)).toEqual(['loop_era_primitive', 'loop_era_primitive', 'loop_era_scrap_electric', 'loop_era_scrap_electric', 'loop_era_mechanised', 'loop_era_ri']);
-    expect(cuePool('hymn', { night: false, era: 0, faith: 1 })).toEqual(['loop_hymn_b']);
+  it('maps every colony mood onto a bed that exists', () => {
+    expect(cuePool('calm', { night: false, era: 0, faith: 0 })).toEqual(['bed_drift']);
+    expect(cuePool('calm', { night: true, era: 5, faith: 0 })).toEqual(['bed_night']);
+    expect(cuePool('hymn', { night: false, era: 0, faith: 1 })).toEqual(['bed_hymn']);
+    expect(cuePool('rebellion', { night: false, era: 0, faith: 0 })).toEqual(['bed_strain']);
+    expect(cuePool('silence', { night: false, era: 0, faith: 0 })).toEqual([]);
   });
   it('derives states by priority', () => {
     expect(deriveFromSim2(snap()).state).toBe('calm');

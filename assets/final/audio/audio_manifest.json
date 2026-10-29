@@ -1,0 +1,107 @@
+{
+  "version": 3,
+  "bpmGrid": 74,
+  "key": "A minor",
+  "cues": {
+    "bed_drift": {
+      "id": "bed_drift",
+      "kind": "loop",
+      "file": "bed_drift",
+      "dur": 25.9459,
+      "bpm": 74,
+      "beatsPerBar": 4,
+      "bars": 8,
+      "loop": true,
+      "loopStart": 0,
+      "loopEnd": 25.9459,
+      "lufs": -16,
+      "gainDb": 0,
+      "tags": [
+        "synthwave",
+        "original"
+      ],
+      "bytes": {
+        "ogg": 381429,
+        "m4a": 525750
+      },
+      "model": "original-numpy-bed",
+      "source": "scripts/synthwave_beds.py"
+    },
+    "bed_night": {
+      "id": "bed_night",
+      "kind": "loop",
+      "file": "bed_night",
+      "dur": 25.9459,
+      "bpm": 74,
+      "beatsPerBar": 4,
+      "bars": 8,
+      "loop": true,
+      "loopStart": 0,
+      "loopEnd": 25.9459,
+      "lufs": -16,
+      "gainDb": 0,
+      "tags": [
+        "synthwave",
+        "original"
+      ],
+      "bytes": {
+        "ogg": 329971,
+        "m4a": 527390
+      },
+      "model": "original-numpy-bed",
+      "source": "scripts/synthwave_beds.py"
+    },
+    "bed_strain": {
+      "id": "bed_strain",
+      "kind": "loop",
+      "file": "bed_strain",
+      "dur": 25.9459,
+      "bpm": 74,
+      "beatsPerBar": 4,
+      "bars": 8,
+      "loop": true,
+      "loopStart": 0,
+      "loopEnd": 25.9459,
+      "lufs": -16,
+      "gainDb": 0,
+      "tags": [
+        "synthwave",
+        "original"
+      ],
+      "bytes": {
+        "ogg": 290600,
+        "m4a": 525674
+      },
+      "model": "original-numpy-bed",
+      "source": "scripts/synthwave_beds.py"
+    },
+    "bed_hymn": {
+      "id": "bed_hymn",
+      "kind": "loop",
+      "file": "bed_hymn",
+      "dur": 25.9459,
+      "bpm": 74,
+      "beatsPerBar": 4,
+      "bars": 8,
+      "loop": true,
+      "loopStart": 0,
+      "loopEnd": 25.9459,
+      "lufs": -16,
+      "gainDb": 0,
+      "tags": [
+        "synthwave",
+        "original"
+      ],
+      "bytes": {
+        "ogg": 391863,
+        "m4a": 525823
+      },
+      "model": "original-numpy-bed",
+      "source": "scripts/synthwave_beds.py"
+    }
+  },
+  "sfx": {
+    "procedural": [],
+    "sampled": []
+  }
+}

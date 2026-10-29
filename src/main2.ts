@@ -10,6 +10,7 @@ import type { FromWorker2, ToWorker2 } from './sim/v2/contract';
 import { TICK_MS_1X } from './sim/v2/contract';
 import { PX } from './render/v2/units';
 import { Hud2 } from './ui/v2/hud2';
+import * as audio from './audio';
 
 const params = new URLSearchParams(location.search);
 export interface SimPort { send(m: ToWorker2): void; on(f: (m: FromWorker2) => void): void; tick(ms: number): void }
@@ -54,7 +55,15 @@ async function boot() {
   world.onTier = (t) => resize(Post.resFor(t));
   const sim = makeSim();
   const hud = new Hud2(document.getElementById('ui')!, world, sim);
-  sim.on((m) => { world.handle(m); hud.handle(m); });
+  const arm = () => audio.prime();
+  addEventListener('pointerdown', arm, { passive: true });
+  addEventListener('touchend', arm, { passive: true });
+  addEventListener('keydown', arm);
+  sim.on((m) => {
+    world.handle(m); hud.handle(m);
+    if (m.t === 'snap') audio.updateFromSim(m.snap);
+    else if (m.t === 'godResult') audio.onGodResult(m);
+  });
   hud.start();
   (window as any).__rg = { world, sim, hud };
   let last = performance.now();
@@ -68,7 +77,12 @@ async function boot() {
       viewAcc = 0; const v = world.cam.view(48);
       sim.send({ t: 'view', x0: v.x0 / PX, y0: v.y0 / PX, x1: v.x1 / PX, y1: v.y1 / PX });
     }
-    world.frame(); hud.frame(); requestAnimationFrame(loop);
+    world.frame(); hud.frame(); audio.frame();
+    if (world.cam) {
+      const v = world.cam.view(0);
+      audio.setListener({ x: (v.x0 + v.x1) / 2, y: (v.y0 + v.y1) / 2, halfW: Math.max(40, (v.x1 - v.x0) / 2), halfH: Math.max(40, (v.y1 - v.y0) / 2) });
+    }
+    requestAnimationFrame(loop);
   };
   addEventListener('visibilitychange', () => { if (document.hidden) sim.send({ t: 'save' }); });
   addEventListener('pagehide', () => sim.send({ t: 'save' }));

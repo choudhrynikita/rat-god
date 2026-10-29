@@ -13,26 +13,18 @@ export type Focus = 'none' | 'jail' | 'lab' | 'temple' | 'nursery' | 'throne' | 
 export interface MusicIntent { state: MusicState; tension: number; night: boolean; era: number; faith: 0 | 1; reason: string }
 export interface MusicCtx { night: boolean; era: number; faith: 0 | 1 }
 
-/** cue pool for a state; the director rotates within a pool (horizontal re-sequencing) */
+/** Four original beds. Every state lands on one of them so the director never asks for a missing file. */
+const DRIFT = 'bed_drift';
+const NIGHT = 'bed_night';
+const STRAIN = 'bed_strain';
+const HYMN = 'bed_hymn';
+const STRAIN_STATES: ReadonlySet<MusicState> = new Set(['unease', 'famine', 'plague', 'rebellion', 'war', 'revolution', 'storm', 'flood', 'collapse', 'protest', 'oppression', 'jail', 'trial', 'holy_war', 'godless', 'king_defies']);
 export function cuePool(s: MusicState, c: MusicCtx): string[] {
-  const era = eraCue(c.era);
-  switch (s) {
-    case 'title': return ['title_theme'];
-    case 'menu': return ['loop_menu_chronicle'];
-    case 'founding': return c.era > 0 ? ['loop_founding', era] : ['loop_founding'];
-    case 'calm': return c.night ? ['loop_prosperity_night', era] : ['loop_prosperity_day', era];
-    case 'unease': return [c.night ? 'loop_unease_night' : 'loop_unease_day'];
-    case 'war': return ['loop_war_feud'];
-    case 'hymn': return [c.faith ? 'loop_hymn_b' : 'loop_hymn_a'];
-    case 'pups': return ['loop_pups_play'];
-    case 'lab': return ['loop_lab_theme'];
-    case 'protest': return ['loop_protest_strike'];
-    case 'game_over': return ['loop_game_over'];
-    case 'godless': return ['loop_godless_rebellion'];
-    case 'consent': return ['loop_consent_ambience'];
-    case 'silence': return [];
-    default: return ['loop_' + s];
-  }
+  if (s === 'silence') return [];
+  if (s === 'hymn' || s === 'festival' || s === 'wedding' || s === 'coronation' || s === 'romance') return [HYMN];
+  if (s === 'funeral' || s === 'game_over' || s === 'succession') return [NIGHT];
+  if (STRAIN_STATES.has(s)) return [c.night ? NIGHT : STRAIN];
+  return [c.night ? NIGHT : DRIFT];
 }
 export function eraCue(era: number) { return era >= 5 ? 'loop_era_ri' : era >= 4 ? 'loop_era_mechanised' : era >= 2 ? 'loop_era_scrap_electric' : 'loop_era_primitive'; }
 

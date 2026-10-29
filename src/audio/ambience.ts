@@ -1,29 +1,10 @@
-// Ambience beds (the five Sogni beds from v1), streamed with HTMLAudio (each is ~1 min; never decoded whole) and mixed
-// by weather, where the camera is, the tech era and what the colony is doing. They sit on the amb bus, which stingers duck.
-import { AUDIO_EXT, getBuses, audioCtx, onAudioReady, onUnlockGesture } from './core';
-
+// The drip beds are retired. The synthwave loop is the only sound. ambMix stays so the old tests still describe a world.
 export const AMB = ['amb_sewer_drips', 'amb_street_rain', 'amb_machine_hum', 'amb_crowd_murmur', 'amb_silence_dread', 'amb_retro_cave'] as const;
 export type AmbId = (typeof AMB)[number];
 export type AmbMix = Partial<Record<AmbId, number>>;
-interface Chan { el: HTMLAudioElement; g: GainNode | null; want: number; id: AmbId }
-const url = (id: string) => `assets/final/audio/${id}.${AUDIO_EXT}`;
-function mkEl() { const el = new Audio(); el.loop = true; el.preload = 'none'; el.crossOrigin = 'anonymous'; (el as HTMLAudioElement & { playsInline?: boolean }).playsInline = true; return el; }
 
 export class Ambience {
-  ch: Chan[] = AMB.map((id) => ({ el: mkEl(), g: null, want: 0, id }));
-  constructor() {
-    onUnlockGesture(() => { for (const c of this.ch) { if (!c.el.src) c.el.src = url(c.id); c.el.muted = true; c.el.play()?.then(() => { if (c.want <= 0.001) c.el.pause(); c.el.muted = false; }).catch(() => { c.el.muted = false; }); } });
-    onAudioReady((ctx, b) => { for (const c of this.ch) { try { const s = ctx.createMediaElementSource(c.el); c.g = ctx.createGain(); c.g.gain.value = 0; s.connect(c.g).connect(b.amb); } catch { c.g = null; } } });
-  }
-  set(mix: AmbMix, fade = 1.5) {
-    const ctx = audioCtx(); if (!getBuses()) { for (const c of this.ch) c.want = mix[c.id] ?? 0; return; }
-    for (const c of this.ch) {
-      const v = Math.max(0, Math.min(1, mix[c.id] ?? 0)); if (Math.abs(v - c.want) < 0.02) continue; c.want = v;
-      if (c.g && ctx) c.g.gain.setTargetAtTime(v, ctx.currentTime, fade / 3); else c.el.volume = v;
-      if (v > 0.001 && c.el.paused) { if (!c.el.src) c.el.src = url(c.id); void c.el.play().catch(() => {}); }
-      if (v <= 0.001 && !c.el.paused) setTimeout(() => { if (c.want <= 0.001) c.el.pause(); }, fade * 1000 + 300);
-    }
-  }
+  set(_mix: AmbMix, _fade = 1.5) { /* not played */ }
 }
 /** pure mixing rule (unit-tested): world context → bed levels */
 export function ambMix(o: { underground: number; /** 0 = street view, 1 = deep */ rain: number; storm: boolean; machines: number; crowd: number; dread: boolean; dead: boolean; night: boolean }): AmbMix {

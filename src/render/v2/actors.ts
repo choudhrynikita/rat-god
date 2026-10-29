@@ -27,7 +27,7 @@ const MAP: Record<number, string[]> = {
   [Anim.Dance]: ['dance', 'cheer'], [Anim.Music]: ['music', 'cheer'], [Anim.Game]: ['play', 'cheer'], [Anim.Jailed]: ['jailed', 'sick_idle'], [Anim.Strike]: ['protest', 'cheer'],
   [Anim.Trial]: ['idle'], [Anim.Lecture]: ['teach', 'announce', 'preach', 'idle'], [Anim.Repair]: ['repair', 'work', 'work_gnaw'], [Anim.Charge]: ['run'], [Anim.Tend]: ['work_gnaw', 'idle'], [Anim.Kiss]: ['court'],
 };
-const COAT = [0xffffff, 0xc9c6cc, 0x8a8790, 0xffffff, 0xfff0d8, 0xe8d4b8, 0xfff6f6, 0xe6e0e0];
+const COAT = [0xd7b08a, 0x6b5344, 0xc4a07a, 0x3c332c, 0xe6d2b4, 0x8d4e3a, 0x9a9084, 0x4e4038];
 const TIER = (r: number) => r;
 interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null; sash: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
@@ -35,7 +35,7 @@ interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: S
   fyX: number; fyY: number; fyHold: number }
 
 export class Actors {
-  readonly layer = new Container({ label: 'rats', sortableChildren: false });
+  readonly layer = new Container({ label: 'rats', sortableChildren: true });
   readonly back = new Container({ label: 'actor-back' });   // items, corpses, posters (scene layer)
   readonly lights = new Container({ label: 'actor-lights' });
   readonly bonds = new Graphics();
@@ -81,7 +81,6 @@ export class Actors {
     if (flags & RF.enforcer) return 'enforcer';
     if (flags & RF.herald) return 'herald';
     if (flags & RF.outcast) return 'outcast';
-    if (flags & RF.founder) return 'founder';
     if (stage === Stage.Elder) return 'elder';
     return 'worker';
   }
@@ -151,16 +150,16 @@ export class Actors {
             for (let k = 0; k < 18 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
             probe = y;
           }
-          const fl = this.terrain.floorBelow(v.x, probe + 1, 12);
-          if (fl - probe >= -1 && fl - probe <= 12) fy = fl;
+          const fl = this.terrain.floorBelow(v.x, probe + 1, 36);
+          if (fl - probe >= -1 && fl - probe <= 36) fy = fl;
           v.fyX = v.x; v.fyY = v.y; v.fyHold = fy;
         }
       }
       const gap = fy - v.snapY;
       if (Math.abs(gap) > 12) v.snapY = fy; else v.snapY += gap * 0.72;
-      // a rat must fit the tunnel: native art is ~52px, a room is only a few tiles tall
-      let sc = (R.size[i] || 1) * 0.56; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.12;
-      sc = Math.max(0.28, Math.min(0.78, sc));
+      // the painted rat is ~100px wide inside a 128 cell. A nest is only ~7 tiles across.
+      let sc = (R.size[i] || 1) * 0.2; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.12;
+      sc = Math.max(0.14, Math.min(0.26, sc));
       let squash = 1, lift = 0;
       if (LOCO.has(anim) && moving && anim !== Anim.Swim) {
         const phase = ((f + 0.5) / Math.max(1, n)) * Math.PI * 2;
@@ -179,7 +178,7 @@ export class Actors {
       v.body.tint = tint; v.ghost.tint = tint;
       // swimming bob
       const bob = anim === Anim.Swim ? Math.sin(now * 0.006 + v.off * 6) * 1.5 : -lift;
-      v.root.position.set(Math.round(v.x * 4) / 4, Math.round((v.snapY + bob) * 4) / 4); v.root.rotation = v.rot;
+      v.root.position.set(Math.round(v.x * 4) / 4, Math.round((v.snapY + bob) * 4) / 4); v.root.rotation = v.rot; v.root.zIndex = v.snapY;
       // held tool / tech prop
       const tool = R.tool?.[i] ?? 0;
       if (tool && !impostor) { v.tool.visible = true; v.tool.texture = toolTexture(tool, Math.floor(now / 120 + v.off * 7) % 3); v.tool.anchor.set(0.5, 1); v.tool.scale.set(v.facing, 1);
@@ -208,27 +207,6 @@ export class Actors {
         v.pip.visible = true; v.pip.texture = pipTex(mood);
         v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(1.6);
       } else if (v.pip) v.pip.visible = false;
-      const casteId = R.caste?.[i] ?? 0;
-      const cs = casteId ? s.castes?.find((c) => c.id === casteId) : undefined;
-      let sashCol = cs?.color ?? 0;
-      if (!sashCol) {
-        if (flags & RF.king) sashCol = 0xf2b46a;
-        else if (flags & RF.prophet) sashCol = 0xfff2c0;
-        else if (flags & RF.priest) sashCol = 0xf6c992;
-        else if (flags & RF.enforcer) sashCol = 0xc46665;
-        else if (flags & RF.herald) sashCol = 0xd8b040;
-        else if (flags & RF.founder) sashCol = 0xe8dcc8;
-        else if (flags & RF.outcast) sashCol = 0x505048;
-        else if (flags & RF.jailed) sashCol = 0x6070a0;
-        else if (flags & RF.sick) sashCol = 0x6a8a48;
-        else if (flags & RF.blessed) sashCol = 0xffe08a;
-        else if (flags & RF.cursed) sashCol = 0x8060a0;
-      }
-      if (sashCol && stage !== Stage.Pup && !impostor) {
-        if (!v.sash) { v.sash = new Sprite(sashTex()); v.sash.anchor.set(0.5, 0.5); v.root.addChild(v.sash); }
-        v.sash.visible = true; v.sash.tint = sashCol;
-        v.sash.position.set(0, -c.top * sc * 0.42); v.sash.rotation = -v.rot; v.sash.scale.set(1.7 * Math.max(0.85, sc));
-      } else if (v.sash) v.sash.visible = false;
     }
     this.drawBonds(zd);
     this.updateHazards(now);
@@ -253,7 +231,7 @@ export class Actors {
   posOf(id: number) { const v = this.rv.get(id); return v ? { x: v.x, y: v.snapY - 14 } : null; }
   /** A short line between two rats who are actually dealing with each other. Only when you are close enough to see it. */
   private drawBonds(zd: number) {
-    const g = this.bonds; g.clear(); this.layer.addChild(g);
+    const g = this.bonds; g.clear(); g.zIndex = 1e9; this.layer.addChild(g);
     const s = this.snap; if (!s || zd < 0.7) return;
     const R = s.rats; const drawn = new Set<string>(); let n = 0;
     for (const v of this.rv.values()) {
@@ -306,13 +284,6 @@ export class Actors {
     for (const p of P) put('p' + p.id, p.torn ? 'prop_law_poster_torn' : 'prop_law_poster_fresh', p.x * PX, p.y * PX, 0xffffff, 0.6);
     for (const [k, s] of this.itemSpr) if (!keep.has(k)) { s.destroy(); this.itemSpr.delete(k); }
   }
-}
-let _sash: Texture | null = null;
-function sashTex() {
-  if (_sash) return _sash;
-  const c = document.createElement('canvas'); c.width = 7; c.height = 3; const g = c.getContext('2d')!;
-  g.fillStyle = '#000'; g.fillRect(0, 0, 7, 3); g.fillStyle = '#fff'; g.fillRect(1, 1, 5, 1);
-  _sash = Texture.from(c); _sash.source.scaleMode = 'nearest'; return _sash;
 }
 let _mark: Texture | null = null;
 function markTexture() { if (_mark) return _mark; const c = document.createElement('canvas'); c.width = 9; c.height = 7; const g = c.getContext('2d')!;

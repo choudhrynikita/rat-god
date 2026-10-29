@@ -44,7 +44,8 @@ export class MusicDirector {
     if (want !== this.state) {
       if (!this.pending || this.pending.s !== want) this.pending = { s: want, since: now };
       const dwell = now - this.lastSwitch; const stable = now - this.pending.since;
-      if (URGENT.has(want) || (stable > 6000 && dwell > 20000) || (stable > 2500 && this.state === null)) this.setState(want);
+      // first bed starts at once. Later changes wait a few seconds so the loop is not yanked every snapshot.
+      if (URGENT.has(want) || this.state === null || (stable > 3500 && dwell > 8000)) this.setState(want);
     } else { this.pending = null; if (ctxChanged && this.deck && !cuePool(want, this.ctxState).includes(this.deck.cue.id)) void this.toPool('bar', 0); }
   }
   /** call every frame or snapshot */
@@ -55,8 +56,8 @@ export class MusicDirector {
     if (this.deck?.perc) { const g = clamp01(0.15 + this.tension * 1.1) * (this.ctxState.night ? 0.6 : 1); this.deck.perc.gain.setTargetAtTime(g, c.currentTime, 0.8); }
     // night darkens the music a little
     if (cinematicAmount() === 0) b.musicTone.frequency.setTargetAtTime(this.ctxState.night && this.state !== 'title' ? 5200 : 18000, c.currentTime, 1.5);
-    // deliberate silence in calm states
-    const restful = this.state === 'calm' || this.state === 'founding' || this.state === 'pups' || this.state === 'unease' || this.state === 'lab';
+    // the bed stays up. A scheduled rest used to drop the only thing the player could hear.
+    const restful = false;
     if (restful && this.deck && this.nextRestAt && now > this.nextRestAt && this.tension < 0.55) {
       this.restUntil = now + (this.ctxState.night ? 45000 + Math.random() * 25000 : 25000 + Math.random() * 25000); this.nextRestAt = 0;
       this.log.push(`rest ${Math.round((this.restUntil - now) / 1000)}s`); this.stopDeck(this.nextBoundary('bar'), 2 * (this.deck?.barDur ?? 2));
@@ -101,7 +102,12 @@ export class MusicDirector {
     out.gain.setValueAtTime(0, start); out.gain.linearRampToValueAtTime(lvl, start + (q === 'now' && !old ? 1.2 : 0.08));
     const srcs: AudioBufferSourceNode[] = []; let perc: GainNode | null = null;
     bufs.forEach((buf, k) => {
-      const s = c.createBufferSource(); s.buffer = buf!; s.loop = cue.loop; if (cue.loop) { s.loopStart = cue.loopStart; s.loopEnd = cue.loopEnd; }
+      const s = c.createBufferSource(); s.buffer = buf!; s.loop = cue.loop;
+      if (cue.loop && buf) {
+        const end = Math.max(0.05, Math.min(cue.loopEnd || buf.duration, buf.duration));
+        s.loopStart = Math.min(cue.loopStart, Math.max(0, end - 0.05));
+        s.loopEnd = end;
+      }
       if (cue.stems && k === 1) { perc = c.createGain(); perc.gain.value = clamp01(0.15 + this.tension * 1.1); s.connect(perc).connect(out); } else s.connect(out);
       s.start(start, 0); srcs.push(s);
     });

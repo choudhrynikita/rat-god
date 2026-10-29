@@ -9,12 +9,12 @@
 //   audio.playStinger('sting_miracle');                   // musical one-shot over the bed; ducks the music
 //   audio.onGodResult(res);                               // a GodResult message from the sim worker
 //   audio.frame();                                        // every animation frame (cheap)
-import { unlock as coreUnlock, audioCtx, getBuses, isEnabled, setCinematic, godSilence } from './core';
-import { onCaption, emitCaption, STINGER_CAPTIONS, SFX_CAPTIONS } from './captions';
+import { unlock as coreUnlock, setCinematic, godSilence } from './core';
+import { onCaption } from './captions';
 import { MusicDirector, type StingerOpts } from './music';
 import { VoiceManager, DEFS, type PlayOpts, type Listener, type Content } from './voices';
 import { Ambience, ambMix } from './ambience';
-import { deriveFromSim2, pickEvents, godPowerStinger, eventAudio, tiered, tierOf, GOD_POWER_SFX, CINEMATIC, type MusicState, type Focus, type StingerId } from './state';
+import { deriveFromSim2, pickEvents, eventAudio, tiered, CINEMATIC, type MusicState, type Focus, type StingerId } from './state';
 import { stats as bufferStats } from './buffers';
 import type { Snapshot2, SimEvent2, GodResult, Consent } from '../sim/v2/contract';
 
@@ -27,21 +27,18 @@ export const SFX = Object.keys(DEFS);
 const director = new MusicDirector();
 const voices = new VoiceManager();
 const amb = new Ambience();
-let focus: Focus = 'none'; let lastEra = -1; let uiState: MusicState | null = null;
+let focus: Focus = 'none'; let uiState: MusicState | null = null;
 let world = { streetY: 40, worldH: 180 * 4 }; // world px: street level and depth, for the ambience mix
 
 export function unlock() { coreUnlock(); }
+/** Start the bed on the first gesture, before the sim has sent a snapshot. */
+export function prime() { unlock(); if (!director.state) director.setState('founding', { immediate: true }); }
 /** force music: 'title' | 'menu' | 'game_over' | 'silence' or any MusicState (scripted). `null` hands control back to the sim. */
 export function setMusicState(s: MusicState | null, o: { hold?: number; immediate?: boolean } = {}) {
   uiState = s === 'title' || s === 'menu' || s === 'game_over' || s === 'consent' ? s : null;
   if (s) director.setState(s, o); else if (director.state === 'title' || director.state === 'menu' || director.state === 'consent') director.state = null;
 }
-export async function playStinger(id: StingerId, o?: StingerOpts) {
-  const ok = await director.playStinger(id, id === 'sting_notable_chime' ? { duckDb: -3, ...o } : o);
-  if (ok) emitCaption({ text: STINGER_CAPTIONS[id] ?? 'music', kind: 'stinger', id, dur: 3, weight: Math.min(3, Math.round(o?.prio ?? 2)) });
-  else if (id === 'sting_notable_chime') playSfx('chime', { prio: 3 }); // fallback before the Sogni chime exists / during a bigger stinger
-  return ok;
-}
+export async function playStinger(_id: StingerId, _o?: StingerOpts): Promise<boolean> { return false; }
 /** MAJOR-event cinematic banner: plays the tone's stinger immediately (highest priority) with a deep music duck */
 export function playCinematic(tone: keyof typeof CINEMATIC = 'epic') { return playStinger(CINEMATIC[tone], { prio: 5, quantize: 'none', duckDb: -14 }); }
 /** MAJOR cinematic slow-time (render sets time to 0.25x): pass the current time scale. <= 0.3 low-passes and swells reverb; 1 restores. */
@@ -54,15 +51,8 @@ export function setContent(c: Partial<Consent>) {
   if (c.sexual !== undefined) v.sexual = c.sexual && c.mature !== false ? 'implied' : 'off';
 }
 export function contentSettings() { return { ...voices.content }; }
-/** positional SFX. x/y in world px (same space as the camera). Returns false if it was culled/limited. */
-export function playSfx(id: string, o: PlayOpts = {}) {
-  const c = audioCtx(), b = getBuses(); if (!c || !b || !isEnabled()) return false;
-  const d = DEFS[id]; if (!d) return false;
-  const ok = voices.play(c, d.cat === 'ui' || d.cat === 'god' ? b.ui : b.sfx, id, o);
-  const cap = ok ? SFX_CAPTIONS[id] : undefined;
-  if (cap) { const L = voices.listener; const pan = o.x !== undefined ? Math.max(-1, Math.min(1, (o.x - L.x) / L.halfW)) : undefined; emitCaption({ text: cap[0], kind: cap[1], id, pan, dur: 2, weight: Math.min(3, o.sev ?? 1) }); }
-  return ok;
-}
+/** Sound effects are off. The bed is the only audio. */
+export function playSfx(_id: string, _o: PlayOpts = {}) { return false; }
 /** camera → listener. halfW/halfH: half the visible world size; detailRef: half-width at which small sounds are full volume */
 export function setListener(l: Partial<Listener>) { Object.assign(voices.listener, l); }
 export function setFocus(f: Focus) { focus = f; }
@@ -74,40 +64,16 @@ export function updateFromSim(s: Snapshot2, f: Focus = focus) {
   if (s.consent) setContent(s.consent);
   const intent = deriveFromSim2(s, focus, null);
   if (!uiState) director.setIntent(intent);
-  if (lastEra >= 0 && s.stats.techEra > lastEra) void director.playStinger('sting_era_advance', { prio: 3, quantize: 'bar' });
-  lastEra = s.stats.techEra;
-  onSimEvents(s.events);
-  // ambience
-  const L = voices.listener; const under = Math.max(0, Math.min(1, (L.y - world.streetY) / (world.worldH * 0.5)));
-  amb.set(ambMix({ underground: under, rain: s.env.rain, storm: s.env.weather === 'storm', machines: Math.min(1, s.stats.techEra / 5 + s.stats.rodentoids / 40), crowd: Math.min(1, s.stats.pop / 220 + (s.gathering ? 0.4 : 0)), dread: s.phase === 'interregnum' || !!s.justice?.secretPolice, dead: s.phase === 'dead', night: intent.night }));
-  if (s.env.lightning) playSfx('thunder');
 }
 export function onSimEvents(evs: SimEvent2[]) {
-  if (!evs?.length) return;
-  const { top, rest } = pickEvents(evs);
-  if (top) {
-    const a = top.a;
-    if (a.hold && !uiState) director.setState(a.hold.state, { hold: a.hold.sec, silenceFirst: a.silenceFirst });
-    if (a.stinger) void playStinger(a.stinger, { prio: a.priority, quantize: a.silenceFirst || tierOf(top.e) === 'major' ? 'none' : 'beat', duckDb: tierOf(top.e) === 'major' ? -12 : undefined });
-    if (a.sfx && allowed(top.e, a.sfx)) playSfx(a.sfx, { x: top.e.x, y: top.e.y, prio: a.priority + 2, sev: top.e.sev });
-  }
-  // per-snapshot SFX: one per distinct sound id (the voice manager limits further), loudest events first
-  const seen = new Set<string>();
-  for (const { e, a } of rest.sort((p, q) => q.e.sev - p.e.sev)) { if (!a.sfx || seen.has(a.sfx) || !allowed(e, a.sfx)) continue; seen.add(a.sfx); playSfx(a.sfx, { x: e.x, y: e.y, sev: e.sev }); if (seen.size >= 4) break; }
-}
-/** events tagged mature: gore-tagged sounds need gore >= mild; sex-tagged sounds need sexual = implied (and are only ever 'implied' chirps) */
-function allowed(e: SimEvent2, sfx: string) {
-  const m = e.mature ?? []; const c = voices.content;
-  if ((m.includes('gore') || m.includes('torture')) && c.gore === 'off') return sfx !== 'squeal' && sfx !== 'crunch' && sfx !== 'death';
-  if ((m.includes('sex') || m.includes('incest')) && c.sexual !== 'implied') return false;
-  return true;
+  if (!evs?.length || uiState) return;
+  const { top } = pickEvents(evs);
+  if (!top?.a.hold) return;
+  director.setState(top.a.hold.state, { hold: top.a.hold.sec });
 }
 export function onGodResult(r: GodResult) {
-  if (!r.ok) { playSfx('god_fail'); return; }
-  const p = String(r.power);
-  if (p === 'silence') { godSilence(6); emitCaption({ text: 'sudden silence', kind: 'god', id: 'silence', dur: 6, weight: 2 }); return; } // the absence is the sound
-  const sfx = GOD_POWER_SFX[p]; if (sfx) playSfx(sfx, { prio: 9, force: true });
-  const st = godPowerStinger(r.power); if (st) void playStinger(st, { prio: 4, quantize: 'none' });
+  if (!r.ok) return;
+  if (String(r.power) === 'silence') { godSilence(6); return; }
 }
 /** every animation frame */
 export function frame() { director.tick(); }
