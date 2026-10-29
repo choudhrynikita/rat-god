@@ -60,18 +60,21 @@ export class Fx {
   /** The room keeps a few pixels of what happened. The log is not the story. */
   private remember(kind: string, fx: string, x: number, y: number, sev: number) {
     const mark = kind === 'birth' ? 'straw'
-      : kind === 'flood' || fx === 'splash' ? 'stain'
-      : kind === 'plague' || fx === 'miasma' ? 'sick'
+      : kind === 'flood' || fx === 'splash' || fx === 'flood' ? 'stain'
+      : kind === 'plague' || fx === 'miasma' || fx === 'plague' ? 'sick'
       : kind === 'marriage' ? 'bond'
+      : fx === 'harvest' || fx === 'miracle' ? 'straw'
+      : fx === 'earthquake' ? 'crack'
+      : fx === 'sign' ? 'ash'
       : kind === 'blessed' || kind === 'miracle' || fx === 'halo' || fx === 'bless' ? 'ash'
-      : kind === 'cursed' || kind === 'smite' || kind === 'god_punish' || fx === 'curse' || fx === 'punish' ? 'scorch'
+      : kind === 'cursed' || kind === 'smite' || kind === 'god_punish' || fx === 'curse' || fx === 'punish' || fx === 'smite' ? 'scorch'
       : '';
     if (!mark || sev < 1) return;
     if (this.scars.length > 32) { const old = this.scars.shift(); old?.g.destroy(); }
     const g = new Graphics();
     const px = (dx: number, dy: number, c: number) => { g.rect(dx, dy, 2, 2).fill({ color: c }); };
     if (mark === 'ash') { px(-3, 0, 0xf2b46a); px(0, -1, 0xf6c992); px(2, 1, 0x8a6040); }
-    else if (mark === 'scorch') { px(-2, 0, 0x1a1210); px(1, -1, 0x2a1814); px(3, 1, 0x0a0808); px(0, 2, 0x3a2018); }
+    else if (mark === 'scorch' || mark === 'crack') { px(-2, 0, 0x1a1210); px(1, -1, 0x2a1814); px(3, 1, 0x0a0808); px(0, 2, 0x3a2018); }
     else if (mark === 'straw') { px(-4, 0, 0xc4a060); px(-1, 1, 0x8a7040); px(2, 0, 0xd8b070); }
     else if (mark === 'stain') { px(-3, 1, 0x23434c); px(0, 0, 0x1a3038); px(3, 1, 0x2a4450); }
     else if (mark === 'bond') { px(-2, 0, 0xe84b5a); px(2, 0, 0xf2b46a); }
@@ -99,7 +102,10 @@ export class Fx {
       case 'discovery': case 'spark': case 'machine': this.burst(x, y - 14, 30, CYAN, 0.18, { add: true, g: 0.0007 }); this.flash(x, y - 10, 0x45eaf0, 4, 900); break;
       case 'love': for (let i = 0; i < 6; i++) this.spawn({ x: x + (Math.random() - 0.5) * 20, y: y - 20, vx: (Math.random() - 0.5) * 0.02, vy: -0.03, col: 0xe84b5a, size: 3, g: 0, max: 1600, collide: false }); break;
       case 'fanfare': case 'crowd': case 'crown': this.burst(x, y - 30, 40, [0xe84b5a, 0xf2b46a, 0x45eaf0, 0xf6c992], 0.15, { g: 0.0004, size: 2 }); this.flash(x, y - 20, 0xf2b46a, 5, 1000); break;
-      case 'riot': case 'strike': this.burst(x, y, 30, DUST, 0.1); this.cam.shake(0.2); break;
+      case 'storm': this.beam(x, y, 0xc8f0ff, 0x45eaf0, 700, true); this.burst(x, y, 40, WATER, 0.2, { g: 0.001, size: 2 }); this.flash(x, y, 0xc8f0ff, 6, 800); this.cam.shake(0.45); break;
+      case 'sign': for (let i = 0; i < 10; i++) this.spawn({ x: x + (i - 5) * 3, y: y - 8, vx: 0, vy: -0.02, col: 0xf6c992, size: 4, g: 0, add: true, max: 2200, collide: false, tex: glyphs()[i % 8] } as any); this.flash(x, y - 6, 0xf2b46a, 3, 1600); break;
+      case 'foresee': this.ring(x, y - 16, 0x45eaf0, 1400); this.flash(x, y - 10, 0xad6b7a, 3, 1200); break;
+      case 'riot': case 'strike': this.burst(x, y, 36, [0xe84b5a, 0xc46665, 0xf2b46a], 0.16, { size: 2 }); this.cam.shake(0.35); break;
       default: if (fx) this.burst(x, y, 12, GOLD, 0.08);
     }
   }

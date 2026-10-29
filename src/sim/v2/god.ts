@@ -35,9 +35,15 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
   let ok = true;
   let reason: string | undefined;
   const effects: string[] = [];
+  const at = placeOf(w, cmd, rat);
   if (cmd.power === 'smite') {
     if (!rat?.alive) { ok = false; reason = 'No living rat under your hand.'; }
-    else { kill(w, rat, 'smite'); text = `${rat.name} is struck down.`; effects.push(text); }
+    else {
+      kill(w, rat, 'smite'); text = `${rat.name} is struck down.`; effects.push(text);
+      let n = 0;
+      for (const o of w.rats) if (o.alive && o !== rat && Math.hypot(o.x - rat.x, o.y - rat.y) < 16) { o.emo.fear = Math.max(o.emo.fear, 0.85); o.anim = Anim.Cower; n++; }
+      if (n) effects.push(`${n} saw it and cower.`);
+    }
   } else if (cmd.power === 'bless' && rat?.alive) {
     const gift = cmd.params?.gift ?? 'health';
     rat.flags |= RF.blessed;
@@ -52,44 +58,94 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
     text = curse === 'madness' ? `${rat.name} goes mad and turns on the nearest rat.` : `${rat.name} is cursed with ${curse}.`;
     effects.push(text);
   } else if (cmd.power === 'anoint_prophet' && rat?.alive) {
-    rat.flags |= RF.prophet; rat.role = 'priest'; rat.beliefs.god = 1; text = `${rat.name} hears a voice and calls it yours.`; effects.push(text);
+    rat.flags |= RF.prophet | RF.priest; rat.role = 'priest'; rat.beliefs.god = 1; rat.anim = Anim.Preach;
+    let n = 0;
+    for (const o of w.rats) if (o.alive && o !== rat && Math.hypot(o.x - rat.x, o.y - rat.y) < 14) { o.beliefs.god = clamp(o.beliefs.god + 0.25, -1, 1); o.anim = Anim.Pray; n++; }
+    text = `${rat.name} hears a voice and calls it yours. ${n} nearby kneel.`; effects.push(text);
   } else if (cmd.power === 'punish_king' || (cmd.power === 'punish' && !rat)) {
     const k = w.byId.get(w.kingId);
     if (!k?.alive) { ok = false; reason = 'The throne is empty.'; }
-    else { punish(w, k, cmd.params?.punishment ?? 'pain'); text = `The king ${k.name} is punished.`; effects.push(text); }
+    else { text = punish(w, k, cmd.params?.punishment ?? 'pain'); effects.push(text); }
   } else if (cmd.power === 'punish' && rat?.alive) {
-    punish(w, rat, cmd.params?.punishment ?? 'pain'); text = `${rat.name} is chastised.`; effects.push(text);
+    text = punish(w, rat, cmd.params?.punishment ?? 'pain'); effects.push(text);
   } else if (cmd.power === 'whisper' && rat?.alive) {
     const idea = cmd.params?.idea;
-    if (idea?.kind === 'belief') rat.beliefs[idea.axis] = clamp(rat.beliefs[idea.axis] + 0.35 * idea.dir, -1, 1);
-    else if (idea?.kind === 'desire' && idea.what === 'rebel') { rat.beliefs.crown = clamp(rat.beliefs.crown - 0.4, -1, 1); rat.grievance = clamp01(rat.grievance + 0.3); }
-    else rat.beliefs.god = clamp(rat.beliefs.god + 0.2, -1, 1);
-    text = `A thought settles in ${rat.name}.`; effects.push(text);
+    if (idea?.kind === 'belief') rat.beliefs[idea.axis] = clamp(rat.beliefs[idea.axis] + 0.55 * idea.dir, -1, 1);
+    else if (idea?.kind === 'desire' && idea.what === 'rebel') { rat.beliefs.crown = clamp(rat.beliefs.crown - 0.6, -1, 1); rat.grievance = clamp01(rat.grievance + 0.55); }
+    else if (idea?.kind === 'desire' && idea.what === 'worship') rat.beliefs.god = 0.95;
+    else if (idea?.kind === 'desire' && idea.what === 'dig') rat.role = 'digger';
+    else if (idea?.kind === 'desire' && idea.what === 'leave') { rat.emo.fear = Math.max(rat.emo.fear, 0.7); rat.beliefs.kin = clamp(rat.beliefs.kin - 0.4, -1, 1); }
+    else rat.beliefs.god = clamp(rat.beliefs.god + 0.45, -1, 1);
+    rat.anim = Anim.Talk; rat.intent.until = w.tick + 48;
+    text = `A thought settles in ${rat.name}, and they speak it.`; effects.push(text);
   } else if (cmd.power === 'harvest') {
-    w.granary += 24; w.foodOnSurface += 16; text = 'Food spills through the grate.'; effects.push(text);
+    w.granary += 40; w.foodOnSurface += 24;
     const g = w.chambers.find((c) => c.kind === 'granary'); if (g) g.stock = w.granary;
+    let fed = 0;
+    for (const r of w.rats) if (r.alive && r.food < 2.2 && fed < 18) { r.food += 1.6; r.emo.joy = clamp01(r.emo.joy + 0.35); r.anim = Anim.Eat; fed++; }
+    text = fed ? `Food spills through the grate. ${fed} eat.` : 'Food spills through the grate.'; effects.push(text);
   } else if (cmd.power === 'flood') {
-    const ch = nearestChamber(w, cmd.target); if (ch) { ch.flooded = clamp01(ch.flooded + 0.55); w.dirtyChambers.add(ch.id); }
-    w.env.rain = 1; w.env.weather = 'storm'; text = 'Water rises in the low places.'; effects.push(text);
+    const mag = cmd.params?.magnitude ?? 0.7;
+    const ch = nearestChamber(w, cmd.target);
+    let n = 0;
+    if (ch) {
+      ch.flooded = clamp01(Math.max(ch.flooded, 0.45 + mag * 0.5)); w.dirtyChambers.add(ch.id);
+      for (const r of w.rats) if (r.alive && Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 3) { r.emo.fear = Math.max(r.emo.fear, 0.75); if (mag >= 0.6) r.injured = Math.max(r.injured, 0.28); r.anim = Anim.Flee; n++; }
+    }
+    w.env.rain = 1; w.env.weather = 'storm'; w.env.intensity = Math.max(w.env.intensity, 0.7); w.weatherLeft = 400;
+    text = ch ? `Water fills ${ch.name}. ${n} are caught in it.` : 'Water rises in the low places.'; effects.push(text);
   } else if (cmd.power === 'earthquake') {
-    w.env.quake = clamp01(0.45 + (cmd.params?.magnitude ?? 0.5)); w.quakeT = w.tick; text = 'The ground heaves.'; effects.push(text);
+    const mag = cmd.params?.magnitude ?? 0.6;
+    w.env.quake = clamp01(0.6 + mag * 0.4); w.quakeT = w.tick;
+    let n = 0; const cap = 3 + Math.round(mag * 6);
+    for (const r of w.rats) if (r.alive && n < cap && (r.id + (w.tick % 5)) % 4 === 0) { r.injured = Math.max(r.injured, 0.25 + mag * 0.35); r.emo.fear = Math.max(r.emo.fear, 0.8); r.anim = Anim.Cower; n++; }
+    text = `The ground heaves. ${n} are thrown.`; effects.push(text);
   } else if (cmd.power === 'storm') {
-    w.env.weather = 'storm'; w.env.intensity = 0.9; w.env.rain = 0.8; w.weatherLeft = 280; text = 'A storm breaks over the street.'; effects.push(text);
+    w.env.weather = 'storm'; w.env.intensity = 1; w.env.rain = 1; w.weatherLeft = 520;
+    let n = 0;
+    for (const r of w.rats) if (r.alive && r.y < 8) { r.emo.fear = Math.max(r.emo.fear, 0.65); r.anim = Anim.Flee; n++; }
+    text = n ? `A storm breaks over the street. ${n} run for the mouth.` : 'A storm breaks over the street.'; effects.push(text);
   } else if (cmd.power === 'plague') {
     const ch = w.chambers[cmd.target.chamber ?? -1] ?? nearestChamber(w, cmd.target);
     let n = 0;
-    for (const r of w.rats) if (r.alive && ch && Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 4 && n < 6) { r.disease = 'fever'; r.flags |= RF.sick; n++; }
-    text = n ? `A fever takes ${n}.` : 'The fever finds no one.'; effects.push(text);
+    for (const r of w.rats) if (r.alive && ch && Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 5 && n < 12) { r.disease = 'fever'; r.flags |= RF.sick; r.health = clamp(r.health - 0.15, 0.1, 1); r.anim = Anim.Sick; r.emo.fear = Math.max(r.emo.fear, 0.55); n++; }
+    text = n ? `A fever takes ${n} in ${ch?.name ?? 'the dark'}.` : 'The fever finds no one.'; effects.push(text);
   } else if (cmd.power === 'miracle') {
     const kind = cmd.params?.miracle ?? 'heal';
-    if (kind === 'feed') { w.granary += 30; text = 'The stores fill.'; }
-    else if (kind === 'calm') { for (const r of w.rats) r.emo.anger *= 0.4; w.stats.unrest *= 0.5; text = 'The shouting stops.'; }
-    else { for (const r of w.rats) if (r.disease || r.injured > 0.2) { r.disease = null; r.injured = 0; r.flags &= ~RF.sick; } text = 'Wounds close.'; }
+    const ch = nearestChamber(w, cmd.target);
+    if (kind === 'feed') {
+      w.granary += 50; const g = w.chambers.find((c) => c.kind === 'granary'); if (g) g.stock = w.granary;
+      let fed = 0; for (const r of w.rats) if (r.alive && r.food < 3 && fed < 24) { r.food += 2; r.anim = Anim.Eat; fed++; }
+      text = `The stores fill. ${fed} eat.`;
+    } else if (kind === 'calm') {
+      for (const r of w.rats) { r.emo.anger *= 0.2; r.emo.fear *= 0.5; }
+      w.stats.unrest *= 0.35; text = 'The shouting stops.';
+    } else if (kind === 'light') {
+      let n = 0;
+      for (const r of w.rats) if (r.alive && (!ch || Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 6)) { r.emo.fear *= 0.15; r.emo.joy = clamp01(r.emo.joy + 0.45); r.anim = Anim.Cheer; n++; }
+      text = `A light stands in ${ch?.name ?? 'the tunnels'}. ${n} look up.`;
+    } else if (kind === 'fertile') {
+      let n = 0;
+      for (const r of w.rats) if (r.alive && r.stageN >= 2 && (!ch || Math.hypot(r.x - ch.cx, r.y - ch.cy) < (ch?.rx ?? 8) + 4)) { r.genes.fertility = Math.max(r.genes.fertility, 0.9); r.emo.joy = clamp01(r.emo.joy + 0.3); n++; }
+      text = `${n} are made fruitful.`;
+    } else {
+      let n = 0; for (const r of w.rats) if (r.disease || r.injured > 0.15) { r.disease = null; r.injured = 0; r.health = 1; r.flags &= ~RF.sick; r.anim = Anim.Cheer; n++; }
+      text = n ? `${n} wounds close.` : 'No one was hurt.';
+    }
     effects.push(text);
   } else if (cmd.power === 'foresee') {
     text = 'You look, and do not touch.';
   } else if (cmd.power === 'sign') {
-    text = cmd.params?.text?.slice(0, 80) || 'A sign is scratched where many pass.'; effects.push(text);
+    const ch = nearestChamber(w, cmd.target);
+    let up = 0, down = 0;
+    const line = cmd.params?.text?.slice(0, 80);
+    if (ch) for (const r of w.rats) if (r.alive && Math.hypot(r.x - ch.cx, r.y - ch.cy) < ch.rx + 6) {
+      if (r.id % 2 === 0) { r.beliefs.god = clamp(r.beliefs.god + 0.4, -1, 1); up++; }
+      else { r.beliefs.god = clamp(r.beliefs.god - 0.3, -1, 1); down++; }
+      r.anim = Anim.Talk;
+    }
+    text = line || (ch ? `A mark in ${ch.name}. ${up} kneel. ${down} spit.` : 'A sign is scratched where many pass.');
+    effects.push(text);
   } else if (!rat?.alive && (cmd.power === 'bless' || cmd.power === 'curse' || cmd.power === 'whisper' || cmd.power === 'anoint_prophet')) {
     ok = false; reason = 'Choose a living rat.';
   } else {
@@ -101,12 +157,9 @@ export function actGod(w: World, cmd: GodCommand): GodResult {
   const rp: RippleS = { id: ++w.nextRipple, power: cmd.power, tick: w.tick, text, target: rat?.id, open: true, chain: [], until: w.tick + 960 * 14, world: true };
   w.ripples.push(rp); if (w.ripples.length > 24) w.ripples.shift();
   w.ripCtx = [rp.id];
-  const fx = cmd.power === 'smite' ? 'smite'
-    : cmd.power === 'bless' || cmd.power === 'anoint_prophet' || cmd.power === 'seed_founder' ? 'bless'
-    : cmd.power === 'curse' || cmd.power === 'famine' ? 'curse'
-    : cmd.power === 'whisper' || cmd.power === 'inspire' || cmd.power === 'sow_rumour' ? 'whisper'
-    : 'god';
-  const ev = emit(w, cmd.power === 'punish_king' || cmd.power === 'punish' ? 'god_punish' : cmd.power === 'smite' ? 'smite' : 'god_act', text, cmd.power === 'smite' || cmd.power === 'punish_king' ? 2 : 1, { rats: rat ? [rat.id] : [], fx, card: text.slice(0, 48) });
+  const fx = fxOf(cmd);
+  const who = cmd.power === 'punish_king' ? w.byId.get(w.kingId) : rat;
+  const ev = emit(w, cmd.power === 'punish_king' || cmd.power === 'punish' ? 'god_punish' : cmd.power === 'smite' ? 'smite' : 'god_act', text, cmd.power === 'smite' || cmd.power === 'punish_king' || cmd.power === 'earthquake' || cmd.power === 'plague' ? 2 : 1, { rats: who ? [who.id] : [], x: who?.x ?? at.x, y: who?.y ?? at.y, chamber: at.chamber, fx, card: text.slice(0, 48) });
   w.ripCtx = [];
   w.chron.godActs.push({ tick: w.tick, power: cmd.power, text });
   if (rat) { rat.beliefs.god = clamp(rat.beliefs.god + (cmd.power === 'smite' || cmd.power === 'curse' || cmd.power === 'punish' ? -0.15 : 0.2), -1, 1); rat.rip.push({ id: rp.id, d: 0, t: w.tick }); }
@@ -144,11 +197,60 @@ function applyCurse(w: World, r: Rat, curse: string) {
   else if (curse === 'weakness') { r.genes.strength = 0.05; r.skills.fight = 0.05; r.emo.fear = 0.85; r.anim = Anim.Cower; }
   else { r.food = 0; r.injured = Math.max(r.injured, 0.55); r.emo.fear = 0.6; r.health = clamp(r.health - 0.25, 0.05, 1); }
 }
-function punish(w: World, r: Rat, how: string) {
-  r.injured = Math.max(r.injured, 0.5); r.emo.fear = 1; r.emo.shame = clamp01(r.emo.shame + 0.5);
-  r.beliefs.god = clamp(r.beliefs.god - 0.25, -1, 1);
-  if (r.flags & RF.king) { w.stats.unrest = clamp01(w.stats.unrest + 0.12); w.stats.legitimacy = clamp01(w.stats.legitimacy - 0.08); w.godRejection = clamp01(w.godRejection + 0.05); }
+function punish(w: World, r: Rat, how: string): string {
+  r.beliefs.god = clamp(r.beliefs.god - 0.3, -1, 1);
+  r.emo.fear = 1;
   r.mem.push({ tick: w.tick, text: `Something above punished me (${how}).`, val: -0.8, other: 0, kind: 'god_wrath', pinned: true, w: 0.9 });
+  const king = (r.flags & RF.king) !== 0;
+  if (how === 'humble') {
+    r.emo.shame = 1; r.genes.charisma *= 0.35; r.titles.length = 0; r.anim = Anim.Cower;
+    if (king) { w.stats.legitimacy = clamp01(w.stats.legitimacy - 0.22); w.stats.unrest = clamp01(w.stats.unrest + 0.18); }
+    return `${r.name} is humbled. The titles come off.`;
+  }
+  if (how === 'blight') {
+    w.granary = Math.max(0, w.granary * 0.4); r.food = 0; r.emo.fear = 0.85;
+    const g = w.chambers.find((c) => c.kind === 'granary'); if (g) { g.stock = w.granary; w.dirtyChambers.add(g.id); }
+    return `The stores rot under ${r.name}.`;
+  }
+  if (how === 'strip') {
+    r.titles.length = 0; r.emo.shame = 1; r.anim = Anim.Cower; r.flags &= ~(RF.enforcer | RF.herald | RF.priest);
+    if (!king) r.role = 'idle';
+    if (king) { w.stats.legitimacy = clamp01(w.stats.legitimacy - 0.35); w.stats.unrest = clamp01(w.stats.unrest + 0.28); }
+    return king ? `${r.name} keeps the throne and loses the city's trust.` : `${r.name} is stripped of office.`;
+  }
+  if (how === 'nightmare') {
+    r.emo.fear = 1; r.anim = Anim.Sleep; r.needs.energy = 0;
+    for (const o of w.rats) if (o.alive && o !== r && Math.hypot(o.x - r.x, o.y - r.y) < 10) o.emo.fear = Math.max(o.emo.fear, 0.45);
+    return `${r.name} drops, dreaming of you.`;
+  }
+  r.injured = Math.max(r.injured, 0.75); r.health = clamp(r.health - 0.22, 0.08, 1); r.emo.fear = 1; r.anim = Anim.Cower;
+  if (king) { w.stats.unrest = clamp01(w.stats.unrest + 0.14); w.stats.legitimacy = clamp01(w.stats.legitimacy - 0.1); w.godRejection = clamp01(w.godRejection + 0.06); }
+  return `${r.name} is struck with pain.`;
+}
+
+function placeOf(w: World, cmd: GodCommand, rat?: Rat): { x: number; y: number; chamber?: number } {
+  if (rat?.alive) return { x: rat.x, y: rat.y };
+  const ch = nearestChamber(w, cmd.target);
+  if (ch) return { x: ch.cx, y: ch.floorY || ch.cy, chamber: ch.id };
+  const nest = w.chambers[0];
+  return { x: nest?.cx ?? 0, y: nest?.cy ?? 0, chamber: nest?.id };
+}
+function fxOf(cmd: GodCommand): string {
+  if (cmd.power === 'smite') return 'smite';
+  if (cmd.power === 'bless') return cmd.params?.gift === 'prophecy' ? 'halo' : 'bless';
+  if (cmd.power === 'anoint_prophet') return 'halo';
+  if (cmd.power === 'curse') return cmd.params?.curse === 'plague' ? 'plague' : cmd.params?.curse === 'madness' ? 'riot' : 'curse';
+  if (cmd.power === 'punish' || cmd.power === 'punish_king') return cmd.params?.punishment === 'nightmare' ? 'dream' : cmd.params?.punishment === 'blight' ? 'miasma' : 'punish';
+  if (cmd.power === 'whisper') return 'whisper';
+  if (cmd.power === 'harvest') return 'harvest';
+  if (cmd.power === 'flood') return 'flood';
+  if (cmd.power === 'earthquake') return 'earthquake';
+  if (cmd.power === 'storm') return 'storm';
+  if (cmd.power === 'plague') return 'plague';
+  if (cmd.power === 'miracle') return cmd.params?.miracle === 'light' ? 'halo' : cmd.params?.miracle === 'calm' ? 'whisper' : 'miracle';
+  if (cmd.power === 'foresee') return 'foresee';
+  if (cmd.power === 'sign') return 'sign';
+  return 'god';
 }
 
 function nearestChamber(w: World, t: GodTarget) {
