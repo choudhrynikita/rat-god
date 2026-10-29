@@ -104,7 +104,6 @@ export class Fx {
       case 'fanfare': case 'crowd': case 'crown': this.burst(x, y - 30, 40, [0xe84b5a, 0xf2b46a, 0x45eaf0, 0xf6c992], 0.15, { g: 0.0004, size: 2 }); this.flash(x, y - 20, 0xf2b46a, 5, 1000); break;
       case 'storm': this.beam(x, y, 0xc8f0ff, 0x45eaf0, 700, true); this.burst(x, y, 40, WATER, 0.2, { g: 0.001, size: 2 }); this.flash(x, y, 0xc8f0ff, 6, 800); this.cam.shake(0.45); break;
       case 'sign': for (let i = 0; i < 10; i++) this.spawn({ x: x + (i - 5) * 3, y: y - 8, vx: 0, vy: -0.02, col: 0xf6c992, size: 4, g: 0, add: true, max: 2200, collide: false, tex: glyphs()[i % 8] } as any); this.flash(x, y - 6, 0xf2b46a, 3, 1600); break;
-      case 'foresee': this.ring(x, y - 16, 0x45eaf0, 1400); this.flash(x, y - 10, 0xad6b7a, 3, 1200); break;
       case 'riot': case 'strike': this.burst(x, y, 36, [0xe84b5a, 0xc46665, 0xf2b46a], 0.16, { size: 2 }); this.cam.shake(0.35); break;
       default: if (fx) this.burst(x, y, 12, GOLD, 0.08);
     }
