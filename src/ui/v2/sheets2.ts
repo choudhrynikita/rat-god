@@ -8,7 +8,7 @@ import type { Tier } from '../../render/v2/post';
 
 const hex = (c: number) => `#${(c >>> 0).toString(16).padStart(6, '0').slice(-6)}`;
 export class Sheets {
-  private el: HTMLElement | null = null; private kind = ''; private ratId = -1; private ratTab = 'now'; private socTab = 'overview'; private storyCache = new Map<number, RatDetail>();
+  private el: HTMLElement | null = null; private kind = ''; private ratId = -1; private ratTab = 'now'; private socTab = 'overview'; private storyCache = new Map<number, RatDetail>(); private ratAt = 0;
   constructor(private hud: Hud2) {}
   close() { this.el?.remove(); this.el = null; this.kind = ''; }
   open(title: string, body: string, bind?: (root: HTMLElement) => void, tabs?: { id: string; label: string; on: boolean }[], onTab?: (id: string) => void, kind = 'misc') {
@@ -24,9 +24,14 @@ export class Sheets {
   private ratLink(id: number) { return id > 0 ? `<button class="btn" data-rat="${id}" style="min-height:44px">${esc(this.hud.name(id))}</button>` : '—'; }
   // ───────── a rat's life ─────────
   rat(id: number) { this.ratId = id; this.hud.sim.send({ t: 'inspect', id }); if (this.ratTab === 'story') this.hud.sim.send({ t: 'story', id }); this.renderRat(this.hud.detail?.id === id ? this.hud.detail : null); }
-  refreshRat(d: RatDetail) { if (this.kind === 'rat' && d.id === this.ratId && this.ratTab !== 'story' && !this.el?.matches(':hover')) { const sc = this.el?.querySelector('.sc'); const top = sc?.scrollTop ?? 0; this.renderRat(d); const sc2 = this.el?.querySelector('.sc'); if (sc2) sc2.scrollTop = top; } }
+  refreshRat(d: RatDetail) {
+    if (this.kind !== 'rat' || d.id !== this.ratId || this.ratTab === 'story') return;
+    const now = performance.now(); if (now - this.ratAt < 700) return; this.ratAt = now;
+    const sc = this.el?.querySelector('.sc'); const top = sc?.scrollTop ?? 0; this.renderRat(d); const sc2 = this.el?.querySelector('.sc'); if (sc2) sc2.scrollTop = top;
+  }
   story(d: RatDetail) { this.storyCache.set(d.id, d); if (this.kind === 'rat' && d.id === this.ratId && this.ratTab === 'story') this.renderRat(d); }
   private renderRat(d: RatDetail | null) {
+    this.ratAt = performance.now();
     const hud = this.hud; const tabs = [['now', 'NOW'], ['story', 'LIFE STORY'], ['bonds', 'BONDS'], ['life', 'PLACE IN THE CITY'], ['ripples', 'YOUR HAND']].map(([id, label]) => ({ id, label, on: id === this.ratTab }));
     const title = d ? `${esc(d.name)}${d.title ? ` · ${esc(d.title)}` : ''}` : esc(hud.name(this.ratId));
     let body = '<p class="h2-p">Listening…</p>';

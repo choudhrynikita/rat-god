@@ -28,7 +28,7 @@ export class Hud2 {
   feedLog: SimEvent2[] = []; notable: SimEvent2[] = []; omens: Omen[] = []; ripples = new Map<number, Ripple>();
   private top!: HTMLElement; private pillsEl!: HTMLElement; private feedEl!: HTMLElement; private nudgeEl!: HTMLElement; private bottom!: HTMLElement; private selEl!: HTMLElement;
   private pills: { e: SimEvent2; el: HTMLElement }[] = []; private lastMajor = 0; private majorQ: SimEvent2[] = []; private cine: HTMLElement | null = null;
-  readonly god: GodMenu; readonly sheets: Sheets; following = -1; private cluster: number[] = []; private clusterAt = 0; private started = false; private nudgeEls = new Map<number, HTMLElement>();
+  readonly god: GodMenu; readonly sheets: Sheets; following = -1; private cluster: number[] = []; private clusterAt = 0; private started = false; private nudgeEls = new Map<number, HTMLElement>(); private uiHold = 0;
   speed = 1; private lastTop = 0; blocking = false; private resume = false; private lensEl!: HTMLElement; private lensAt = 0;
   private static readonly LENS: (LensId | null)[] = [null, 'needs', 'mood', 'faith', 'caste', 'wealth', 'disease', 'giants'];
   private static readonly LENS_BTN = ['SEE', 'NEED', 'MOOD', 'FAITH', 'CASTE', 'RICH', 'SICK', 'GIANT'];
@@ -93,14 +93,16 @@ export class Hud2 {
       <button class="btn h2-iconbtn" data-k="omens" aria-label="Omens inbox">✶<span class="h2-badge hidden">0</span></button></div>`);
     this.pillsEl = h(`<div class="h2-pills"></div>`); this.feedEl = h(`<div class="h2-feed"></div>`); this.nudgeEl = h(`<div class="h2-nudges"></div>`);
     this.lensEl = h(`<div class="h2-lens" style="display:none"></div>`);
-    this.selEl = h(`<div class="h2-sel" style="display:none"><span data-n></span><button class="btn" data-k="look">LOOK</button></div>`);
+    this.selEl = h(`<div class="h2-watch" style="display:none"><button class="btn" data-k="prev" aria-label="Previous rat">‹</button><button class="btn look" data-k="look"><span data-n></span></button><button class="btn" data-k="next" aria-label="Next rat">›</button></div>`);
     this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="see" aria-label="See the city">SEE</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
       <button class="h2-god" data-k="god" aria-label="Act as god">ACT</button></div>`);
     this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.lensEl, this.bottom, this.selEl);
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
     on('god', () => this.god.open()); on('stat', () => this.sheets.society()); on('see', () => this.cycleLens());
-    on('look', () => { const id = this.world.actors.selected; if (id >= 0) this.sheets.rat(id); });
+    on('look', () => { this.uiHold = performance.now(); const id = this.world.actors.selected; if (id >= 0) this.sheets.rat(id); });
+    on('prev', () => { this.uiHold = performance.now(); this.stepCluster(-1); });
+    on('next', () => { this.uiHold = performance.now(); this.stepCluster(1); });
     on('speed', () => { const seq = [1, 2, 4, 8, 16, 0] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
   }
   setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
@@ -174,11 +176,20 @@ export class Hud2 {
   }
   followRat(id: number, z?: number) {
     this.following = id; const a = this.world.actors; a.selected = id;
-    this.world.cam.follow = () => a.posOf(id);
+    const cam = this.world.cam; cam.follow = () => a.posOf(id);
     const p = a.posOf(id);
-    const want = z ?? (this.world.cam.z < 0.9 ? 1.35 : this.world.cam.z);
-    if (p) this.world.cam.flyTo(p.x, p.y, want);
+    if (p && z != null) cam.flyTo(p.x, p.y, z);
+    else if (p) {
+      const sp = cam.w2s(p.x, p.y);
+      const on = sp.x > 48 && sp.x < cam.vw - 48 && sp.y > 90 && sp.y < cam.vh - 140;
+      if (!on || cam.z < 0.9) cam.flyTo(p.x, p.y, Math.max(cam.z, 1.35));
+    }
     this.sim.send({ t: 'inspect', id });
+  }
+  private stepCluster(dir: number) {
+    if (this.cluster.length < 2) return;
+    this.clusterAt = (this.clusterAt + dir + this.cluster.length) % this.cluster.length;
+    this.followRat(this.cluster[this.clusterAt]);
   }
   // MAJOR → cinematic: time-slow, camera cut, art card, stinger; kept in the Omens inbox until read
   private pumpMajor() {
@@ -209,9 +220,9 @@ export class Hud2 {
   // ───────── world taps ─────────
   private tapWorld(sx: number, sy: number) {
     const w = this.world.cam.s2w(sx, sy);
-    const slack = Math.min(70, Math.max(32, 24 / Math.max(0.4, this.world.cam.z)));
-    if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, slack)); return; }
-    if (this.blocking) return;
+    const slack = Math.min(26, Math.max(14, 16 / Math.max(0.45, this.world.cam.z)));
+    if (this.god.targeting) { this.god.pick(w.x, w.y, this.world.actors.pickAt(w.x, w.y, slack + 8)); return; }
+    if (this.blocking || performance.now() - this.uiHold < 450) return;
     const ids = this.world.actors.pickAll(w.x, w.y, slack);
     if (!ids.length) {
       if (this.following >= 0 || this.world.actors.selected >= 0) { this.following = -1; this.cluster = []; this.world.cam.follow = null; this.world.actors.selected = -1; this.sim.send({ t: 'inspect', id: null }); }
@@ -258,20 +269,17 @@ export class Hud2 {
     this.nudges(s);
     this.tagSelected();
   }
-  /** gold name over the marked rat. The ring lives on the sprite; this is the readable label. */
+  /** gold name in a fixed bar. It does not chase the sprite, so a tap cannot fall through onto the pile. */
   private tagSelected() {
     const id = this.world.actors.selected;
-    if (id < 0) { this.selEl.style.display = 'none'; return; }
-    const p = this.world.actors.posOf(id);
-    if (!p) { this.selEl.style.display = 'none'; return; }
-    const sp = this.world.cam.w2s(p.x, p.y - 22);
+    if (id < 0 || !this.world.actors.posOf(id)) { this.selEl.style.display = 'none'; return; }
     this.selEl.style.display = 'flex';
-    this.selEl.style.left = `${sp.x}px`;
-    this.selEl.style.top = `${sp.y}px`;
     const n = this.selEl.querySelector('[data-n]');
     const name = this.name(id);
     const mark = this.markOf(id);
-    if (n) n.textContent = (this.cluster.length > 1 ? `${name} ${this.clusterAt + 1}/${this.cluster.length}` : name) + (mark ? ` · ${mark}` : '');
+    const pile = this.cluster.length > 1;
+    if (n) n.textContent = (pile ? `${name}  ${this.clusterAt + 1}/${this.cluster.length}` : name) + (mark ? ` · ${mark}` : '');
+    for (const b of this.selEl.querySelectorAll<HTMLElement>('[data-k="prev"],[data-k="next"]')) b.hidden = !pile;
   }
   /** diegetic prayer nudges: a small glyph over a praying rat; tap it to hear the plea and see the power it hints at */
   private nudges(s: Snapshot2) {

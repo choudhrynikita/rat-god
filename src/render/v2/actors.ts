@@ -194,8 +194,11 @@ export class Actors {
         if (!v.ring) { v.ring = new Sprite(ringTexture()); v.ring.anchor.set(0.5, 0.5); v.root.addChildAt(v.ring, 0); }
         if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.mark.scale.set(1.5); v.root.addChild(v.mark); }
         const pulse = 0.5 + Math.sin(now * 0.008) * 0.5;
-        v.ring.position.set(0, 2); v.ring.rotation = -v.rot; v.ring.scale.set(sc * (0.9 + pulse * 0.12)); v.ring.alpha = 0.8 + pulse * 0.2;
-        v.mark.position.set(0, -c.top * sc - 8 + Math.sin(now * 0.008) * 2); v.mark.rotation = -v.rot;
+        const lift = 16;
+        v.ring.position.set(0, 0); v.ring.rotation = -v.rot; v.ring.scale.set(sc * (0.9 + pulse * 0.12)); v.ring.alpha = 0.8 + pulse * 0.2;
+        // stay above the feet in the world, even when the rat is turned to climb
+        v.mark.position.set(-lift * Math.sin(v.rot), -lift * Math.cos(v.rot));
+        v.mark.rotation = -v.rot; v.mark.scale.set(1);
         v.body.tint = mixTint(tint, 0xf2b46a, 0.28 + pulse * 0.22);
       } else {
         if (v.mark) { v.mark.destroy(); v.mark = null; }
@@ -223,13 +226,13 @@ export class Actors {
   }
   /** every rat under a finger, nearest first, so a crowd can be stepped through */
   pickAll(wx: number, wy: number, r: number): number[] {
-    const hits: { id: number; d: number }[] = []; const r2 = r * r;
+    const hits: { id: number; d: number }[] = [];
     for (const v of this.rv.values()) {
       if (!v.root.visible) continue;
-      const top = v.snapY - 40, bot = v.snapY + 8;
-      const cy = wy < top ? top : wy > bot ? bot : wy;
-      const d = (v.x - wx) * (v.x - wx) + (cy - wy) * (cy - wy);
-      if (d <= r2) hits.push({ id: v.id, d });
+      const dx = v.x - wx, dy = (v.snapY - 8) - wy;
+      const rx = r + 8, ry = r * 0.55 + 6;
+      const d = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+      if (d <= 1) hits.push({ id: v.id, d });
     }
     hits.sort((a, b) => a.d - b.d);
     return hits.map((h) => h.id);
