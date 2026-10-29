@@ -22,6 +22,7 @@ export class World2 {
   private boxSig = '';
   private prevZ = 0;
   private calm = 0;
+  private colonyAt = 0;
   constructor(renderer: Renderer, el: HTMLElement) {
     this.cam = new Camera2(el); this.post = new Post(renderer); this.actors = new Actors(this.terrain); this.fx = new Fx(this.terrain, this.cam);
     const P = this.post;
@@ -32,14 +33,14 @@ export class World2 {
   handle(m: FromWorker2) {
     if (m.t === 'init') {
       this.T = m.terrain; this.B = m.burrow; this.terrain.init(m.terrain); this.sky.init(m.terrain, m.burrow); this.fx.initChambers(m.burrow);
-      this.rooms.sync(m.burrow.chambers);
+      this.rooms.sync(m.burrow.chambers, 0, true);
       this.colony.ready = false; this.boxSig = '';
       this.cam.setBounds({ x0: -200, y0: -SKY_PX, x1: m.terrain.W * PX + 200, y1: m.terrain.H * PX });
       this.absorbColony(); this.cam.setMinZFloor(this.zoomFloor()); this.jumpColony();
     } else if (m.t === 'worldGrow') {
       const dx = m.dx * PX;
       if (this.B) this.shiftBurrow(m.dx);
-      if (this.B) this.rooms.sync(this.B.chambers);
+      if (this.B) this.rooms.sync(this.B.chambers, this.env?.day ?? 0);
       if (dx) { this.cam.x += dx; this.actors.shift(dx); if (this.colony.ready) { this.colony.x0 += dx; this.colony.x1 += dx; } }
       this.T = m.terrain;
       this.sky.relayout(m.terrain, dx);
@@ -60,7 +61,7 @@ export class World2 {
           const c = B.chambers.find((x) => x.id === id); if (!c) continue;
           c.progress = progress; c.stock = stock; c.owner = owner; c.flooded = flooded;
         }
-        this.rooms.sync(B.chambers);
+        this.rooms.sync(B.chambers, s.env.day);
       }
       this.actors.ingest(s, now);
       if (s.consent) { this.fx.gore = s.consent.mature ? s.consent.gore : 0; this.actors.gore = this.fx.gore > 0; }
@@ -74,7 +75,8 @@ export class World2 {
   frame() {
     const now = performance.now(); const dt = Math.min(100, now - this.last); this.last = now; if (!this.T) return;
     if (now > this.slowUntil) this.timeScale += (1 - this.timeScale) * Math.min(1, dt / 300);
-    this.absorbColony(); this.cam.setMinZFloor(this.zoomFloor()); this.easeColony();
+    if (now - this.colonyAt > 480 || !this.colony.ready) { this.absorbColony(); this.colonyAt = now; }
+    this.cam.setMinZFloor(this.zoomFloor()); this.easeColony();
     const live = this.cam.update(dt);
     const z = this.cam.z;
     if (this.prevZ > 0 && Math.abs(z - this.prevZ) > 0.006) this.calm = now + 220;
@@ -82,6 +84,7 @@ export class World2 {
     const fast = now < this.calm || this.cam.gesturing || this.cam.flying;
     const zd = z * this.R; const view = this.cam.view(24);
     this.terrain.update(view, z, fast);
+    this.rooms.sway(now);
     this.actors.update(now, zd, view, !live);
     this.lens.update(this.actors, this.snap, zd, Lenses.surfFn(this.T?.surfaceY));
     const penv = this.sky.update(this.env, this.cam, view, now, dt, this.post.tier === 'low' ? 0 : 1);

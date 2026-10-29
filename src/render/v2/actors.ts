@@ -31,7 +31,8 @@ const COAT = [0xffffff, 0xc9c6cc, 0x8a8790, 0xffffff, 0xfff0d8, 0xe8d4b8, 0xfff6
 const TIER = (r: number) => r;
 interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
-  snapY: number; rot: number; facing: number; flip: number; clipId: string; fade: number; seen: number; t0: number; off: number; i: number; lastAnim: number }
+  snapY: number; rot: number; facing: number; flip: number; clipId: string; fade: number; seen: number; t0: number; off: number; i: number; lastAnim: number;
+  fyX: number; fyY: number; fyHold: number }
 
 export class Actors {
   readonly layer = new Container({ label: 'rats', sortableChildren: false });
@@ -68,7 +69,7 @@ export class Actors {
   private make(id: number, x: number, y: number): RV {
     const root = new Container(); const body = new Sprite(); const ghost = new Sprite(); const tool = new Sprite(); tool.visible = false; ghost.visible = false;
     root.addChild(ghost, body, tool); this.layer.addChild(root);
-    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, pip: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1 };
+    const v: RV = { id, root, body, ghost, tool, light: null, mark: null, ring: null, pip: null, px: x, py: y, cx: x, cy: y, pd: 0, cd: 0, ph: 0, ch: 0, x, y, dist: 0, snapY: y, rot: 0, facing: 1, flip: 1, clipId: '', fade: 0, seen: 0, t0: performance.now() - Math.random() * 4000, off: (id * 0.6180339) % 1, i: 0, lastAnim: -1, fyX: 1e9, fyY: 1e9, fyHold: y };
     this.rv.set(id, v); return v;
   }
   private character(flags: number, stage: number): string {
@@ -88,7 +89,8 @@ export class Actors {
     if (a === Anim.Carry && carry !== Carry.Pup) a = Anim.Haul;
     const cands = [...(MAP[a] ?? ['idle'])]; if (a === Anim.Dying && violent && this.gore) cands.unshift('die_violent');
     for (const c of cands) { const k = `${ch}_${c}`; const cl = clip(k); if (cl) return cl; }
-    if (ch !== 'worker') return this.pick('worker', anim, moving, carry, violent);
+    // stay the same animal. A missing clip must not swap a king or a pup into a worker.
+    if (ch !== 'worker') { const own = clip(`${ch}_idle`) ?? clip(`${ch}_walk`); if (own) return own; return this.pick('worker', anim, moving, carry, violent); }
     return clip('worker_idle')!;
   }
   /** per-frame update. zd = device px per world px; view in world px */
@@ -140,22 +142,32 @@ export class Actors {
       const col = Math.max(0, Math.min(this.terrain.W - 1, Math.floor(v.x / PX)));
       const under = v.y > this.terrain.T.surfaceY[col] * PX - 4;
       if (!impostor && anim !== Anim.Swim && under) {
-        let probe = v.y;
-        if (!this.terrain.isOpenPx(v.x, probe)) {
-          let y = Math.floor(probe);
-          for (let k = 0; k < 18 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
-          probe = y;
+        if (Math.abs(v.x - v.fyX) < 5 && Math.abs(v.y - v.fyY) < 10) fy = v.fyHold;
+        else {
+          let probe = v.y;
+          if (!this.terrain.isOpenPx(v.x, probe)) {
+            let y = Math.floor(probe);
+            for (let k = 0; k < 18 && y > 0 && !this.terrain.isOpenPx(v.x, y); k++) y--;
+            probe = y;
+          }
+          const fl = this.terrain.floorBelow(v.x, probe + 1, 12);
+          if (fl - probe >= -1 && fl - probe <= 12) fy = fl;
+          v.fyX = v.x; v.fyY = v.y; v.fyHold = fy;
         }
-        // a floor is the dirt under their feet, not the bottom of an open shaft
-        const fl = this.terrain.floorBelow(v.x, probe + 1, 12);
-        if (fl - probe >= -1 && fl - probe <= 12) fy = fl;
       }
       const gap = fy - v.snapY;
       if (Math.abs(gap) > 12) v.snapY = fy; else v.snapY += gap * 0.72;
       // a rat must fit the tunnel: native art is ~52px, a room is only a few tiles tall
       let sc = (R.size[i] || 1) * 0.56; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.12;
       sc = Math.max(0.28, Math.min(0.78, sc));
-      if (anim === Anim.Squeeze && !c.id.includes('squeeze')) { v.body.scale.set(sx * sc, sc * 0.8); } else v.body.scale.set(sx * sc, sc);
+      let squash = 1, lift = 0;
+      if (LOCO.has(anim) && moving && anim !== Anim.Swim) {
+        const phase = ((f + 0.5) / Math.max(1, n)) * Math.PI * 2;
+        squash = 1 + Math.sin(phase) * 0.08;
+        lift = Math.abs(Math.sin(phase)) * 3.4 * sc;
+      }
+      if (anim === Anim.Squeeze && !c.id.includes('squeeze')) v.body.scale.set((sx * sc) / squash, sc * squash * 0.8);
+      else v.body.scale.set((sx * sc) / squash, sc * squash);
       v.ghost.scale.copyFrom(v.body.scale);
       v.body.position.set(c.dx[f] * v.facing * sc, c.dy[f] * sc);
       let tint = COAT[R.coat[i] & 7];
@@ -165,7 +177,7 @@ export class Actors {
       if (flags & RF.jailed) tint = ((tint >> 1) & 0x7f7f7f) + 0x303030;
       v.body.tint = tint; v.ghost.tint = tint;
       // swimming bob
-      const bob = anim === Anim.Swim ? Math.sin(now * 0.006 + v.off * 6) * 1.5 : 0;
+      const bob = anim === Anim.Swim ? Math.sin(now * 0.006 + v.off * 6) * 1.5 : -lift;
       v.root.position.set(Math.round(v.x * 4) / 4, Math.round((v.snapY + bob) * 4) / 4); v.root.rotation = v.rot;
       // held tool / tech prop
       const tool = R.tool?.[i] ?? 0;
@@ -175,7 +187,7 @@ export class Actors {
       if (glow) { if (!v.light) { v.light = new Sprite(lightTexture()); v.light.anchor.set(0.5); v.light.blendMode = 'add'; this.lights.addChild(v.light); }
         const L = v.light; const fl = 0.85 + Math.sin(now * 0.02 + v.off * 9) * 0.08 + Math.sin(now * 0.053) * 0.05;
         if (tool === 1) { L.tint = 0xffa040; L.scale.set(1.3 * fl); L.alpha = 0.9; } else if (tool === 6) { L.tint = 0xffc070; L.scale.set(1.7 * fl); L.alpha = 0.85; }
-        else if (tool === 8) { L.tint = 0xf2b46a; L.scale.set(1.5 * fl); L.alpha = 0.95; } else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.7 + Math.random() * 0.3); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
+        else if (tool === 8) { L.tint = 0xf2b46a; L.scale.set(1.5 * fl); L.alpha = 0.95; } else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.85 + Math.sin(now * 0.03 + v.off) * 0.15); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
         L.position.set(v.x, v.snapY - 12); } else if (v.light) { v.light.destroy(); v.light = null; }
       // selection: gold ring at the feet, chevron over the head, body warmed
       if (v.id === this.selected) {
