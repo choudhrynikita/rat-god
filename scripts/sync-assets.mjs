@@ -29,7 +29,7 @@ src = Image.open(${JSON.stringify(ICON)}).convert('RGBA')
 def up(n, f): return src.resize((64*f, 64*f), Image.NEAREST)
 def fit(size, pad=0):
     f = max(1, (size - 2*pad) // 64); im = up(64, f)
-    bg = Image.new('RGBA', (size, size), (8, 13, 10, 255)); bg.alpha_composite(im, ((size-im.width)//2, (size-im.height)//2)); return bg
+    bg = Image.new('RGBA', (size, size), (244, 239, 228, 255)); bg.alpha_composite(im, ((size-im.width)//2, (size-im.height)//2)); return bg
 fit(192).save('public/icons/icon-192.png'); fit(512).save('public/icons/icon-512.png')
 fit(192, 32).save('public/icons/maskable-192.png'); fit(180).save('public/icons/apple-touch-icon.png'); fit(64).save('public/favicon.png')
 `;

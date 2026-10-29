@@ -27,7 +27,7 @@ const MAP: Record<number, string[]> = {
   [Anim.Dance]: ['dance', 'cheer'], [Anim.Music]: ['music', 'cheer'], [Anim.Game]: ['play', 'cheer'], [Anim.Jailed]: ['jailed', 'sick_idle'], [Anim.Strike]: ['protest', 'cheer'],
   [Anim.Trial]: ['idle'], [Anim.Lecture]: ['teach', 'announce', 'preach', 'idle'], [Anim.Repair]: ['repair', 'work', 'work_gnaw'], [Anim.Charge]: ['run'], [Anim.Tend]: ['work_gnaw', 'idle'], [Anim.Kiss]: ['court'],
 };
-const COAT = [0xd7b08a, 0x6b5344, 0xc4a07a, 0x3c332c, 0xe6d2b4, 0x8d4e3a, 0x9a9084, 0x4e4038];
+const COAT = [0xffffff, 0xfff3e6, 0xf4e7d8, 0xffe9dc, 0xf8f2e8, 0xf3e0d2, 0xece7de, 0xf7e6da];
 const TIER = (r: number) => r;
 interface RV { id: number; root: Container; body: Sprite; ghost: Sprite; tool: Sprite; light: Sprite | null; mark: Sprite | null; ring: Sprite | null; pip: Sprite | null; sash: Sprite | null;
   px: number; py: number; cx: number; cy: number; pd: number; cd: number; ph: number; ch: number; x: number; y: number; dist: number;
@@ -162,8 +162,8 @@ export class Actors {
       const gap = fy - v.snapY;
       if (Math.abs(gap) > 12) v.snapY = fy; else v.snapY += gap * 0.72;
       // the painted rat is ~100px wide inside a 128 cell. A nest is only ~7 tiles across.
-      let sc = (R.size[i] || 1) * 0.2; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.12;
-      sc = Math.max(0.14, Math.min(0.26, sc));
+      let sc = (R.size[i] || 1) * 0.26; if (ch === 'pup') sc *= 0.62; if (ch === 'king' || flags & RF.leader) sc *= 1.15;
+      sc = Math.max(0.18, Math.min(0.36, sc));
       let squash = 1, lift = 0;
       if (LOCO.has(anim) && moving && anim !== Anim.Swim) {
         const phase = ((f + 0.5) / Math.max(1, n)) * Math.PI * 2;

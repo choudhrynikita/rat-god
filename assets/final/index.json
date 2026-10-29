@@ -476,8 +476,8 @@
    "path": "backgrounds/bg_throne_hall.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -488,8 +488,8 @@
    "path": "backgrounds/bg_plaza.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2137,8 +2137,8 @@
    "path": "backgrounds/bg_surface_street.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2149,8 +2149,8 @@
    "path": "backgrounds/bg_burrow_entrance.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2161,8 +2161,8 @@
    "path": "backgrounds/bg_granary.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2178,8 +2178,8 @@
    "path": "backgrounds/bg_nursery.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2195,8 +2195,8 @@
    "path": "backgrounds/bg_workshop.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2207,8 +2207,8 @@
    "path": "backgrounds/bg_barracks.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2224,8 +2224,8 @@
    "path": "backgrounds/bg_shrine.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2238,8 +2238,8 @@
    "path": "backgrounds/bg_graveyard.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2267,8 +2267,8 @@
    "path": "backgrounds/bg_outcast_slum.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,

@@ -1,4 +1,4 @@
-CC0 ambience used by Rat God. Do not replace these with generated audio.
+CC0 ambience kept on disk. The game no longer plays these beds.
 
 amb_sewer_drips
   Loopable Dungeon Ambience by JaggedStone
@@ -9,3 +9,7 @@ amb_retro_cave
   Void Estate (haunting chiptune loop) by Zane Little
   https://opengameart.org/content/haunting-chiptune-loop-void-estate
   CC0
+
+bed_drift, bed_night, bed_strain, bed_hymn
+  Original loops written for this game (scripts/synthwave_beds.py).
+  Not a recording or a cover of any commercial track.

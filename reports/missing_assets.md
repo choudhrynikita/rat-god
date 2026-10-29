@@ -1,6 +1,6 @@
 # Asset status
 
-Final Sogni assets: 203/215 (index.json found; files in assets/final: 182)
+Final Sogni assets: 203/215 (index.json found; files in assets/final: 245)
 
 | id | category | in game as |
 |---|---|---|

@@ -33,8 +33,9 @@ export async function loadSprites(onProgress?: (d: number, t: number) => void) {
   let done = 0;
   await Promise.all(list.map(async (a) => {
     try {
-      const tex: Texture = await Assets.load({ src: BASE + a.path, data: { scaleMode: 'nearest' } });
-      tex.source.scaleMode = 'nearest';
+      const lin = a.type === 'anim' || a.type === 'background' || a.type === 'parallax' || a.type === 'portrait';
+      const tex: Texture = await Assets.load({ src: BASE + a.path, data: { scaleMode: lin ? 'linear' : 'nearest' } });
+      tex.source.scaleMode = lin ? 'linear' : 'nearest';
       const n = Math.max(1, a.frames || 1); const [w, h] = a.size ?? [tex.width / n, tex.height];
       const frames: Texture[] = []; for (let f = 0; f < n; f++) frames.push(new Texture({ source: tex.source, frame: new Rectangle(f * w, 0, w, h) }));
       let st = { dx: new Float32Array(n), dy: new Float32Array(n), top: 0, base: h - 1 };

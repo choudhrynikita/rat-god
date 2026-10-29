@@ -11,8 +11,8 @@ export default defineConfig({
       injectRegister: 'script-defer',
       includeAssets: ['favicon.png', 'icons/*.png', 'assets/**/*.{png,json}'],
       manifest: {
-        name: 'Rat God', short_name: 'Rat God', description: 'Watch a rat city and its king with free will. You are their god. You may only watch.',
-        theme_color: '#080d0a', background_color: '#080d0a', display: 'standalone', orientation: 'portrait', start_url: './', scope: './',
+        name: 'Rat God', short_name: 'Rat God', description: 'Watch a burrow and its king with free will. You are their god. You may only watch.',
+        theme_color: '#1c1612', background_color: '#f4efe4', display: 'standalone', orientation: 'portrait', start_url: './', scope: './',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },

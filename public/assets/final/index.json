@@ -12,15 +12,15 @@
    "status": "done",
    "path": "sprites/worker_eat.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 4,
+   "frames": 8,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -33,15 +33,15 @@
    "status": "done",
    "path": "sprites/worker_dig.png",
    "size": [
-    104,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -54,15 +54,15 @@
    "status": "done",
    "path": "sprites/worker_haul.png",
    "size": [
-    96,
-    48
+    128,
+    128
    ],
    "frames": 8,
-   "fps": 10,
+   "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -75,15 +75,15 @@
    "status": "done",
    "path": "sprites/worker_groom.png",
    "size": [
-    64,
-    56
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -96,15 +96,15 @@
    "status": "done",
    "path": "sprites/worker_idle.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -117,15 +117,15 @@
    "status": "done",
    "path": "sprites/worker_walk.png",
    "size": [
-    72,
-    40
+    128,
+    128
    ],
    "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -138,15 +138,15 @@
    "status": "done",
    "path": "sprites/worker_sleep.png",
    "size": [
-    64,
-    48
+    128,
+    128
    ],
-   "frames": 4,
-   "fps": 4,
+   "frames": 8,
+   "fps": 5,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -159,15 +159,15 @@
    "status": "done",
    "path": "sprites/worker_die.png",
    "size": [
-    88,
-    56
+    128,
+    128
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.9464
+    0.98
    ],
    "foot_baseline_y": 53,
    "sheet": "sheets/worker.json",
@@ -350,15 +350,15 @@
    "status": "done",
    "path": "sprites/worker_run.png",
    "size": [
-    120,
-    40
+    128,
+    128
    ],
-   "frames": 6,
-   "fps": 14,
+   "frames": 8,
+   "fps": 16,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -371,15 +371,15 @@
    "status": "done",
    "path": "sprites/worker_work_wheel.png",
    "size": [
-    120,
-    40
+    128,
+    128
    ],
-   "frames": 6,
-   "fps": 12,
+   "frames": 8,
+   "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -392,15 +392,15 @@
    "status": "done",
    "path": "sprites/worker_work_gnaw.png",
    "size": [
-    80,
-    56
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -413,15 +413,15 @@
    "status": "done",
    "path": "sprites/worker_drink.png",
    "size": [
-    96,
-    48
+    128,
+    128
    ],
-   "frames": 4,
+   "frames": 8,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json",
@@ -437,15 +437,15 @@
    "status": "done",
    "path": "sprites/worker_court.png",
    "size": [
-    112,
-    56
+    128,
+    128
    ],
    "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -458,15 +458,15 @@
    "status": "done",
    "path": "sprites/worker_exhausted_collapse.png",
    "size": [
-    80,
-    40
+    128,
+    128
    ],
-   "frames": 6,
-   "fps": 8,
-   "loop": false,
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -476,8 +476,8 @@
    "path": "backgrounds/bg_throne_hall.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -488,8 +488,8 @@
    "path": "backgrounds/bg_plaza.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -500,8 +500,8 @@
    "path": "sprites/prop_law_poster_fresh.png",
    "type": "prop",
    "size": [
-    32,
-    40
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -638,15 +638,15 @@
    "status": "done",
    "path": "sprites/worker_nurse.png",
    "size": [
-    72,
-    40
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -659,15 +659,15 @@
    "status": "done",
    "path": "sprites/worker_sick_idle.png",
    "size": [
-    80,
-    48
+    128,
+    128
    ],
-   "frames": 4,
+   "frames": 8,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -680,15 +680,15 @@
    "status": "done",
    "path": "sprites/worker_starving_walk.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 8,
-   "fps": 10,
+   "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -701,15 +701,15 @@
    "status": "done",
    "path": "sprites/worker_fight.png",
    "size": [
-    88,
-    64
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.8438
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -722,15 +722,15 @@
    "status": "done",
    "path": "sprites/worker_hurt.png",
    "size": [
-    88,
-    40
+    128,
+    128
    ],
-   "frames": 3,
-   "fps": 12,
-   "loop": false,
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -743,15 +743,15 @@
    "status": "done",
    "path": "sprites/worker_protest.png",
    "size": [
-    80,
-    56
+    128,
+    128
    ],
-   "frames": 4,
-   "fps": 8,
+   "frames": 8,
+   "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -764,15 +764,15 @@
    "status": "done",
    "path": "sprites/worker_vote.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/worker.json"
@@ -785,15 +785,15 @@
    "status": "done",
    "path": "sprites/worker_cheer.png",
    "size": [
-    120,
-    56
+    128,
+    128
    ],
    "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -806,15 +806,15 @@
    "status": "done",
    "path": "sprites/worker_cower.png",
    "size": [
-    120,
-    40
+    128,
+    128
    ],
-   "frames": 4,
-   "fps": 8,
+   "frames": 8,
+   "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/worker.json"
@@ -827,15 +827,15 @@
    "status": "done",
    "path": "sprites/worker_die_violent.png",
    "size": [
-    120,
-    72
+    128,
+    128
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 12,
    "loop": false,
    "anchor": [
     0.5,
-    0.75
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/worker.json"
@@ -848,15 +848,15 @@
    "status": "done",
    "path": "sprites/king_decree.png",
    "size": [
-    104,
-    64
+    128,
+    128
    ],
    "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9062
+    0.98
    ],
    "foot_baseline_y": 58,
    "sheet": "sheets/king.json",
@@ -872,15 +872,15 @@
    "status": "done",
    "path": "sprites/king_feast.png",
    "size": [
-    104,
-    64
+    128,
+    128
    ],
-   "frames": 6,
-   "fps": 10,
+   "frames": 8,
+   "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9062
+    0.98
    ],
    "foot_baseline_y": 58,
    "sheet": "sheets/king.json"
@@ -893,15 +893,15 @@
    "status": "done",
    "path": "sprites/king_eat_scraps.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
-   "frames": 4,
+   "frames": 8,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -914,15 +914,15 @@
    "status": "done",
    "path": "sprites/king_sleep.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
-   "frames": 4,
-   "fps": 4,
+   "frames": 8,
+   "fps": 5,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -935,15 +935,15 @@
    "status": "done",
    "path": "sprites/king_starving.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -956,15 +956,15 @@
    "status": "done",
    "path": "sprites/king_sick.png",
    "size": [
-    72,
-    64
+    128,
+    128
    ],
-   "frames": 4,
+   "frames": 8,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9062
+    0.98
    ],
    "foot_baseline_y": 58,
    "sheet": "sheets/king.json"
@@ -977,15 +977,15 @@
    "status": "done",
    "path": "sprites/king_executed.png",
    "size": [
-    120,
-    56
+    128,
+    128
    ],
-   "frames": 10,
+   "frames": 4,
    "fps": 12,
    "loop": false,
    "anchor": [
     0.5,
-    0.9107
+    0.98
    ],
    "foot_baseline_y": 51,
    "sheet": "sheets/king.json",
@@ -1001,15 +1001,15 @@
    "status": "done",
    "path": "sprites/king_crowned.png",
    "size": [
-    96,
-    64
+    128,
+    128
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.8438
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -1022,15 +1022,15 @@
    "status": "done",
    "path": "sprites/king_dig_founder.png",
    "size": [
-    104,
-    40
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/king.json"
@@ -1043,15 +1043,15 @@
    "status": "done",
    "path": "sprites/king_build_founder.png",
    "size": [
-    80,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/king.json"
@@ -1064,15 +1064,15 @@
    "status": "done",
    "path": "sprites/founder_idle.png",
    "size": [
-    72,
-    40
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/founder.json"
@@ -1085,15 +1085,15 @@
    "status": "done",
    "path": "sprites/founder_walk.png",
    "size": [
-    80,
-    40
+    128,
+    128
    ],
    "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/founder.json"
@@ -1106,15 +1106,15 @@
    "status": "done",
    "path": "sprites/herald_walk.png",
    "size": [
-    64,
-    56
+    128,
+    128
    ],
    "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/herald.json"
@@ -1127,15 +1127,15 @@
    "status": "done",
    "path": "sprites/herald_announce.png",
    "size": [
-    72,
-    64
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.8438
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/herald.json"
@@ -1392,15 +1392,15 @@
    "status": "done",
    "path": "sprites/pup_idle.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 2,
+   "frames": 4,
    "fps": 4,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/pup.json"
@@ -1413,15 +1413,15 @@
    "status": "done",
    "path": "sprites/pup_walk.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/pup.json"
@@ -1434,15 +1434,15 @@
    "status": "done",
    "path": "sprites/pup_suckle.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 4,
-   "fps": 6,
+   "frames": 8,
+   "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/pup.json"
@@ -1455,15 +1455,15 @@
    "status": "done",
    "path": "sprites/pup_play.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/pup.json"
@@ -1476,15 +1476,15 @@
    "status": "done",
    "path": "sprites/pup_die.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/pup.json"
@@ -1497,15 +1497,15 @@
    "status": "done",
    "path": "sprites/elder_walk_limp.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 8,
-   "fps": 8,
+   "fps": 9,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/elder.json"
@@ -1518,15 +1518,15 @@
    "status": "done",
    "path": "sprites/elder_idle_cough.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/elder.json"
@@ -1539,15 +1539,15 @@
    "status": "done",
    "path": "sprites/elder_teach.png",
    "size": [
-    72,
-    64
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.8438
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/elder.json"
@@ -1560,15 +1560,15 @@
    "status": "done",
    "path": "sprites/king_idle_throne.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -1581,15 +1581,15 @@
    "status": "done",
    "path": "sprites/king_press_law.png",
    "size": [
-    120,
-    56
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 12,
    "loop": false,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -1602,15 +1602,15 @@
    "status": "done",
    "path": "sprites/king_die.png",
    "size": [
-    104,
-    64
+    128,
+    128
    ],
-   "frames": 10,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.9062
+    0.98
    ],
    "foot_baseline_y": 58,
    "sheet": "sheets/king.json"
@@ -1623,15 +1623,15 @@
    "status": "done",
    "path": "sprites/enforcer_patrol.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 8,
-   "fps": 10,
+   "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/enforcer.json"
@@ -1644,15 +1644,15 @@
    "status": "done",
    "path": "sprites/enforcer_idle.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/enforcer.json"
@@ -1665,15 +1665,15 @@
    "status": "done",
    "path": "sprites/enforcer_beat.png",
    "size": [
-    88,
-    64
+    128,
+    128
    ],
-   "frames": 6,
-   "fps": 12,
-   "loop": false,
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
    "anchor": [
     0.5,
-    0.8438
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/enforcer.json"
@@ -1686,15 +1686,15 @@
    "status": "done",
    "path": "sprites/enforcer_drag_body.png",
    "size": [
-    96,
-    48
+    128,
+    128
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/enforcer.json"
@@ -1707,15 +1707,15 @@
    "status": "done",
    "path": "sprites/outcast_idle.png",
    "size": [
-    72,
-    48
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/outcast.json"
@@ -1728,15 +1728,15 @@
    "status": "done",
    "path": "sprites/outcast_beg.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/outcast.json"
@@ -1749,15 +1749,15 @@
    "status": "done",
    "path": "sprites/outcast_steal.png",
    "size": [
-    112,
-    48
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 10,
-   "loop": false,
+   "loop": true,
    "anchor": [
     0.5,
-    0.9583
+    0.98
    ],
    "foot_baseline_y": 46,
    "sheet": "sheets/outcast.json"
@@ -1770,15 +1770,15 @@
    "status": "done",
    "path": "sprites/cat_prowl.png",
    "size": [
-    152,
-    80
+    192,
+    192
    ],
    "frames": 8,
-   "fps": 10,
+   "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.975
+    0.98
    ],
    "foot_baseline_y": 78,
    "sheet": "sheets/cat.json"
@@ -1791,15 +1791,15 @@
    "status": "done",
    "path": "sprites/cat_pounce.png",
    "size": [
-    168,
-    88
+    192,
+    192
    ],
-   "frames": 6,
-   "fps": 14,
-   "loop": false,
+   "frames": 8,
+   "fps": 11,
+   "loop": true,
    "anchor": [
     0.5,
-    0.9659
+    0.98
    ],
    "foot_baseline_y": 85,
    "sheet": "sheets/cat.json"
@@ -1812,15 +1812,15 @@
    "status": "done",
    "path": "sprites/cat_eat_kill.png",
    "size": [
-    176,
-    80
+    192,
+    192
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.975
+    0.98
    ],
    "foot_baseline_y": 78,
    "sheet": "sheets/cat.json"
@@ -1833,15 +1833,15 @@
    "status": "done",
    "path": "sprites/cat_idle_tail.png",
    "size": [
-    128,
-    128
+    192,
+    192
    ],
    "frames": 4,
    "fps": 6,
    "loop": true,
    "anchor": [
     0.5,
-    0.8984
+    0.98
    ],
    "foot_baseline_y": 115,
    "sheet": "sheets/cat.json"
@@ -1959,15 +1959,15 @@
    "status": "done",
    "path": "sprites/king_indulge.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 8,
    "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/king.json"
@@ -1980,15 +1980,15 @@
    "status": "done",
    "path": "sprites/herald_paste_poster.png",
    "size": [
-    72,
-    56
+    128,
+    128
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 10,
    "loop": false,
    "anchor": [
     0.5,
-    0.9643
+    0.98
    ],
    "foot_baseline_y": 54,
    "sheet": "sheets/herald.json",
@@ -2137,8 +2137,8 @@
    "path": "backgrounds/bg_surface_street.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2149,8 +2149,8 @@
    "path": "backgrounds/bg_burrow_entrance.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2161,8 +2161,8 @@
    "path": "backgrounds/bg_granary.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2178,8 +2178,8 @@
    "path": "backgrounds/bg_nursery.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2195,8 +2195,8 @@
    "path": "backgrounds/bg_workshop.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2207,8 +2207,8 @@
    "path": "backgrounds/bg_barracks.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2224,8 +2224,8 @@
    "path": "backgrounds/bg_shrine.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2238,8 +2238,8 @@
    "path": "backgrounds/bg_graveyard.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2267,8 +2267,8 @@
    "path": "backgrounds/bg_outcast_slum.png",
    "type": "background",
    "size": [
-    360,
-    220
+    960,
+    540
    ],
    "frames": 1,
    "fps": null,
@@ -2610,8 +2610,8 @@
    "path": "sprites/prop_food_crumb.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2626,8 +2626,8 @@
    "path": "sprites/prop_rotten_fruit.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2642,8 +2642,8 @@
    "path": "sprites/prop_cheese_rind.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2658,8 +2658,8 @@
    "path": "sprites/prop_pebble.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2674,8 +2674,8 @@
    "path": "sprites/prop_bone.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2722,8 +2722,8 @@
    "path": "sprites/prop_poster_scrap.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -2837,8 +2837,8 @@
    "path": "sprites/prop_law_poster_torn.png",
    "type": "prop",
    "size": [
-    32,
-    40
+    64,
+    64
    ],
    "frames": 1,
    "fps": null,
@@ -3065,15 +3065,15 @@
    "status": "done",
    "path": "sprites/king_walk.png",
    "size": [
-    80,
-    40
+    128,
+    128
    ],
    "frames": 8,
    "fps": 12,
    "loop": true,
    "anchor": [
     0.5,
-    0.95
+    0.98
    ],
    "foot_baseline_y": 38,
    "sheet": "sheets/founder.json",
@@ -3291,15 +3291,15 @@
    "status": "done",
    "path": "sprites/king_frustrated.png",
    "size": [
-    120,
-    44
+    128,
+    128
    ],
-   "frames": 6,
+   "frames": 4,
    "fps": 10,
    "loop": true,
    "anchor": [
     0.5,
-    0.9773
+    0.98
    ],
    "foot_baseline_y": 43,
    "sheet": "sheets/king.json"
@@ -3809,6 +3809,986 @@
     "bg colour shift 97",
     "bg not flat 31"
    ]
+  },
+  {
+   "id": "pup_run",
+   "type": "anim",
+   "character": "pup",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/pup_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_dig",
+   "type": "anim",
+   "character": "pup",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/pup_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_eat",
+   "type": "anim",
+   "character": "pup",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/pup_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_sleep",
+   "type": "anim",
+   "character": "pup",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/pup_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_cower",
+   "type": "anim",
+   "character": "pup",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/pup_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_fight",
+   "type": "anim",
+   "character": "pup",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/pup_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "pup_haul",
+   "type": "anim",
+   "character": "pup",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/pup_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_run",
+   "type": "anim",
+   "character": "king",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/king_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_dig",
+   "type": "anim",
+   "character": "king",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/king_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_eat",
+   "type": "anim",
+   "character": "king",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/king_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_cower",
+   "type": "anim",
+   "character": "king",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/king_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_fight",
+   "type": "anim",
+   "character": "king",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/king_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "king_haul",
+   "type": "anim",
+   "character": "king",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/king_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "herald_dig",
+   "type": "anim",
+   "character": "herald",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/herald_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "herald_eat",
+   "type": "anim",
+   "character": "herald",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/herald_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "herald_sleep",
+   "type": "anim",
+   "character": "herald",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/herald_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "herald_cower",
+   "type": "anim",
+   "character": "herald",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/herald_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "herald_fight",
+   "type": "anim",
+   "character": "herald",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/herald_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_walk",
+   "type": "anim",
+   "character": "elder",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/elder_walk.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_run",
+   "type": "anim",
+   "character": "elder",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/elder_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_dig",
+   "type": "anim",
+   "character": "elder",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/elder_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_eat",
+   "type": "anim",
+   "character": "elder",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/elder_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_sleep",
+   "type": "anim",
+   "character": "elder",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/elder_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_cower",
+   "type": "anim",
+   "character": "elder",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/elder_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_fight",
+   "type": "anim",
+   "character": "elder",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/elder_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "elder_haul",
+   "type": "anim",
+   "character": "elder",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/elder_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_walk",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/enforcer_walk.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_run",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/enforcer_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_dig",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/enforcer_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_eat",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/enforcer_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_sleep",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/enforcer_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_cower",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/enforcer_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_fight",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/enforcer_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "enforcer_haul",
+   "type": "anim",
+   "character": "enforcer",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/enforcer_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_walk",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "walk",
+   "status": "done",
+   "path": "sprites/outcast_walk.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_run",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/outcast_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_dig",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/outcast_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_eat",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/outcast_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_sleep",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/outcast_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_cower",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/outcast_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_fight",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/outcast_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "outcast_haul",
+   "type": "anim",
+   "character": "outcast",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/outcast_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_run",
+   "type": "anim",
+   "character": "founder",
+   "anim": "run",
+   "status": "done",
+   "path": "sprites/founder_run.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 16,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_dig",
+   "type": "anim",
+   "character": "founder",
+   "anim": "dig",
+   "status": "done",
+   "path": "sprites/founder_dig.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_eat",
+   "type": "anim",
+   "character": "founder",
+   "anim": "eat",
+   "status": "done",
+   "path": "sprites/founder_eat.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_sleep",
+   "type": "anim",
+   "character": "founder",
+   "anim": "sleep",
+   "status": "done",
+   "path": "sprites/founder_sleep.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 5,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_cower",
+   "type": "anim",
+   "character": "founder",
+   "anim": "cower",
+   "status": "done",
+   "path": "sprites/founder_cower.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 6,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_fight",
+   "type": "anim",
+   "character": "founder",
+   "anim": "fight",
+   "status": "done",
+   "path": "sprites/founder_fight.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
+  },
+  {
+   "id": "founder_haul",
+   "type": "anim",
+   "character": "founder",
+   "anim": "haul",
+   "status": "done",
+   "path": "sprites/founder_haul.png",
+   "size": [
+    128,
+    128
+   ],
+   "frames": 8,
+   "fps": 12,
+   "loop": true,
+   "anchor": [
+    0.5,
+    0.98
+   ],
+   "foot_baseline_y": 120
   }
  ]
 }
