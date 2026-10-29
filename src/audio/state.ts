@@ -64,7 +64,7 @@ export function deriveFromSim2(s: Snapshot2, focus: Focus = 'none', hold: MusicS
   if (focus === 'lab' && (s.research?.length ?? 0) > 0) return I('lab', 'focus lab');
   if (focus === 'temple' && rel) return I('hymn', 'focus temple');
   const fest = s.festivals?.[0]; if (fest) return I(fest.kind === 'wedding' ? 'wedding' : 'festival', 'festival ' + fest.kind);
-  if (st.unrest > 0.42 || st.legitimacy < 0.3 || st.hunger > 0.45) return I('unease', 'unease');
+  if (st.unrest > 0.62 || st.legitimacy < 0.18 || st.hunger > 0.62) return I('unease', 'unease');
   if (focus === 'nursery' && !night && st.pups > 0) return I('pups', 'focus nursery');
   return I('calm', 'calm');
 }

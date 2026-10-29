@@ -199,7 +199,7 @@ function wander(w: World, r: Rat) {
   const s = 0.3 + R(w) * Math.max(0.3, e.len - 0.6);
   r.intent.kind = 'wander'; r.intent.since = w.tick; r.intent.goalEdge = e.id; r.intent.goalS = s;
   if (pathTo(w, r, { edge: e.id, s })) r.intent.until = w.tick + 40 + Math.floor(R(w) * 30);
-  else { r.intent.kind = 'idle'; r.anim = Anim.Idle; r.intent.until = w.tick + 10; }
+  else { r.intent.kind = 'idle'; r.anim = (r.id + Math.floor(w.tick / 24)) % 3 === 0 ? Anim.Groom : Anim.Idle; r.intent.until = w.tick + 22; }
 }
 
 function deliverDue(w: World) {
@@ -268,7 +268,7 @@ function pray(w: World) {
   if (r.needs.hunger > 0.62) { kind = 'food'; plea = 'The cache is thin. Do not let the pups starve.'; suggest = 'harvest'; }
   else if (r.disease || r.injured > 0.3) { kind = 'heal'; plea = 'The sickness is in the bedding. Take it back.'; suggest = 'miracle'; }
   else if (r.female && r.spouse && !r.pregnant) { kind = 'child'; plea = 'A litter, if the nest can hold one.'; suggest = 'bless'; }
-  else if (r.beliefs.god > 0.5 || r.flags & RF.priest) { kind = 'sign'; plea = 'Speak, so the others stop laughing.'; suggest = 'voice'; r.anim = Anim.Pray; }
+  else if (r.beliefs.god > 0.5 || r.flags & RF.priest) { kind = 'sign'; plea = 'The nest is warm. Keep it that way.'; suggest = 'voice'; }
   r.beliefs.god = Math.min(1, r.beliefs.god + 0.04);
   const p: Prayer = { ratId: r.id, name: r.name, plea, kind, tick: w.tick, x: r.x, y: r.y, suggest };
   w.prayers.push(p);

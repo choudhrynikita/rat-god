@@ -11,9 +11,9 @@ const CH = 256;
 const hex = (h: number) => [(h >> 16) & 255, (h >> 8) & 255, h & 255] as const;
 // palette ramps (dark → light), all from style_ref/palette.hex
 const RAMP: Record<number, number[]> = {
-  [Mat.Topsoil]: [0x30161b, 0x441f28, 0x572932, 0x70473f],
-  [Mat.Loam]: [0x1e2228, 0x38302d, 0x4d3d3d, 0x70473f],
-  [Mat.Clay]: [0x441f28, 0x572932, 0x864f4d, 0x9c6e4e],
+  [Mat.Topsoil]: [0x3a2a22, 0x4e382c, 0x624838, 0x7a5a42],
+  [Mat.Loam]: [0x2c241c, 0x3e3228, 0x524238, 0x6a5644],
+  [Mat.Clay]: [0x4a3428, 0x5c4032, 0x745038, 0x8a6848],
   [Mat.Gravel]: [0x222c32, 0x373f41, 0x475052, 0x505b5c],
   [Mat.Roots]: [0x30161b, 0x441f28, 0x70473f, 0x9c6e4e],
   [Mat.Rock]: [0x1e2228, 0x373f41, 0x475052, 0x796765],
@@ -24,7 +24,7 @@ const RAMP: Record<number, number[]> = {
 };
 const RAMPC: Record<number, (readonly [number, number, number])[]> = {};
 for (const k in RAMP) RAMPC[k] = RAMP[k].map(hex);
-const BACK = [0x080d0a, 0x14151a, 0x1e2228, 0x2a2126].map(hex);
+const BACK = [0x2a221c, 0x3a2e26, 0x4a3a2e, 0x5c4a3a].map(hex);
 const DIRT = [0x38302d, 0x4d3d3d, 0x70473f, 0x9c6e4e].map(hex);
 const INK = hex(0x080d0a);
 const WATER = hex(0x23434c), WATER_HI = hex(0x489da2), WATER_TOP = hex(0x42c3ca);
@@ -143,6 +143,10 @@ export class Terrain {
           const c = BACK[li]; r = c[0]; g = c[1]; b = c[2];
           // spoil heaps on the floor
           const deb = this.bil(T.debris, wx, wy) / 255; const f = fd[k];
+          if (f <= 3 && !up1) {
+            const tread = f <= 1 ? hex(0x6a5344) : f === 2 ? hex(0x534030) : hex(0x3e3228);
+            r = tread[0]; g = tread[1]; b = tread[2];
+          }
           if (deb > 0.04 && f <= 1 + deb * 13 * (0.75 + nz(N8, wx, 3) * 0.6)) { const dc = DIRT[Math.min(3, Math.max(0, Math.floor((nz(N4, wx, wy) + 0.5) * 3.2 + (f <= 1 ? 0 : 0))))]; r = dc[0]; g = dc[1]; b = dc[2]; if (open[k - ew] === 1 && fd[k - ew] > f + 0) { r = DIRT[3][0]; g = DIRT[3][1]; b = DIRT[3][2]; } }
           // standing water (flat-topped per tile)
           const wl = this.tile(T.water, Math.floor(wx / PX), Math.floor(wy / PX)) / 255;

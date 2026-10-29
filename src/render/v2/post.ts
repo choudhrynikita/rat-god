@@ -137,7 +137,7 @@ export class Post {
     const T = this.toggles; const amb = env.ambient;
     r.render({ container: this.sceneHold, target: this.sceneRT, clear: true, clearColor: [0.03, 0.04, 0.04, 1] });
     r.render({ container: this.actorHold, target: this.actorRT, clear: true, clearColor: [0, 0, 0, 0] });
-    if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] * 0.35, amb[1] * 0.32, amb[2] * 0.38, 0] });
+    if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] * 0.55, amb[1] * 0.5, amb[2] * 0.46, 0] });
     const bloomOn = T.bloom && this.tier !== 'low' && !fast;
     const detail = !!(T.rim && this.tier === 'high' && T.lighting && !fast);
     if (bloomOn) { this.bloomSprite.texture = this.sceneRT; this.bloomSprite.scale.set(LS); this.blur.quality = this.tier === 'high' ? 2 : 1; r.render({ container: this.bloomHold, target: this.bloomRT, clear: true, clearColor: [0, 0, 0, 1] }); }
@@ -145,7 +145,7 @@ export class Post {
     U.uRT[0] = this.alloc.w; U.uRT[1] = this.alloc.h; U.uLRT[0] = this.alloc.lw; U.uLRT[1] = this.alloc.lh; U.uScreen[0] = devW; U.uScreen[1] = devH;
     U.uS = s; U.uOff[0] = ox - ix + PAD + cam.shakeX / s; U.uOff[1] = oy - iy + PAD + cam.shakeY / s; U.uLScale = LS; U.uTime = timeS;
     U.uBloomAmt = bloomOn ? 1.15 : 0; U.uRim = detail ? 1.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
-    U.uVig = T.vignette ? 0.62 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.055 : 0; U.uCA = T.ca && this.tier === 'high' ? 1.6 : 0; U.uHaze = T.haze ? env.haze * 1.4 : 0;
+    U.uVig = T.vignette ? 0.34 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.035 : 0; U.uCA = T.ca && this.tier === 'high' ? 0.6 : 0; U.uHaze = T.haze ? env.haze * 0.7 : 0;
     U.uScan = T.crt ? 1 : 0; U.uFlash = env.flash;
     const g = T.grade; U.uTint[0] = g ? env.tint[0] : 1; U.uTint[1] = g ? env.tint[1] : 1; U.uTint[2] = g ? env.tint[2] : 1; U.uSat = g ? env.sat : 1; U.uContrast = g ? env.contrast : 1;
     U.uFog = T.fog ? env.fog : 0; U.uFogCol[0] = env.fogCol[0]; U.uFogCol[1] = env.fogCol[1]; U.uFogCol[2] = env.fogCol[2]; U.uDust = T.fog ? env.dust : 0;

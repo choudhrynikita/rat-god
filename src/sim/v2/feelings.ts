@@ -90,7 +90,7 @@ function meet(w: World, alive: Rat[]) {
     (a as { met?: number }).met = w.tick; (b as { met?: number }).met = w.tick;
     face(a, b); face(b, a); a.target = b.id; b.target = a.id;
     const aff = a.rel.get(b.id)?.aff ?? 0;
-    if ((a.emo.anger > 0.62 || b.emo.anger > 0.62) && aff < -0.05) {
+    if ((a.emo.anger > 0.84 || b.emo.anger > 0.84) && aff < -0.35) {
       fight(w, a, b, 'a grudge', false);
       a.emo.anger = clamp01(a.emo.anger * 0.55); b.emo.anger = clamp01(b.emo.anger + 0.2);
       w.stats.unrest = clamp01(w.stats.unrest + 0.012);
@@ -134,11 +134,6 @@ function meet(w: World, alive: Rat[]) {
       a.intent.kind = 'socialize'; b.intent.kind = 'socialize';
       a.intent.until = w.tick + 32; b.intent.until = w.tick + 32;
       hold(a); hold(b);
-    } else if (aff < -0.2) {
-      a.anim = Anim.Protest; b.anim = Anim.Protest;
-      a.intent.kind = 'socialize'; b.intent.kind = 'socialize';
-      a.intent.until = w.tick + 22; b.intent.until = w.tick + 22;
-      hold(a); hold(b);
     }
   }
 }
@@ -157,7 +152,6 @@ function audience(w: World, alive: Rat[]) {
     if (d > 10) continue;
     face(r, king);
     if (d < cd) { cd = d; closest = r; }
-    if (d < 5 && d > 2.2 && (r.intent.kind === 'idle' || r.intent.kind === 'wander' || r.intent.kind === 'socialize')) r.anim = Anim.Cheer;
   }
   if (closest && cd < 3.2 && closest.intent.kind !== 'dig' && closest.intent.kind !== 'fight') {
     face(king, closest); face(closest, king);
