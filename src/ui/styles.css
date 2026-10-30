@@ -128,7 +128,7 @@ h2 { font-size: 20px; color: var(--amberL); } h3 { font-size: 14px; color: var(-
 @keyframes talk { to { background-position-x: calc(-576px * var(--s)); } }
 #inspect .row .pt { width: 64px; height: 64px; background-size: 384px 64px; animation-name: talk64; margin-right: 4px; }
 @keyframes talk64 { to { background-position-x: -384px; } }
-.card { width: 100%; max-width: 320px; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; border: 2px solid #000; box-shadow: 3px 3px 0 #000; background: #000; }
+.card { width: 100%; max-width: 320px; aspect-ratio: 16 / 9; image-rendering: auto; display: block; border: 0; box-shadow: none; background: #f4efe4; }
 .card.hero { margin: 0 auto 10px; }
 .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
 .card.thumb { box-shadow: 2px 2px 0 #000; }

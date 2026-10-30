@@ -60,7 +60,7 @@ export class Hud2 {
   // ───────── first launch: rating & consent ─────────
   gate(done: () => void) {
     const c = { ...this.consent };
-    const g = h(`<div class="h2-gate scan" role="dialog" aria-label="Rating and content settings">
+    const g = h(`<div class="h2-gate" role="dialog" aria-label="Rating and content settings">
       <h1>RAT GOD</h1><div class="rating">18+</div>
       <div class="box panel rivet">
         <p class="h2-p">A living society of rats, simulated without mercy. Over time it can show:</p>

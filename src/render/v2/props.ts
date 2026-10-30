@@ -1,22 +1,26 @@
-// Small code-drawn pixel props (held tools) until generated art replaces them. All colours from the palette.
+// Held tools drawn as thick ink, the same poster language as the rats. Not pixel stamps.
 import { Texture } from 'pixi.js';
 const cache = new Map<string, Texture>();
-type Px = [number, number, string];
-function draw(w: number, h: number, px: Px[]) { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d')!; for (const [x, y, col] of px) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } const t = Texture.from(c); t.source.scaleMode = 'nearest'; return t; }
-const line = (x0: number, y0: number, x1: number, y1: number, col: string): Px[] => { const out: Px[] = []; const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) out.push([Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), col]); return out; };
-const WOOD = '#70473f', DARK = '#080d0a', MET = '#796765', MET2 = '#4b7e89', FIRE = ['#f2b46a', '#e84b5a', '#f6c992'], CYAN = '#45eaf0';
+const INK = '#1c1612', PAPER = '#f4efe4', CLAY = '#6a5344', MUST = '#e2b15a', BRICK = '#c4543a', OLIVE = '#6d7a3c', TIN = '#8a8478';
+function ink(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void): Texture {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d')!;
+  g.lineWidth = 5; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = INK; g.fillStyle = CLAY;
+  draw(g);
+  const t = Texture.from(c); t.source.scaleMode = 'linear'; return t;
+}
+const stroke = (g: CanvasRenderingContext2D) => { g.stroke(); };
 export function toolTexture(tool: number, frame: number): Texture {
-  const k = `${tool}:${frame}`; let t = cache.get(k); if (t) return t;
-  let px: Px[] = [];
+  const k = `${tool}:${frame % 3}`; let t = cache.get(k); if (t) return t;
+  const flick = frame % 3;
   switch (tool) {
-    case 1: px = [...line(2, 11, 2, 4, WOOD), [1, 3, FIRE[frame % 3]], [2, 2, FIRE[(frame + 1) % 3]], [3, 3, FIRE[(frame + 2) % 3]], [2, 1, FIRE[0]], [2, 3, '#f6c992']]; t = draw(5, 12, px); break; // torch
-    case 2: px = [...line(1, 9, 1, 6, WOOD), ...line(0, 5, 4, 5, MET), ...line(1, 4, 3, 4, '#907d78'), [2, 3, '#907d78']]; t = draw(5, 10, px); break; // digging blade
-    case 3: px = [...line(0, 13, 5, 2, WOOD), [5, 1, MET], [6, 0, '#907d78'], [6, 1, MET]]; t = draw(7, 14, px); break; // spear
-    case 4: px = []; for (let y = 2; y < 8; y++) for (let x = 0; x < 6; x++) px.push([x, y, y === 2 || x === 0 ? '#505b5c' : '#373f41']); px.push([2, 4, '#d8b397'], [3, 4, '#d8b397'], [2, 6, '#d8b397']); t = draw(6, 8, px); break; // slate with marks
-    case 5: px = [...line(0, 7, 3, 4, '#ba8360'), ...line(3, 4, 5, 5, '#ba8360'), [5 + (frame % 2), 4 - frame % 2, CYAN], [4, 3, frame ? CYAN : '#42c3ca']]; t = draw(7, 8, px); break; // wire & spark
-    case 6: px = [...line(2, 0, 2, 1, MET), [1, 2, DARK], [3, 2, DARK], [1, 3, FIRE[frame % 3]], [2, 3, '#f6c992'], [3, 3, FIRE[0]], [1, 4, FIRE[0]], [2, 4, FIRE[(frame + 1) % 3]], [3, 4, FIRE[0]], ...line(1, 5, 3, 5, DARK)]; t = draw(5, 6, px); break; // lantern
-    case 7: px = [...line(0, 8, 4, 3, MET2), [4, 2, MET2], [5, 3, MET2], [5, 1, MET2], [6, 2, MET2]]; t = draw(7, 9, px); break; // wrench
-    case 8: { const hot = FIRE[frame % 3]; px = []; for (let y = 1; y <= 7; y++) for (let x = 0; x <= 6; x++) { const edge = x === 0 || y === 1 || x === 6 || y === 7; px.push([x, y, edge ? '#080d0a' : (x === 1 || y === 2 || x === 5 || y === 6) ? '#3b2015' : hot]); } px.push([3, 4, '#fff4d2']); t = draw(7, 9, px); break; } // the king's button
+    case 1: t = ink(36, 64, (g) => { g.fillStyle = CLAY; g.fillRect(14, 22, 8, 36); g.strokeRect(14, 22, 8, 36); g.fillStyle = flick === 1 ? PAPER : MUST; g.beginPath(); g.ellipse(18, 16, 8, 12, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = BRICK; g.beginPath(); g.ellipse(18, 12, 4, 6, 0, 0, Math.PI * 2); g.fill(); }); break;
+    case 2: t = ink(40, 48, (g) => { g.fillStyle = CLAY; g.fillRect(16, 18, 8, 26); g.strokeRect(16, 18, 8, 26); g.fillStyle = TIN; g.fillRect(6, 10, 28, 10); g.strokeRect(6, 10, 28, 10); }); break;
+    case 3: t = ink(28, 72, (g) => { g.strokeStyle = INK; g.beginPath(); g.moveTo(8, 68); g.lineTo(18, 8); g.stroke(); g.fillStyle = TIN; g.beginPath(); g.moveTo(18, 4); g.lineTo(26, 16); g.lineTo(12, 16); g.closePath(); g.fill(); stroke(g); }); break;
+    case 4: t = ink(40, 32, (g) => { g.fillStyle = PAPER; g.fillRect(4, 4, 32, 24); g.strokeRect(4, 4, 32, 24); g.fillStyle = INK; g.fillRect(10, 12, 14, 3); g.fillRect(10, 18, 10, 3); }); break;
+    case 5: t = ink(48, 28, (g) => { g.strokeStyle = OLIVE; g.lineWidth = 4; g.beginPath(); g.moveTo(4, 20); g.quadraticCurveTo(20, 4, 40, 16); g.stroke(); g.fillStyle = MUST; g.beginPath(); g.arc(40, 12, 4 + flick, 0, Math.PI * 2); g.fill(); }); break;
+    case 6: t = ink(32, 40, (g) => { g.fillStyle = TIN; g.fillRect(8, 10, 16, 18); g.strokeRect(8, 10, 16, 18); g.fillStyle = MUST; g.fillRect(12, 16, 8, 8); g.strokeStyle = INK; g.beginPath(); g.moveTo(16, 10); g.lineTo(16, 2); g.stroke(); }); break;
+    case 7: t = ink(48, 28, (g) => { g.strokeStyle = TIN; g.lineWidth = 6; g.beginPath(); g.moveTo(6, 22); g.lineTo(30, 8); g.stroke(); g.strokeStyle = INK; g.lineWidth = 4; g.strokeRect(28, 2, 14, 10); }); break;
+    case 8: t = ink(36, 36, (g) => { g.fillStyle = flick ? BRICK : MUST; g.beginPath(); g.arc(18, 18, 12, 0, Math.PI * 2); g.fill(); g.stroke(); }); break;
     default: t = Texture.EMPTY;
   }
   cache.set(k, t); return t;

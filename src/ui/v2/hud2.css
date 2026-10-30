@@ -102,6 +102,81 @@
 .h2-watch .look { flex: 1; min-width: 0; font-family: 'Arial Black', 'Arial Narrow', sans-serif; font-size: 11px; color: #1c1612; background: #f4efe4; border: 3px solid #1c1612; box-shadow: 3px 3px 0 #1c1612; }
 .h2-watch [data-n] { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h2-board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 8px 0; }
-.h2-sock { min-height: 36px; padding: 2px; font-family: 'Arial Black', 'Arial Narrow', sans-serif; font-size: 9px; line-height: 1.05; color: #6e6458; background: #e7dfd0; border: 2px solid #1c1612; overflow: hidden; word-break: break-word; }
-.h2-sock.on { color: var(--amberL); background: var(--slate2); box-shadow: inset 0 0 0 1px var(--amber); }
-.h2-sock.reach { color: #f0c0b8; box-shadow: inset 0 0 0 1px var(--red); }
+.h2-sock { min-height: 36px; padding: 4px 0; font-family: Georgia, 'Iowan Old Style', serif; font-size: 13px; line-height: 1.2; color: #1c1612; background: transparent; border: 0; border-bottom: 1px solid rgba(28,22,18,.25); overflow: hidden; word-break: break-word; }
+.h2-sock.on { color: #1c1612; background: transparent; box-shadow: inset 0 -2px 0 #c4543a; }
+.h2-sock.reach { color: #c4543a; box-shadow: inset 0 -2px 0 #c4543a; }
+
+/* Type on the picture. No boxed website controls. */
+.h2 { font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif; font-weight: 500; color: #1c1612; }
+.h2 .btn, .h2 button.btn {
+  background: transparent; color: #1c1612; border: 0; border-radius: 0; box-shadow: none;
+  font-family: Georgia, 'Iowan Old Style', Palatino, serif; font-size: 16px; font-weight: 500;
+  letter-spacing: 0.01em; text-transform: none; min-height: 44px; min-width: 36px; padding: 0 8px;
+  text-shadow: 0 0 8px #f4efe4, 0 0 2px #f4efe4;
+}
+.h2 .btn:active { transform: none; opacity: .45; box-shadow: none; }
+.h2 .btn.on { background: transparent; color: #1c1612; box-shadow: inset 0 -2px 0 #c4543a; }
+.h2 .btn.rust, .h2 .btn.red { background: transparent; color: #c4543a; box-shadow: inset 0 -2px 0 #c4543a; }
+.h2 .panel, .h2 .panel.rivet { background: transparent; border: 0; box-shadow: none; }
+.h2 .panel.rivet::before, .h2 .panel.rivet::after { display: none; }
+.h2 .scan { background-image: none; }
+.h2-top { padding: calc(var(--sat) + 10px) 16px 0; }
+.h2-stat { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; min-height: 0; padding: 0; }
+.h2-stat .clock, .h2-stat .pop { font-family: Georgia, serif; font-size: 18px; font-weight: 600; color: #1c1612; text-shadow: 0 0 8px #f4efe4, 0 0 2px #f4efe4; }
+.h2-grace { flex: 1 0 100%; gap: 4px; }
+.h2-grace .lbl2 { font-family: Georgia, serif; letter-spacing: .18em; font-size: 10px; color: #6e6458; }
+.h2-grace i { height: 3px; background: rgba(28,22,18,.18); border: 0; }
+.h2-grace i b { background: #c4543a; }
+.h2-iconbtn { width: auto; min-height: 44px; font-size: 18px; }
+.h2-badge { top: 2px; right: -4px; min-width: 16px; height: 16px; border: 0; border-radius: 0; background: transparent; color: #c4543a; font-family: Georgia, serif; font-size: 12px; line-height: 16px; }
+.h2-bottom { background: linear-gradient(transparent, rgba(244,239,228,.5) 72%); padding: 0 12px calc(var(--sab) + 8px); align-items: center; }
+.h2-bottom .grp { gap: 0; align-items: center; }
+.h2-god {
+  width: 58px; height: 58px; border-radius: 50%; background: rgba(244,239,228,.94); color: #1c1612;
+  border: 1.5px solid #1c1612; box-shadow: inset 0 0 0 4px #f4efe4, inset 0 0 0 5.5px #1c1612;
+  font-family: Georgia, serif; font-size: 11px; letter-spacing: .14em; font-weight: 600;
+}
+.h2-god:active { transform: none; opacity: .7; }
+.h2-feed { left: 16px; right: 84px; bottom: calc(var(--sab) + 72px); }
+.h2-feed .ln { background: transparent; border: 0; padding: 0; font-family: Georgia, serif; font-style: italic; font-weight: 500; font-size: 15px; color: #1c1612; text-shadow: 0 0 8px #f4efe4, 0 0 2px #f4efe4; }
+.h2-lens { left: 16px; right: 84px; bottom: calc(var(--sab) + 112px); background: transparent; border: 0; box-shadow: none; font-family: Georgia, serif; font-size: 13px; font-style: italic; color: #1c1612; text-shadow: 0 0 8px #f4efe4; }
+.h2 .h2-pill { background: rgba(244,239,228,.94); border-radius: 0; padding: 8px 10px; box-shadow: none; border-left: 3px solid #1c1612; }
+.h2-pill .por { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid #1c1612; box-shadow: none; background-color: #f4efe4; background-size: cover; background-position: center 20%; image-rendering: auto; }
+.h2-pill .tx { font-family: Georgia, serif; font-weight: 500; }
+.h2-pill.k-god { box-shadow: none; border-left-color: #c4543a; }
+.h2-watch { left: 12px; right: 78px; bottom: calc(var(--sab) + 48px); }
+.h2 .h2-watch .look { font-family: Georgia, serif; font-size: 15px; font-style: italic; font-weight: 500; color: #1c1612; background: rgba(244,239,228,.92); border: 0; box-shadow: none; }
+.h2 .h2-nudge { background: rgba(244,239,228,.92); border: 0; border-bottom: 1.5px solid #1c1612; box-shadow: none; color: #1c1612; font-family: Georgia, serif; }
+.h2-nudge::after { border-top-color: #1c1612; }
+.h2 .h2-sheet { background: #f4efe4; border: 0; border-top: 2px solid #1c1612; box-shadow: none; animation: h2up .28s ease; max-height: 64vh; }
+.h2-sheet .hd { border-bottom: 1px solid rgba(28,22,18,.18); padding: 16px 18px 8px; }
+.h2-sheet .hd h3 { font-family: Georgia, serif; font-size: 28px; font-weight: 600; color: #1c1612; letter-spacing: -0.03em; text-transform: none; }
+.h2-sheet .sc { padding: 6px 18px 24px; }
+.h2-tabs { border-bottom: 1px solid rgba(28,22,18,.12); }
+.h2-sec { font-family: Georgia, serif; letter-spacing: .18em; color: #6e6458; font-size: 11px; }
+.h2-row { font-family: Georgia, serif; border-bottom: 1px solid rgba(28,22,18,.12); }
+.h2-row .v { color: #1c1612; }
+.h2-bar { height: 3px; background: rgba(28,22,18,.12); border: 0; } .h2-bar b { background: #6d7a3c; }
+.h2-chip { font-family: Georgia, serif; background: transparent; border: 0; border-bottom: 1.5px solid #1c1612; color: #1c1612; }
+.h2-p { font-family: Georgia, serif; font-weight: 500; line-height: 1.35; }
+.h2 .h2-gate { background: #f4efe4; }
+.h2-gate h1 { font-family: Georgia, serif; font-weight: 600; font-size: 68px; letter-spacing: -0.04em; color: #1c1612; text-shadow: none; }
+.h2-gate .rating { font-family: Georgia, serif; background: transparent; color: #c4543a; border: 0; box-shadow: none; letter-spacing: .22em; }
+.h2-gate .box { background: transparent; border: 0; box-shadow: none; }
+.h2 .h2-opening { background: #f4efe4; }
+.h2-opening p { font-family: Georgia, serif; font-size: 22px; font-weight: 500; line-height: 1.45; color: #1c1612; text-shadow: none; }
+.h2-cine { background: rgba(28,22,18,.35); }
+.h2-cine::before, .h2-cine::after { background: #1c1612; height: 7vh; }
+.h2 .h2-cine .card { background: #f4efe4; border: 0; box-shadow: none; }
+.h2-cine .art { border: 0; image-rendering: auto; }
+.h2-cine h2 { font-family: Georgia, serif; font-size: 28px; font-weight: 600; color: #1c1612; letter-spacing: -0.03em; text-shadow: none; text-transform: none; }
+.h2-radial { background: rgba(244,239,228,.22); }
+.h2 .h2-radial .opt { background: rgba(244,239,228,.95); border: 0; border-radius: 999px; box-shadow: none; font-family: Georgia, serif; font-size: 14px; color: #1c1612; animation: h2fade .18s ease; text-shadow: none; }
+.h2-radial .opt small { font-family: Georgia, serif; color: #6e6458; }
+.h2-radial .hub { background: #f4efe4; }
+.h2 .h2-radial .info { background: rgba(244,239,228,.96); border-top: 1px solid rgba(28,22,18,.25); }
+.h2 .h2-target { background: rgba(244,239,228,.94); border-left: 3px solid #1c1612; }
+.h2-web { background: transparent; border: 0; border-top: 1px solid rgba(28,22,18,.2); }
+@keyframes h2in { from { transform: translateY(-8px); opacity: 0; } }
+@keyframes h2up { from { transform: translateY(28px); } }
+

@@ -13,15 +13,15 @@ const mix = (a: number[], b: number[], t: number) => a.map((v, i) => v + (b[i] -
 const toHex = (c: number[]) => (Math.round(c[0] * 255) << 16) | (Math.round(c[1] * 255) << 8) | Math.round(c[2] * 255);
 // key frames over the day: [tod, skyTop, skyBottom, ambient(surface), grade tint]
 const KEYS: [number, number, number, number[], number[]][] = [
-  [0.0, 0x080d0a, 0x23434c, [0.42, 0.48, 0.66], [0.86, 0.9, 1.08]],
-  [0.2, 0x14151a, 0x352e46, [0.48, 0.5, 0.66], [0.9, 0.9, 1.05]],
-  [0.27, 0x352e46, 0xc46665, [0.85, 0.7, 0.7], [1.05, 0.95, 0.92]],
-  [0.36, 0x3b666f, 0xd5a063, [1.0, 0.95, 0.88], [1.04, 1.0, 0.96]],
-  [0.5, 0x3b666f, 0x907d78, [1.08, 1.04, 1.0], [1.02, 1.0, 0.98]],
-  [0.68, 0x413b5a, 0xd5a063, [1.0, 0.85, 0.75], [1.06, 0.97, 0.92]],
-  [0.76, 0x352e46, 0xe84b5a, [0.8, 0.6, 0.62], [1.06, 0.92, 0.95]],
-  [0.84, 0x14151a, 0x413b5a, [0.5, 0.5, 0.68], [0.9, 0.9, 1.05]],
-  [1.0, 0x080d0a, 0x23434c, [0.42, 0.48, 0.66], [0.86, 0.9, 1.08]],
+  [0.0, 0x1c1612, 0x3a2e26, [0.45, 0.38, 0.32], [1.0, 0.94, 0.86]],
+  [0.2, 0x2a221c, 0x5c4038, [0.55, 0.45, 0.36], [1.02, 0.94, 0.86]],
+  [0.27, 0x6a4038, 0xe2b15a, [0.85, 0.7, 0.5], [1.06, 0.96, 0.84]],
+  [0.36, 0xc4a888, 0xf4efe4, [1.0, 0.96, 0.88], [1.02, 1.0, 0.94]],
+  [0.5, 0xd7c4a4, 0xf7f1e6, [1.05, 1.0, 0.92], [1.0, 1.0, 0.96]],
+  [0.68, 0xc4a888, 0xe7c98a, [1.0, 0.9, 0.72], [1.04, 0.96, 0.86]],
+  [0.76, 0x8a4038, 0xe2b15a, [0.85, 0.62, 0.45], [1.06, 0.92, 0.82]],
+  [0.84, 0x2a221c, 0x5c4038, [0.5, 0.4, 0.32], [1.0, 0.92, 0.84]],
+  [1.0, 0x1c1612, 0x3a2e26, [0.45, 0.38, 0.32], [1.0, 0.94, 0.86]],
 ];
 function keyAt(t: number) { for (let i = 0; i < KEYS.length - 1; i++) { const a = KEYS[i], b = KEYS[i + 1]; if (t >= a[0] && t <= b[0]) { const f = (t - a[0]) / (b[0] - a[0]); return { top: mix(H(a[1]), H(b[1]), f), bot: mix(H(a[2]), H(b[2]), f), amb: mix(a[3], b[3], f), tint: mix(a[4], b[4], f) }; } } const k = KEYS[0]; return { top: H(k[1]), bot: H(k[2]), amb: k[3], tint: k[4] }; }
 
@@ -47,7 +47,7 @@ export class Sky {
     this.grad.texture = this.gradTex; this.grad.position.set(-400, -SKY_PX); this.grad.width = this.W + 800; this.grad.height = SKY_PX + this.surf + 40; this.back.addChild(this.grad);
     // stars
     let seed = 9; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 140; i++) { const st = new Sprite(Texture.WHITE); st.width = st.height = r() < 0.15 ? 4 : 2; st.position.set(r() * this.W, -SKY_PX + r() * SKY_PX * 0.6); st.alpha = 0.4 + r() * 0.6; st.tint = r() < 0.2 ? 0x45eaf0 : 0xf6c992; this.stars.addChild(st); }
+    for (let i = 0; i < 80; i++) { const st = new Sprite(Texture.WHITE); st.width = st.height = r() < 0.15 ? 3 : 1.5; st.position.set(r() * this.W, -SKY_PX + r() * SKY_PX * 0.55); st.alpha = 0.25 + r() * 0.35; st.tint = 0xf4efe4; this.stars.addChild(st); }
     this.back.addChild(this.stars);
     const far = clip('parallax_city_far'), mid = clip('parallax_city_mid');
     if (far) { const t = far.frames[0]; this.far = new TilingSprite({ texture: t, width: this.W + 1600, height: t.height }); this.far.tileScale.set(STREET_SCALE * 0.75); this.far.height = t.height * STREET_SCALE * 0.75; this.far.position.set(-800, this.surf - this.far.height - 260);
@@ -60,7 +60,7 @@ export class Sky {
     const rayTex = (() => { const c = document.createElement('canvas'); c.width = 16; c.height = 128; const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(255,240,200,0)'); gr.addColorStop(0.35, 'rgba(255,240,200,0.55)'); gr.addColorStop(1, 'rgba(255,240,200,0)'); g.fillStyle = gr; g.fillRect(0, 0, 16, 128); const hg = g.createLinearGradient(0, 0, 16, 0); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.5, 'rgba(0,0,0,0)'); hg.addColorStop(1, 'rgba(0,0,0,1)'); g.globalCompositeOperation = 'destination-out'; g.fillStyle = hg; g.fillRect(0, 0, 16, 128); return Texture.from(c); })();
     for (const n of B.nodes) if (n.kind === 'surface' || n.kind === 'entrance') for (let k = 0; k < 3; k++) { const ry = new Sprite(rayTex); ry.anchor.set(0.5, 0.2); ry.position.set(n.x * PX + (k - 1) * 14, n.y * PX - 40); ry.width = 26 + k * 8; ry.height = 240 + k * 50; ry.skew.x = -0.25 + k * 0.08; ry.blendMode = 'add'; ry.alpha = 0; this.front.addChild(ry); this.rays.push(ry); }
     // rain / snow pool (positioned around the camera each frame)
-    this.rainTex = (() => { const c = document.createElement('canvas'); c.width = 1; c.height = 10; const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 0, 10); gr.addColorStop(0, 'rgba(160,220,230,0)'); gr.addColorStop(1, 'rgba(190,235,240,0.9)'); g.fillStyle = gr; g.fillRect(0, 0, 1, 10); return Texture.from(c); })();
+    this.rainTex = (() => { const c = document.createElement('canvas'); c.width = 1; c.height = 10; const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 0, 10); gr.addColorStop(0, 'rgba(90,70,50,0)'); gr.addColorStop(1, 'rgba(120,100,80,0.75)'); g.fillStyle = gr; g.fillRect(0, 0, 1, 10); return Texture.from(c); })();
     this.snowTex = Texture.WHITE;
     for (let i = 0; i < 360; i++) { const d = new Sprite(this.rainTex); d.visible = false; (d as any).sd = Math.random(); this.front.addChild(d); this.rain.push(d); }
     this.front.addChild(this.bolt);
@@ -68,7 +68,7 @@ export class Sky {
     this.sunRect.position.set(-800, -SKY_PX); this.sunRect.width = this.W + 1600; this.sunRect.height = SKY_PX + this.surf - 10; this.lights.addChild(this.sunRect);
     this.sunFade.texture = (() => { const c = document.createElement('canvas'); c.width = 1; c.height = 32; const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 0, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 1, 32); return Texture.from(c); })();
     this.sunFade.position.set(-800, this.surf - 10); this.sunFade.width = this.W + 1600; this.sunFade.height = 70; this.lights.addChild(this.sunFade);
-    const LCOL = [0xe84b5a, 0x45eaf0, 0xf2b46a, 0xad6b7a, 0x42c3ca];
+    const LCOL = [0xe2b15a, 0xc4543a, 0xf4efe4, 0xc9842a, 0x6d7a3c];
     for (let x = 120, i = 0; x < this.W; x += 260 + ((i * 97) % 180), i++) { const L = new Sprite(lightTexture()); L.anchor.set(0.5); L.blendMode = 'add'; L.position.set(x, this.surf - 120 - ((i * 53) % 380)); L.scale.set(3 + (i % 3)); L.tint = LCOL[i % LCOL.length]; (L as any).ph = i; this.lights.addChild(L); this.lamps.push(L); }
     this.head.texture = lightTexture(); this.head.anchor.set(0.5); this.head.blendMode = 'add'; this.head.scale.set(7, 2.2); this.head.tint = 0xf6c992; this.head.visible = false; this.lights.addChild(this.head);
   }

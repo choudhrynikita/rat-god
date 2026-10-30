@@ -11,23 +11,23 @@ const CH = 256;
 const hex = (h: number) => [(h >> 16) & 255, (h >> 8) & 255, h & 255] as const;
 // palette ramps (dark → light), all from style_ref/palette.hex
 const RAMP: Record<number, number[]> = {
-  [Mat.Topsoil]: [0x3a2a22, 0x4e382c, 0x624838, 0x7a5a42],
-  [Mat.Loam]: [0x2c241c, 0x3e3228, 0x524238, 0x6a5644],
-  [Mat.Clay]: [0x4a3428, 0x5c4032, 0x745038, 0x8a6848],
-  [Mat.Gravel]: [0x222c32, 0x373f41, 0x475052, 0x505b5c],
-  [Mat.Roots]: [0x30161b, 0x441f28, 0x70473f, 0x9c6e4e],
-  [Mat.Rock]: [0x1e2228, 0x373f41, 0x475052, 0x796765],
-  [Mat.Pipe]: [0x14151a, 0x23434c, 0x3b666f, 0x4b7e89],
-  [Mat.Concrete]: [0x373f41, 0x40494b, 0x505b5c, 0x796765],
-  [Mat.Bedrock]: [0x080d0a, 0x14151a, 0x1e2228, 0x222c32],
+  [Mat.Topsoil]: [0x6a5344, 0x6a5344, 0x6a5344, 0x6a5344],
+  [Mat.Loam]: [0x5a4638, 0x5a4638, 0x5a4638, 0x5a4638],
+  [Mat.Clay]: [0x8a6848, 0x8a6848, 0x8a6848, 0x8a6848],
+  [Mat.Gravel]: [0x7a7068, 0x7a7068, 0x7a7068, 0x7a7068],
+  [Mat.Roots]: [0x6a4030, 0x6a4030, 0x6a4030, 0x6a4030],
+  [Mat.Rock]: [0x4a453e, 0x4a453e, 0x4a453e, 0x4a453e],
+  [Mat.Pipe]: [0x5c564c, 0x5c564c, 0x5c564c, 0x5c564c],
+  [Mat.Concrete]: [0x8a8072, 0x8a8072, 0x8a8072, 0x8a8072],
+  [Mat.Bedrock]: [0x2a241e, 0x2a241e, 0x2a241e, 0x2a241e],
   [Mat.Air]: [0, 0, 0, 0],
 };
 const RAMPC: Record<number, (readonly [number, number, number])[]> = {};
 for (const k in RAMP) RAMPC[k] = RAMP[k].map(hex);
-const BACK = [0x2a221c, 0x3a2e26, 0x4a3a2e, 0x5c4a3a].map(hex);
-const DIRT = [0x38302d, 0x4d3d3d, 0x70473f, 0x9c6e4e].map(hex);
-const INK = hex(0x080d0a);
-const WATER = hex(0x23434c), WATER_HI = hex(0x489da2), WATER_TOP = hex(0x42c3ca);
+const BACK = [0x3a2e26, 0x4a3a2e, 0x5c4a3a, 0xc4a888].map(hex);
+const DIRT = [0x6a5344, 0x6a5344, 0x8a6848, 0xc4a888].map(hex);
+const INK = hex(0x1c1612);
+const WATER = hex(0x3d4a40), WATER_HI = hex(0x5c6a58), WATER_TOP = hex(0x8a9478);
 
 // deterministic tileable value-noise tables
 function noiseTable(seed: number, cell: number): Float32Array {
@@ -126,8 +126,8 @@ export class Terrain {
           const above = sy - wy;
           if (above > 0 && above < 22) {
             const tx = Math.floor(wx / 4);
-            const cob = hash(tx, 2) > 0.45 ? 0x2c3338 : 0x1a2024;
-            const c = hex(above < 3 ? 0x3a4448 : cob);
+            const cob = hash(tx, 2) > 0.45 ? 0xc4a08a : 0x8a6848;
+            const c = hex(above < 3 ? 0xe2d2bc : cob);
             out[p] = c[0]; out[p + 1] = c[1]; out[p + 2] = c[2]; out[p + 3] = above < 3 ? 255 : 210;
           } else out[p + 3] = 0;
           continue;
@@ -137,7 +137,7 @@ export class Terrain {
           // tunnel back wall, AO toward walls, a darker ceiling band, scratch marks
           const ov = oval[k]; const ao = Math.min(1, Math.max(0, (ov - 0.5) * 2.6));
           const up1 = open[k - ew] !== 1, up2 = open[k - 2 * ew] !== 1 || up1;
-          let li = ao < 0.25 ? 0 : ao < 0.6 ? 1 : 2; if (nz(N4, wx, wy) > 0.32 && li > 0) li--;
+          let li = ao < 0.25 ? 0 : ao < 0.6 ? 1 : 2;
           if (up1) li = 0; else if (up2 && li > 1) li = 1;
           if (li >= 1 && hash(wx >> 1, wy) > 0.985) li = 3;
           const c = BACK[li]; r = c[0]; g = c[1]; b = c[2];
@@ -162,7 +162,7 @@ export class Terrain {
           const col = Math.max(0, Math.min(T.W - 1, tx));
           const depth = ty - T.surfaceY[col];
           if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) {
-            const grass = hex(cell > 0.55 ? 0x6d8f4a : 0x3f5c32);
+            const grass = hex(0x6d7a3c);
             r = grass[0]; g = grass[1]; b = grass[2]; v = -9;
           }
           if (m === Mat.Pipe) { // shade across the pipe axis
@@ -187,9 +187,9 @@ export class Terrain {
           // cracks where the ground is unstable
           const st = this.bil(T.stab, wx, wy); if (st < 70) { const q = Math.abs(nz(N16, wx * 2, wy * 2)) + Math.abs(nz(N8, wx + 50, wy)) * 0.3; if (q < 0.035 * (1 - st / 70) + 0.006) { r = INK[0]; g = INK[1]; b = INK[2]; } }
           // grass-less street crust right under the open air
-          if (open[k - ew] === 2) { const c = hex(0x505b5c); r = c[0]; g = c[1]; b = c[2]; } else if (open[k - 2 * ew] === 2 || open[k - 3 * ew] === 2) { const c = hex(0x373f41); r = c[0]; g = c[1]; b = c[2]; }
+          if (open[k - ew] === 2) { const c = hex(0xc4a08a); r = c[0]; g = c[1]; b = c[2]; } else if (open[k - 2 * ew] === 2 || open[k - 3 * ew] === 2) { const c = hex(0x8a6848); r = c[0]; g = c[1]; b = c[2]; }
         }
-        if (moist > 0.25) { const f = 1 - (moist - 0.25) * 0.35; r *= f; g *= f; b *= f * 1.04; }
+        if (moist > 0.25) { const f = 1 - (moist - 0.25) * 0.15; r *= f; g *= f; b *= f; }
         out[p] = r; out[p + 1] = g; out[p + 2] = b; out[p + 3] = 255;
       }
     }
@@ -201,7 +201,7 @@ export class Terrain {
       if (m === Mat.Air) {
         const col = Math.max(0, Math.min(T.W - 1, Math.floor(wx / PX)));
         const above = T.surfaceY[col] * PX - wy;
-        if (above > 0 && above < 22) { const c = hex(above < 6 ? 0x3a4448 : hash(x, 2) > 0.45 ? 0x2c3338 : 0x1a2024); img.data[p] = c[0]; img.data[p + 1] = c[1]; img.data[p + 2] = c[2]; img.data[p + 3] = 230; }
+        if (above > 0 && above < 22) { const c = hex(above < 6 ? 0xe2d2bc : 0xc4a08a); img.data[p] = c[0]; img.data[p + 1] = c[1]; img.data[p + 2] = c[2]; img.data[p + 3] = 230; }
         else img.data[p + 3] = 0;
         continue;
       }
@@ -211,7 +211,7 @@ export class Terrain {
         const tx = Math.floor(wx / PX), ty = Math.floor(wy / PX);
         const col = Math.max(0, Math.min(T.W - 1, tx));
         const depth = ty - T.surfaceY[col];
-        if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) c = hex(hash(tx, ty) > 0.55 ? 0x6d8f4a : 0x3f5c32);
+        if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) c = hex(0x6d7a3c);
         else { const R = RAMPC[m] ?? RAMPC[Mat.Loam]; c = R[(hash(tx, ty) * 4) | 0]; }
       }
       const moist = this.tile(T.moist, Math.floor(wx / PX), Math.floor(wy / PX)) / 255; const f = moist > 0.25 ? 1 - (moist - 0.25) * 0.35 : 1;
@@ -222,10 +222,10 @@ export class Terrain {
     const T = this.T;
     if (tx < 0 || ty < 0 || tx >= T.W || ty >= T.H) return null;
     const i = ty * T.W + tx; const m = T.mat[i]; const carve = T.carve[i];
-    if (m === Mat.Air) { const above = T.surfaceY[Math.max(0, Math.min(T.W - 1, tx))] - ty; return above > 0 && above < 3 ? 0x3a4448 : null; }
-    if (carve >= PASSABLE && m !== Mat.Rock && m !== Mat.Pipe && m !== Mat.Concrete) return 0x14151a;
+    if (m === Mat.Air) { const above = T.surfaceY[Math.max(0, Math.min(T.W - 1, tx))] - ty; return above > 0 && above < 3 ? 0xe2d2bc : null; }
+    if (carve >= PASSABLE && m !== Mat.Rock && m !== Mat.Pipe && m !== Mat.Concrete) return 0x4a3a2e;
     const depth = ty - T.surfaceY[Math.max(0, Math.min(T.W - 1, tx))];
-    if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) return hash(tx, ty) > 0.55 ? 0x6d8f4a : 0x3f5c32;
+    if (depth >= 0 && depth < 2 && m !== Mat.Concrete && m !== Mat.Pipe) return 0x6d7a3c;
     const R = RAMPC[m] ?? RAMPC[Mat.Loam]; const c = R[(hash(tx, ty) * 3) | 0];
     return (c[0] << 16) | (c[1] << 8) | c[2];
   }
@@ -253,8 +253,8 @@ export class Terrain {
     const key = cy * 4096 + cx; let c = this.chunks.get(key); if (c) return c;
     const cv = document.createElement('canvas'); cv.width = CH; cv.height = CH; const g = cv.getContext('2d')!;
     this.blitTiles(cx, cy, g);
-    const tex = Texture.from(cv); tex.source.scaleMode = 'nearest';
-    const spr = new Sprite(tex); spr.position.set(cx * CH, cy * CH); spr.roundPixels = true; this.root.addChild(spr);
+    const tex = Texture.from(cv); tex.source.scaleMode = 'linear';
+    const spr = new Sprite(tex); spr.position.set(cx * CH, cy * CH); spr.roundPixels = false; this.root.addChild(spr);
     c = { spr, cv, g, tex, sharp: false, rows: 0 }; this.chunks.set(key, c); this.refine.push(key); return c;
   }
   /** apply a sim delta: update fields, queue local repaints, collect dig particles */

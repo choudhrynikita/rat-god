@@ -14,7 +14,7 @@ export class Sheets {
   open(title: string, body: string, bind?: (root: HTMLElement) => void, tabs?: { id: string; label: string; on: boolean }[], onTab?: (id: string) => void, kind = 'misc') {
     if (this.hud.blocking) return this.el ?? this.hud.el;
     this.close(); this.kind = kind;
-    const el = h(`<div class="h2-sheet panel rivet scan" role="dialog" aria-label="${esc(title)}"><div class="hd"><h3>${title}</h3><button class="btn" data-close aria-label="Close">✕</button></div>
+    const el = h(`<div class="h2-sheet panel" role="dialog" aria-label="${esc(title)}"><div class="hd"><h3>${title}</h3><button class="btn" data-close aria-label="Close">close</button></div>
       ${tabs ? `<div class="h2-tabs">${tabs.map((t) => `<button class="btn${t.on ? ' on' : ''}" data-tab="${t.id}">${esc(t.label)}</button>`).join('')}</div>` : ''}<div class="sc">${body}</div></div>`);
     (el.querySelector('[data-close]') as HTMLElement).onclick = () => this.close();
     el.querySelectorAll<HTMLElement>('[data-tab]').forEach((b) => b.onclick = () => onTab?.(b.dataset.tab!));

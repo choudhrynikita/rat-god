@@ -33,7 +33,7 @@ void main(){
   if (uCA > 0.0) { vec2 d = (vUV - 0.5) * uCA / uRT * 2.0; col = vec3(texture(uScene, uv + d).r, texture(uScene, uv).g, texture(uScene, uv - d).b); }
   else col = texture(uScene, uv).rgb;
   vec4 a = texture(uActor, uv); col = col * (1.0 - a.a) + a.rgb;
-  vec3 lit = mix(vec3(0.28), L * 1.55, uLightOn);
+  vec3 lit = mix(vec3(0.86), L * 1.05, uLightOn);
   col *= lit;
   if (uRim > 0.5) {
     vec2 px = vec2(1.6) / uRT;
@@ -86,7 +86,7 @@ export interface PostEnv { tint: [number, number, number]; sat: number; contrast
 
 export class Post {
   tier: Tier = 'high'; auto = true;
-  toggles: PostToggles = { lighting: true, bloom: true, rim: true, grade: true, vignette: true, grain: true, crt: false, ca: true, haze: true, fog: true };
+  toggles: PostToggles = { lighting: true, bloom: true, rim: false, grade: true, vignette: true, grain: false, crt: false, ca: false, haze: true, fog: true };
   readonly sceneRoot = new Container({ label: 'scene' });   // world-space, not on stage
   readonly actorRoot = new Container({ label: 'actors' });
   readonly lightRoot = new Container({ label: 'lights' });
@@ -130,12 +130,12 @@ export class Post {
   /** render everything. cam: world x,y at the screen centre; zd: device px per world px; shake in device px */
   render(cam: { x: number; y: number; zd: number; shakeX: number; shakeY: number }, devW: number, devH: number, cssW: number, cssH: number, env: PostEnv, surfY: number, timeS: number, fast = false) {
     const r = this.renderer; this.resize(devW, devH);
-    const zd = cam.zd; this.lod = zd < 1; const k = zd >= 1 ? Math.min(Math.floor(zd), 4) : zd; const s = zd / k; this.k = k; this.s = s;
+    const zd = cam.zd; this.lod = zd < 1; const k = Math.max(0.35, zd); const s = 1; this.k = k; this.s = s;
     const PAD = 4; const ox = cam.x * k - devW / s / 2, oy = cam.y * k - devH / s / 2; const ix = Math.floor(ox), iy = Math.floor(oy);
     for (const c of [this.sceneRoot, this.actorRoot]) { c.scale.set(k); c.position.set(-(ix - PAD), -(iy - PAD)); }
     const LS = 0.25; this.lightRoot.scale.set(k * LS); this.lightRoot.position.set(-(ix - PAD) * LS, -(iy - PAD) * LS);
     const T = this.toggles; const amb = env.ambient;
-    r.render({ container: this.sceneHold, target: this.sceneRT, clear: true, clearColor: [0.03, 0.04, 0.04, 1] });
+    r.render({ container: this.sceneHold, target: this.sceneRT, clear: true, clearColor: [0.29, 0.23, 0.18, 1] });
     r.render({ container: this.actorHold, target: this.actorRT, clear: true, clearColor: [0, 0, 0, 0] });
     if (T.lighting) r.render({ container: this.lightHold, target: this.lightRT, clear: true, clearColor: [amb[0] * 0.55, amb[1] * 0.5, amb[2] * 0.46, 0] });
     const bloomOn = T.bloom && this.tier !== 'low' && !fast;
@@ -144,8 +144,8 @@ export class Post {
     const U = this.U;
     U.uRT[0] = this.alloc.w; U.uRT[1] = this.alloc.h; U.uLRT[0] = this.alloc.lw; U.uLRT[1] = this.alloc.lh; U.uScreen[0] = devW; U.uScreen[1] = devH;
     U.uS = s; U.uOff[0] = ox - ix + PAD + cam.shakeX / s; U.uOff[1] = oy - iy + PAD + cam.shakeY / s; U.uLScale = LS; U.uTime = timeS;
-    U.uBloomAmt = bloomOn ? 1.15 : 0; U.uRim = detail ? 1.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
-    U.uVig = T.vignette ? 0.34 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.035 : 0; U.uCA = T.ca && this.tier === 'high' ? 0.6 : 0; U.uHaze = T.haze ? env.haze * 0.7 : 0;
+    U.uBloomAmt = bloomOn ? 0.35 : 0; U.uRim = detail ? 0.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
+    U.uVig = T.vignette ? 0.16 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.012 : 0; U.uCA = T.ca && this.tier === 'high' ? 0.25 : 0; U.uHaze = T.haze ? env.haze * 0.25 : 0;
     U.uScan = T.crt ? 1 : 0; U.uFlash = env.flash;
     const g = T.grade; U.uTint[0] = g ? env.tint[0] : 1; U.uTint[1] = g ? env.tint[1] : 1; U.uTint[2] = g ? env.tint[2] : 1; U.uSat = g ? env.sat : 1; U.uContrast = g ? env.contrast : 1;
     U.uFog = T.fog ? env.fog : 0; U.uFogCol[0] = env.fogCol[0]; U.uFogCol[1] = env.fogCol[1]; U.uFogCol[2] = env.fogCol[2]; U.uDust = T.fog ? env.dust : 0;
