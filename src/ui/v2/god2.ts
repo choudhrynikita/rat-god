@@ -41,10 +41,10 @@ export class GodMenu {
     const ring = (opts: { label: string; sub?: string; dis?: boolean; on: () => void; blurb?: string }[], back?: () => void) => {
       root.querySelectorAll('.opt,.hub').forEach((n) => n.remove());
       const R = Math.min(vw, vh) * 0.36; const n = opts.length;
-      opts.forEach((o, i) => { const a = -Math.PI / 2 + (i / n) * Math.PI * 2; const b = h(`<button class="btn opt${o.dis ? ' dis' : ''}">${esc(o.label)}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</button>`);
+      opts.forEach((o, i) => { const a = -Math.PI / 2 + (i / n) * Math.PI * 2; const b = h(`<button class="word opt${o.dis ? ' dis' : ''}">${esc(o.label)}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</button>`);
         b.style.left = `${cx + Math.cos(a) * R}px`; b.style.top = `${cy + Math.sin(a) * R * 0.92}px`; b.onclick = (ev) => { ev.stopPropagation(); o.on(); };
         b.onpointerenter = () => { if (o.blurb) (info.querySelector('[data-blurb]') as HTMLElement).textContent = o.blurb; }; root.appendChild(b); });
-      const hub = h(`<button class="h2-god hub" aria-label="${back ? 'Back' : 'Close'}">${back ? 'BACK' : 'CLOSE'}</button>`); hub.style.left = `${cx}px`; hub.style.top = `${cy}px`;
+      const hub = h(`<button class="h2-god hub" aria-label="${back ? 'Back' : 'Close'}">${back ? 'back' : 'watch'}</button>`); hub.style.left = `${cx}px`; hub.style.top = `${cy}px`;
       hub.onclick = (ev) => { ev.stopPropagation(); back ? back() : this.close(); }; root.appendChild(hub);
     };
     const fits = (p: GodPowerInfo) => !preset.rat || p.target.length === 0 || p.target.includes('rat') || p.target.includes('dynasty') || p.target.includes('x');
@@ -59,7 +59,7 @@ export class GodMenu {
     const params: GodParams = {}; const queue = info.params.filter((k) => PARAM_OPTS[k]);
     const nextParam = () => {
       const k = queue.shift(); if (!k) return this.targets(info, preset, params);
-      const spec = PARAM_OPTS[k]!; this.hud.sheets.open(`${info.label}: ${spec.title}`, `<p class="h2-p" style="color:var(--grey)">${esc(info.blurb)}</p><div style="display:flex;flex-wrap:wrap;gap:6px">${spec.opts.map((o, i) => `<button class="btn" data-i="${i}">${esc(o.label)}</button>`).join('')}</div>`, (root) => {
+      const spec = PARAM_OPTS[k]!; this.hud.sheets.open(`${info.label}: ${spec.title}`, `<p class="h2-p" style="color:var(--grey)">${esc(info.blurb)}</p><div style="display:flex;flex-wrap:wrap;gap:6px">${spec.opts.map((o, i) => `<button class="word" data-i="${i}">${esc(o.label)}</button>`).join('')}</div>`, (root) => {
         root.querySelectorAll<HTMLElement>('[data-i]').forEach((b) => b.onclick = () => { (params as Record<string, unknown>)[k] = spec.opts[Number(b.dataset.i)].v; this.hud.sheets.close(); nextParam(); }); });
     };
     nextParam();
@@ -69,12 +69,12 @@ export class GodMenu {
     for (const k of info.target) { if (k === 'y') continue; if (k === 'rat' && preset.rat != null) target.rat = preset.rat; else if (k === 'x' && preset.x != null) { target.x = preset.x; target.y = preset.y; } else need.push(k); }
     if (info.power === 'punish' && need.includes('rat') && this.hud.snap?.king) { /* default target the king, but let the player tap another rat */ }
     if (!need.length) return this.fire(info, target, params);
-    const bar = h(`<div class="h2-target panel rivet"><span class="body"></span><button class="btn red">CANCEL</button></div>`);
+    const bar = h(`<div class="h2-target"><span class="body"></span><button class="word red">never mind</button></div>`);
     (bar.querySelector('button') as HTMLElement).onclick = () => this.cancel();
-    if (info.power === 'punish' && this.hud.snap?.king) { const kb = h(`<button class="btn rust">THE KING</button>`); kb.onclick = () => { target.rat = this.hud.snap!.king!.id; this.hud.world.actors.selected = target.rat; this.targeting!.need = this.targeting!.need.filter((n) => n !== 'rat'); this.advance(); }; bar.insertBefore(kb, bar.lastElementChild); }
+    if (info.power === 'punish' && this.hud.snap?.king) { const kb = h(`<button class="word rust">the king</button>`); kb.onclick = () => { target.rat = this.hud.snap!.king!.id; this.hud.world.actors.selected = target.rat; this.targeting!.need = this.targeting!.need.filter((n) => n !== 'rat'); this.advance(); }; bar.insertBefore(kb, bar.lastElementChild); }
     const held = this.hud.following >= 0 ? this.hud.following : this.hud.world.actors.selected;
     if (held >= 0 && need.some((k) => k === 'rat' || k === 'dynasty' || k === 'faction')) {
-      const tb = h(`<button class="btn rust">THIS RAT</button>`);
+      const tb = h(`<button class="word rust">this one</button>`);
       tb.onclick = () => this.pick(0, 0, held);
       bar.insertBefore(tb, bar.lastElementChild);
     }

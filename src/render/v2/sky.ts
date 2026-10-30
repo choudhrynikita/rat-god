@@ -158,7 +158,7 @@ export class Sky {
   private drawBolt(view: { x0: number; x1: number; y0: number }) {
     const g = this.bolt; g.clear(); let x = view.x0 + (view.x1 - view.x0) * (0.2 + Math.random() * 0.6), y = Math.max(-SKY_PX, view.y0 - 50); const pts: number[] = [x, y];
     while (y < this.surf - 20) { x += (Math.random() - 0.5) * 60; y += 20 + Math.random() * 40; pts.push(x, Math.min(y, this.surf - 20)); }
-    g.poly(pts, false).stroke({ width: 6, color: 0x45eaf0, alpha: 0.5 }); g.poly(pts, false).stroke({ width: 2, color: 0xffffff });
+    g.poly(pts, false).stroke({ width: 6, color: 0xf4efe4, alpha: 0.7 }); g.poly(pts, false).stroke({ width: 2, color: 0x1c1612 });
     const L = new Sprite(lightTexture()); L.anchor.set(0.5); L.blendMode = 'add'; L.position.set(x, this.surf - 40); L.scale.set(12); L.tint = 0xc8f0ff; this.lights.addChild(L); setTimeout(() => L.destroy(), 300);
   }
 }

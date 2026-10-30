@@ -49,7 +49,7 @@ function maybeFound(w: World) {
     id: ++w.nextRel, name: NAMES[deity][0], deity, doctrine: CREED[deity],
     founder: lead.id, prophet: lead.id, members: 1, temples: shrine ? [shrine.id] : [],
     tolerance: clamp01(lead.P.A) * 2 - 1, enemies: [], parent: 0, founded: w.tick,
-    color: deity === 'the Machine' ? 0x45eaf0 : deity === 'the Flood' ? 0x42c3ca : 0xf2b46a,
+    color: deity === 'the Machine' ? 0x6d7a3c : deity === 'the Flood' ? 0x5c6a58 : 0xe2b15a,
     memberIds: [lead.id],
   };
   w.religions.push(rel);

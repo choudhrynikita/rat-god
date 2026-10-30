@@ -33,7 +33,7 @@ void main(){
   if (uCA > 0.0) { vec2 d = (vUV - 0.5) * uCA / uRT * 2.0; col = vec3(texture(uScene, uv + d).r, texture(uScene, uv).g, texture(uScene, uv - d).b); }
   else col = texture(uScene, uv).rgb;
   vec4 a = texture(uActor, uv); col = col * (1.0 - a.a) + a.rgb;
-  vec3 lit = mix(vec3(0.86), L * 1.05, uLightOn);
+  vec3 lit = mix(vec3(0.97), L, 0.42 * uLightOn);
   col *= lit;
   if (uRim > 0.5) {
     vec2 px = vec2(1.6) / uRT;
@@ -59,7 +59,7 @@ void main(){
   float dust = 0.6 + 0.4 * sin(wx * 0.013 + uTime * 0.4 + sin(wy * 0.017 - uTime * 0.3) * 2.0);
   float fg = uFog * (wy < uSurf ? 0.6 : 0.25 + 0.75 * depth) * dust;
   col = mix(col, uFogCol * (L * 0.5 + 0.25), clamp(fg, 0.0, 0.85));
-  float mote = step(0.9994, hash(floor(vec2(wx + uTime * 2.0, wy + uTime * 4.0)))) * uDust * (wy > uSurf ? 1.0 : 0.3);
+  float mote = 0.0;
   col += mote * L * 0.3;
   // grade
   col *= uTint; float lum = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(lum), col, uSat); col = (col - 0.5) * uContrast + 0.5;
@@ -86,7 +86,7 @@ export interface PostEnv { tint: [number, number, number]; sat: number; contrast
 
 export class Post {
   tier: Tier = 'high'; auto = true;
-  toggles: PostToggles = { lighting: true, bloom: true, rim: false, grade: true, vignette: true, grain: false, crt: false, ca: false, haze: true, fog: true };
+  toggles: PostToggles = { lighting: true, bloom: true, rim: false, grade: true, vignette: true, grain: false, crt: false, ca: false, haze: false, fog: true };
   readonly sceneRoot = new Container({ label: 'scene' });   // world-space, not on stage
   readonly actorRoot = new Container({ label: 'actors' });
   readonly lightRoot = new Container({ label: 'lights' });
@@ -144,7 +144,7 @@ export class Post {
     const U = this.U;
     U.uRT[0] = this.alloc.w; U.uRT[1] = this.alloc.h; U.uLRT[0] = this.alloc.lw; U.uLRT[1] = this.alloc.lh; U.uScreen[0] = devW; U.uScreen[1] = devH;
     U.uS = s; U.uOff[0] = ox - ix + PAD + cam.shakeX / s; U.uOff[1] = oy - iy + PAD + cam.shakeY / s; U.uLScale = LS; U.uTime = timeS;
-    U.uBloomAmt = bloomOn ? 0.35 : 0; U.uRim = detail ? 0.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
+    U.uBloomAmt = bloomOn ? 0.18 : 0; U.uRim = detail ? 0.4 : 0; U.uLightOn = T.lighting ? 1 : 0;
     U.uVig = T.vignette ? 0.16 : 0; U.uGrain = T.grain && this.tier !== 'low' ? 0.012 : 0; U.uCA = T.ca && this.tier === 'high' ? 0.25 : 0; U.uHaze = T.haze ? env.haze * 0.25 : 0;
     U.uScan = T.crt ? 1 : 0; U.uFlash = env.flash;
     const g = T.grade; U.uTint[0] = g ? env.tint[0] : 1; U.uTint[1] = g ? env.tint[1] : 1; U.uTint[2] = g ? env.tint[2] : 1; U.uSat = g ? env.sat : 1; U.uContrast = g ? env.contrast : 1;

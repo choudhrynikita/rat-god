@@ -31,7 +31,7 @@ export class Hud2 {
   readonly god: GodMenu; readonly sheets: Sheets; following = -1; private cluster: number[] = []; private clusterAt = 0; private started = false; private nudgeEls = new Map<number, HTMLElement>(); private uiHold = 0;
   speed = 1; private lastTop = 0; blocking = false; private resume = false; private lensEl!: HTMLElement; private lensAt = 0;
   private static readonly LENS: (LensId | null)[] = [null, 'needs', 'mood', 'faith', 'caste', 'wealth', 'disease', 'giants'];
-  private static readonly LENS_BTN = ['SEE', 'NEED', 'MOOD', 'FAITH', 'CASTE', 'RICH', 'SICK', 'GIANT'];
+  private static readonly LENS_BTN = ['look', 'need', 'mood', 'faith', 'caste', 'means', 'sick', 'giants'];
   constructor(host: HTMLElement, readonly world: World2, readonly sim: SimPort) {
     host.innerHTML = ''; this.el = h(`<div class="h2"></div>`); host.appendChild(this.el);
     this.god = new GodMenu(this); this.sheets = new Sheets(this);
@@ -66,11 +66,11 @@ export class Hud2 {
         <p class="h2-p">A living society of rats, simulated without mercy. Over time it can show:</p>
         <p class="h2-p" style="color:var(--amberL)">war and violent death · disease, famine and grief · tyranny, injustice and persecution · religion, heresy and holy war · castes and discrimination · courtship, marriage and implied mating (never explicit) · blood and gore (only if you allow it)</p>
         <p class="h2-p">Mature content starts OFF. You can change any of this later in Settings. Your choice stays on this device.</p>
-        <div class="h2-tog"><span>Mature content</span><span class="seg" data-k="mature"><button class="btn" data-v="0">OFF</button><button class="btn" data-v="1">ON</button></span></div>
-        <div class="h2-tog" data-dep><span>Gore</span><span class="seg" data-k="gore"><button class="btn" data-v="0">NONE</button><button class="btn" data-v="1">BLOOD</button><button class="btn" data-v="2">CARNAGE</button></span></div>
-        <div class="h2-tog" data-dep><span>Sexual themes</span><span class="seg" data-k="sexual"><button class="btn" data-v="0">OFF</button><button class="btn" data-v="1">IMPLIED</button></span></div>
-        <button class="btn rust" data-enter style="min-height:52px;font-size:15px">I AM 18 OR OLDER · ENTER</button>
-        <button class="btn" data-leave>LEAVE</button>
+        <div class="h2-tog"><span>mature things</span><span class="seg" data-k="mature"><button class="word" data-v="0">off</button><button class="word" data-v="1">on</button></span></div>
+        <div class="h2-tog" data-dep><span>blood</span><span class="seg" data-k="gore"><button class="word" data-v="0">none</button><button class="word" data-v="1">a little</button><button class="word" data-v="2">too much</button></span></div>
+        <div class="h2-tog" data-dep><span>desire</span><span class="seg" data-k="sexual"><button class="word" data-v="0">off</button><button class="word" data-v="1">implied</button></span></div>
+        <button class="word rust" data-enter>I am eighteen. Open the nest.</button>
+        <button class="word" data-leave>turn away</button>
       </div></div>`);
     const paint = () => { g.querySelectorAll<HTMLElement>('.seg').forEach((s) => { const k = s.dataset.k as keyof Consent; const v = Number(c[k]); s.querySelectorAll<HTMLElement>('button').forEach((b) => b.classList.toggle('on', Number(b.dataset.v) === v)); });
       g.querySelectorAll<HTMLElement>('[data-dep]').forEach((d) => { d.style.opacity = c.mature ? '1' : '.45'; d.querySelectorAll('button').forEach((b) => ((b as HTMLButtonElement).disabled = !c.mature)); }); };
@@ -88,14 +88,14 @@ export class Hud2 {
   }
   // ───────── chrome ─────────
   private build() {
-    this.top = h(`<div class="h2-top"><div class="h2-stat panel" data-k="stat"><span class="clock">DAY 1</span><span class="pop">0 RATS</span>
-        <span class="h2-grace" aria-label="Grace"><span class="lbl2">GRACE</span><i><b style="width:0%"></b></i></span></div>
-      <button class="btn h2-iconbtn" data-k="omens" aria-label="Omens inbox">✶<span class="h2-badge hidden">0</span></button></div>`);
+    this.top = h(`<div class="h2-top"><div class="h2-stat" data-k="stat"><span class="clock">the first day</span><span class="pop">the nest is empty</span>
+        <span class="h2-grace" aria-label="Grace"><span class="lbl2">grace</span><i><b style="width:0%"></b></i></span></div>
+      <button class="word omen" data-k="omens" aria-label="Omens">omens<span class="h2-badge hidden">0</span></button></div>`);
     this.pillsEl = h(`<div class="h2-pills"></div>`); this.feedEl = h(`<div class="h2-feed"></div>`); this.nudgeEl = h(`<div class="h2-nudges"></div>`);
     this.lensEl = h(`<div class="h2-lens" style="display:none"></div>`);
-    this.selEl = h(`<div class="h2-watch" style="display:none"><button class="btn" data-k="prev" aria-label="Previous rat">‹</button><button class="btn look" data-k="look"><span data-n></span></button><button class="btn" data-k="next" aria-label="Next rat">›</button></div>`);
-    this.bottom = h(`<div class="h2-bottom"><div class="grp"><button class="btn" data-k="speed" aria-label="Speed">▶ 1×</button><button class="btn" data-k="see" aria-label="See the city">SEE</button><button class="btn" data-k="society">CITY</button><button class="btn" data-k="ripples">RIPPLES</button><button class="btn h2-iconbtn" data-k="settings" aria-label="Settings">⚙</button></div>
-      <button class="h2-god" data-k="god" aria-label="Act as god">ACT</button></div>`);
+    this.selEl = h(`<div class="h2-watch" style="display:none"><button class="word" data-k="prev" aria-label="Previous rat">back</button><button class="word look" data-k="look"><span data-n></span></button><button class="word" data-k="next" aria-label="Next rat">on</button></div>`);
+    this.bottom = h(`<div class="h2-bottom"><nav class="plate" aria-label="Watch"><button class="word" data-k="speed" aria-label="How fast time moves">one</button><button class="word" data-k="see" aria-label="See the city">look</button><button class="word" data-k="society">the city</button><button class="word" data-k="ripples">echoes</button><button class="word" data-k="settings">the book</button></nav>
+      <button class="seal" data-k="god" aria-label="Act as god">act</button></div>`);
     this.el.append(this.nudgeEl, this.top, this.pillsEl, this.feedEl, this.lensEl, this.bottom, this.selEl);
     const on = (k: string, f: () => void) => this.el.querySelectorAll<HTMLElement>(`[data-k="${k}"]`).forEach((b) => b.onclick = f);
     on('omens', () => this.sheets.omens()); on('society', () => this.sheets.society()); on('ripples', () => this.sheets.society('ripples')); on('settings', () => this.sheets.settings());
@@ -105,7 +105,7 @@ export class Hud2 {
     on('next', () => { this.uiHold = performance.now(); this.stepCluster(1); });
     on('speed', () => { const seq = [1, 2, 4, 8, 16, 0] as const; const i = seq.indexOf(this.speed as never); this.setSpeed(seq[(i + 1) % seq.length]); });
   }
-  setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); if (b) b.textContent = v === 0 ? '❚❚ PAUSED' : `▶ ${v}×`; }
+  setSpeed(v: number) { this.speed = v; this.sim.send({ t: 'speed', v: v as never }); const b = this.el.querySelector<HTMLElement>('[data-k="speed"]'); const word: Record<number, string> = { 0: 'still', 1: 'one', 2: 'two', 4: 'four', 8: 'eight', 16: 'rush' }; if (b) b.textContent = word[v] ?? 'one'; }
   private cycleLens() {
     this.lensAt = (this.lensAt + 1) % Hud2.LENS.length;
     const mode = Hud2.LENS[this.lensAt];
@@ -156,7 +156,7 @@ export class Hud2 {
     const por = e.rats?.[0] != null ? portraitUrl(this.snap?.rats, e.rats[0]) : '';
     const el = h(`<div class="h2-pill panel${opts.god ? ' k-god' : ''}">${por ? `<span class="por" style="background-image:url(${por})"></span>` : ''}
       <span class="tx"><span class="lbl2">${esc(opts.label ?? e.kind.replace(/_/g, ' '))}</span>${esc(e.text)}</span>
-      ${this.canJump(e) ? '<button class="btn go">GO</button>' : ''}<button class="btn x" aria-label="Dismiss">✕</button></div>`);
+      ${this.canJump(e) ? '<button class="word go">there</button>' : ''}<button class="word x" aria-label="Dismiss">enough</button></div>`);
     (el.querySelector('.x') as HTMLElement).onclick = () => this.dropPill(el);
     const go = el.querySelector('.go') as HTMLElement | null; if (go) go.onclick = () => { this.jump(e); this.dropPill(el); };
     this.pills.unshift({ e, el }); this.layoutPills();
@@ -165,7 +165,7 @@ export class Hud2 {
   private dropPill(el: HTMLElement) { const i = this.pills.findIndex((p) => p.el === el); if (i < 0) return; this.pills.splice(i, 1); el.remove(); this.layoutPills(); }
   private layoutPills() {
     this.pillsEl.innerHTML = ''; const show = this.pills.slice(0, 1); for (const p of show) this.pillsEl.appendChild(p.el);
-    if (this.pills.length > 2) { const m = h(`<button class="btn h2-more">+${this.pills.length - 2} MORE</button>`); m.onclick = () => this.sheets.omens('notable'); this.pillsEl.appendChild(m); }
+    if (this.pills.length > 2) { const m = h(`<button class="word h2-more">and ${this.pills.length - 2} more</button>`); m.onclick = () => this.sheets.omens('notable'); this.pillsEl.appendChild(m); }
     this.pillsEl.querySelectorAll('*').forEach((n) => ((n as HTMLElement).style.pointerEvents = 'auto'));
   }
   canJump(e: SimEvent2) { return (e.rats?.length ?? 0) > 0 || e.x != null; }
@@ -202,7 +202,7 @@ export class Hud2 {
     window.dispatchEvent(new CustomEvent('rg:stinger', { detail: { kind: e.kind, sfx: e.sfx, score: e.score } }));
     const c = h(`<div class="h2-cine" role="dialog" aria-label="Major event"><div class="card panel rivet scan">
       ${art ? `<div class="art" style="background-image:url(${art})"></div>` : ''}<span class="lbl2">${esc(e.kind.replace(/_/g, ' '))} · day ${Math.floor(e.tick / 960) + 1}</span>
-      <h2>${esc(e.text)}</h2><div class="row">${this.canJump(e) ? '<button class="btn rust" data-a="watch">WATCH</button>' : ''}<button class="btn" data-a="later">LATER</button></div></div></div>`);
+      <h2>${esc(e.text)}</h2><div class="row">${this.canJump(e) ? '<button class="word rust" data-a="watch">watch</button>' : ''}<button class="word" data-a="later">later</button></div></div></div>`);
     const om = this.omens.find((o) => o.e === e || o.e.seq === e.seq);
     this.blocking = true; this.el.classList.add('modal');
     const close = (read: boolean) => { if (!this.cine) return; this.cine = null; this.blocking = false; this.el.classList.remove('modal'); c.remove(); if (om && read) om.read = true; this.badge(); setTimeout(() => this.pumpMajor(), 400); };
@@ -262,9 +262,10 @@ export class Hud2 {
     const s = this.snap; if (!s) return; const now = performance.now();
     if (now - this.lastTop > 250) { this.lastTop = now; const env = s.env, st = s.stats;
       const clock = this.top.querySelector('.clock')!, pop = this.top.querySelector('.pop')!, g = this.top.querySelector<HTMLElement>('.h2-grace b')!;
-      const hh = String(env.hour).padStart(2, '0'); clock.textContent = `DAY ${env.day + 1} · ${hh}:00 · ${env.weather.toUpperCase()}`;
-      const beat = s.gathering ? ` · ${s.gathering.kind.replace(/_/g, ' ').toUpperCase()}` : (st.techEra ? ` · ERA ${st.techEra}` : '');
-      pop.textContent = `${st.pop} RATS${beat}`;
+      const phase = env.hour < 5 || env.hour >= 20 ? 'night' : env.hour < 11 ? 'morning' : env.hour < 17 ? 'afternoon' : 'evening';
+      clock.textContent = `day ${env.day + 1}  ·  ${phase}`;
+      const beat = s.gathering ? `  ·  ${s.gathering.kind.replace(/_/g, ' ')}` : '';
+      pop.textContent = `${st.pop} ${st.pop === 1 ? 'rat' : 'rats'}${beat}`;
       g.style.width = `${Math.round((st.grace / Math.max(1, st.graceMax)) * 100)}%`; }
     this.nudges(s);
     this.tagSelected();
@@ -294,7 +295,7 @@ export class Hud2 {
   private prayerCard(p: Snapshot2['prayers'][number]) {
     const info = this.powers.find((x) => x.power === p.suggest);
     this.sheets.open(esc(p.name), `<p class="h2-p">“${esc(clean(p.plea))}”</p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${info ? `<button class="btn rust" data-answer>ANSWER · ${info.cost} GRACE</button>` : ''}<button class="btn" data-watch>ONLY WATCH</button><button class="btn" data-ignore>LOOK AWAY</button></div>`, (root) => {
+      <div style="display:flex;gap:14px;flex-wrap:wrap">${info ? `<button class="word rust" data-answer>answer · ${info.cost}</button>` : ''}<button class="word" data-watch>only watch</button><button class="word" data-ignore>look away</button></div>`, (root) => {
       root.querySelector<HTMLElement>('[data-answer]')?.addEventListener('click', () => { this.sheets.close(); this.god.begin(p.suggest as GodPower, { rat: p.ratId, x: p.x, y: p.y }); });
       root.querySelector<HTMLElement>('[data-watch]')?.addEventListener('click', () => { this.sheets.close(); this.followRat(p.ratId); });
       root.querySelector<HTMLElement>('[data-ignore]')?.addEventListener('click', () => this.sheets.close()); });

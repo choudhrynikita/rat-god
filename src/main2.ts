@@ -89,4 +89,4 @@ async function boot() {
   requestAnimationFrame(loop);
   document.getElementById('boot')?.remove();
 }
-boot().catch((e) => { console.error(e); const m = document.getElementById('bootMsg'); if (m) m.textContent = 'THE CITY FAILED TO WAKE: ' + String(e?.message ?? e); });
+boot().catch((e) => { console.error(e); const m = document.getElementById('bootMsg'); if (m) m.textContent = 'the city did not wake. ' + String(e?.message ?? e); });

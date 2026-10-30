@@ -500,8 +500,8 @@
    "path": "sprites/prop_law_poster_fresh.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -1770,11 +1770,11 @@
    "status": "done",
    "path": "sprites/cat_prowl.png",
    "size": [
-    192,
-    192
+    256,
+    256
    ],
-   "frames": 8,
-   "fps": 12,
+   "frames": 4,
+   "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
@@ -1791,11 +1791,11 @@
    "status": "done",
    "path": "sprites/cat_pounce.png",
    "size": [
-    192,
-    192
+    256,
+    256
    ],
-   "frames": 8,
-   "fps": 11,
+   "frames": 4,
+   "fps": 8,
    "loop": true,
    "anchor": [
     0.5,
@@ -1812,10 +1812,10 @@
    "status": "done",
    "path": "sprites/cat_eat_kill.png",
    "size": [
-    192,
-    192
+    256,
+    256
    ],
-   "frames": 8,
+   "frames": 4,
    "fps": 8,
    "loop": true,
    "anchor": [
@@ -1833,11 +1833,11 @@
    "status": "done",
    "path": "sprites/cat_idle_tail.png",
    "size": [
-    192,
-    192
+    256,
+    256
    ],
    "frames": 4,
-   "fps": 6,
+   "fps": 2,
    "loop": true,
    "anchor": [
     0.5,
@@ -2576,8 +2576,8 @@
    "path": "sprites/prop_bottle_cap_pile.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2592,8 +2592,8 @@
    "path": "sprites/prop_wire_coil.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2610,8 +2610,8 @@
    "path": "sprites/prop_food_crumb.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2626,8 +2626,8 @@
    "path": "sprites/prop_rotten_fruit.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2642,8 +2642,8 @@
    "path": "sprites/prop_cheese_rind.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2658,8 +2658,8 @@
    "path": "sprites/prop_pebble.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2674,8 +2674,8 @@
    "path": "sprites/prop_bone.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2690,8 +2690,8 @@
    "path": "sprites/prop_syringe.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2706,8 +2706,8 @@
    "path": "sprites/prop_battery.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2722,8 +2722,8 @@
    "path": "sprites/prop_poster_scrap.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2738,8 +2738,8 @@
    "path": "sprites/prop_law_tablet.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2754,8 +2754,8 @@
    "path": "sprites/prop_pebble_bowl.png",
    "type": "prop",
    "size": [
-    16,
-    16
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2770,8 +2770,8 @@
    "path": "sprites/prop_corpse_fresh.png",
    "type": "prop",
    "size": [
-    48,
-    32
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2787,8 +2787,8 @@
    "path": "sprites/prop_corpse_bloated.png",
    "type": "prop",
    "size": [
-    48,
-    32
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2804,8 +2804,8 @@
    "path": "sprites/prop_corpse_skeleton.png",
    "type": "prop",
    "size": [
-    48,
-    32
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2820,8 +2820,8 @@
    "path": "sprites/prop_kill_remains.png",
    "type": "prop",
    "size": [
-    48,
-    32
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -2837,8 +2837,8 @@
    "path": "sprites/prop_law_poster_torn.png",
    "type": "prop",
    "size": [
-    64,
-    64
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,
@@ -3042,8 +3042,8 @@
    ],
    "type": "prop",
    "size": [
-    32,
-    40
+    256,
+    256
    ],
    "frames": 1,
    "fps": null,

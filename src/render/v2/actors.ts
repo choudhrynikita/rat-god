@@ -191,7 +191,7 @@ export class Actors {
       if (glow) { if (!v.light) { v.light = new Sprite(lightTexture()); v.light.anchor.set(0.5); v.light.blendMode = 'add'; this.lights.addChild(v.light); }
         const L = v.light; const fl = 0.85 + Math.sin(now * 0.02 + v.off * 9) * 0.08 + Math.sin(now * 0.053) * 0.05;
         if (tool === 1) { L.tint = 0xffa040; L.scale.set(1.3 * fl); L.alpha = 0.9; } else if (tool === 6) { L.tint = 0xffc070; L.scale.set(1.7 * fl); L.alpha = 0.85; }
-        else if (tool === 8) { L.tint = 0xf2b46a; L.scale.set(1.5 * fl); L.alpha = 0.95; } else if (tool === 5) { L.tint = 0x60e0ff; L.scale.set(0.85 + Math.sin(now * 0.03 + v.off) * 0.15); L.alpha = 0.7; } else if (flags & RF.rodentoid) { L.tint = 0x40d0e0; L.scale.set(0.45); L.alpha = 0.6; } else { L.tint = 0xffe08a; L.scale.set(1.1); L.alpha = 0.6; }
+        else if (tool === 8) { L.tint = 0xe2b15a; L.scale.set(1.5 * fl); L.alpha = 0.95; } else if (tool === 5) { L.tint = 0xe2b15a; L.scale.set(0.85 + Math.sin(now * 0.03 + v.off) * 0.15); L.alpha = 0.55; } else if (flags & RF.rodentoid) { L.tint = 0x6d7a3c; L.scale.set(0.45); L.alpha = 0.45; } else { L.tint = 0xe2b15a; L.scale.set(1.1); L.alpha = 0.45; }
         L.position.set(v.x, v.snapY - 12); } else if (v.light) { v.light.destroy(); v.light = null; }
       // selection: gold ring at the feet, chevron over the head, body warmed
       if (v.id === this.selected) {
@@ -199,7 +199,7 @@ export class Actors {
         if (!v.mark) { v.mark = new Sprite(markTexture()); v.mark.anchor.set(0.5, 1); v.mark.scale.set(1.5); v.root.addChild(v.mark); }
         const pulse = 0.5 + Math.sin(now * 0.008) * 0.5;
         const lift = 16;
-        v.ring.position.set(0, 0); v.ring.rotation = -v.rot; v.ring.scale.set(sc * (0.9 + pulse * 0.12)); v.ring.alpha = 0.8 + pulse * 0.2;
+        v.ring.position.set(0, 0); v.ring.rotation = -v.rot; v.ring.scale.set((c.w * sc) / 52); v.ring.alpha = 0.85;
         // stay above the feet in the world, even when the rat is turned to climb
         v.mark.position.set(-lift * Math.sin(v.rot), -lift * Math.cos(v.rot));
         v.mark.rotation = -v.rot; v.mark.scale.set(1);
@@ -212,13 +212,13 @@ export class Actors {
       if (mood) {
         if (!v.pip) { v.pip = new Sprite(pipTex(mood)); v.pip.anchor.set(0.5, 1); v.root.addChild(v.pip); }
         v.pip.visible = true; v.pip.texture = pipTex(mood);
-        v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(1.6);
+        v.pip.position.set(v.facing * 7, -c.top * sc - 6); v.pip.rotation = -v.rot; v.pip.scale.set(0.7);
       } else if (v.pip) v.pip.visible = false;
       const badge = (flags & RF.prophet) || (flags & RF.priest) ? 'faith' : flags & RF.sick ? 'sick' : flags & RF.cursed ? 'curse' : '';
       if (badge && zd > 0.85 && !impostor) {
         if (!v.sash) { v.sash = new Sprite(pipTex(badge)); v.sash.anchor.set(0.5, 1); v.root.addChild(v.sash); }
         v.sash.visible = true; v.sash.texture = pipTex(badge);
-        v.sash.position.set(0, -c.top * sc - 3); v.sash.rotation = -v.rot; v.sash.scale.set(1);
+        v.sash.position.set(0, -c.top * sc - 3); v.sash.rotation = -v.rot; v.sash.scale.set(0.65);
       } else if (v.sash) v.sash.visible = false;
     }
     this.drawBonds(zd);
@@ -288,7 +288,9 @@ export class Actors {
     const keep = new Set<string>();
     const put = (key: string, id: string, x: number, y: number, tint = 0xffffff, sc = 1) => { keep.add(key); let s = this.itemSpr.get(key); const c = clip(id); if (!c) return;
       if (!s) { s = new Sprite(c.frames[0]); s.anchor.set(0.5, 1); this.back.addChild(s); this.itemSpr.set(key, s); } else s.texture = c.frames[0];
-      const fy = this.terrain.floorBelow(x, y - 6, 18); s.position.set(x, fy < y + 12 ? fy : y); s.tint = tint; s.scale.set(sc); };
+      const want = (key.startsWith('c') ? 36 : 26) * sc;
+      const fy = this.terrain.floorBelow(x, y - 6, 18);
+      s.position.set(x, fy < y + 12 ? fy : y); s.tint = tint; s.scale.set(want / Math.max(8, c.w)); };
     for (const c of C) { const id = !this.gore ? 'prop_corpse_skeleton' : c.decay > 0.66 ? 'prop_corpse_skeleton' : c.decay > 0.33 ? 'prop_corpse_bloated' : c.violent ? 'prop_kill_remains' : 'prop_corpse_fresh';
       put('c' + c.id, id, c.x * PX, c.y * PX, this.gore ? COAT[c.coat & 7] : 0x9a9aa0, Math.max(0.5, c.size || 1)); }
     const FOOD = ['prop_food_crumb', 'prop_cheese_rind', 'prop_rotten_fruit'], SCRAP = ['prop_bottle_cap_pile', 'prop_battery', 'prop_wire_coil'];
@@ -299,14 +301,14 @@ export class Actors {
   }
 }
 let _mark: Texture | null = null;
-function markTexture() { if (_mark) return _mark; const c = document.createElement('canvas'); c.width = 9; c.height = 7; const g = c.getContext('2d')!;
-  g.fillStyle = '#080d0a'; for (let y = 0; y < 6; y++) g.fillRect(y - 0, y, 9 - y * 2 + 0, 1); g.fillStyle = '#f2b46a'; for (let y = 0; y < 4; y++) g.fillRect(y + 1, y, 7 - y * 2, 1);
-  _mark = Texture.from(c); _mark.source.scaleMode = 'nearest'; return _mark; }
+function markTexture() { if (_mark) return _mark; const c = document.createElement('canvas'); c.width = 28; c.height = 18; const g = c.getContext('2d')!;
+  g.strokeStyle = '#1c1612'; g.lineWidth = 2.5; g.lineJoin = 'round'; g.beginPath(); g.moveTo(4, 3); g.lineTo(14, 15); g.lineTo(24, 3); g.stroke();
+  _mark = Texture.from(c); _mark.source.scaleMode = 'linear'; return _mark; }
 function ringTexture() {
-  if (_ring) return _ring; const c = document.createElement('canvas'); c.width = 28; c.height = 12; const g = c.getContext('2d')!;
-  g.strokeStyle = '#f2b46a'; g.lineWidth = 2; g.beginPath(); g.ellipse(14, 6, 11, 4, 0, 0, Math.PI * 2); g.stroke();
-  g.strokeStyle = '#080d0a'; g.lineWidth = 1; g.beginPath(); g.ellipse(14, 6, 13, 5, 0, 0, Math.PI * 2); g.stroke();
-  _ring = Texture.from(c); _ring.source.scaleMode = 'nearest'; return _ring;
+  if (_ring) return _ring; const c = document.createElement('canvas'); c.width = 96; c.height = 32; const g = c.getContext('2d')!;
+  g.strokeStyle = '#1c1612'; g.lineWidth = 2.5; g.beginPath(); g.ellipse(48, 16, 40, 10, 0, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = '#c4543a'; g.lineWidth = 1.25; g.beginPath(); g.ellipse(48, 16, 32, 6, 0, 0, Math.PI * 2); g.stroke();
+  _ring = Texture.from(c); _ring.source.scaleMode = 'linear'; return _ring;
 }
 function mixTint(a: number, b: number, t: number) {
   const ch = (s: number, m: number) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t) & 255;
@@ -316,15 +318,14 @@ let _ring: Texture | null = null;
 const _pip = new Map<string, Texture>();
 function pipTex(kind: string) {
   const hit = _pip.get(kind); if (hit) return hit;
-  const c = document.createElement('canvas'); c.width = 5; c.height = 5; const g = c.getContext('2d')!;
-  const px = (x: number, y: number, col: string) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
-  if (kind === 'anger') { px(1, 0, '#e84b5a'); px(3, 0, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#fff2c0'); px(4, 2, '#e84b5a'); px(1, 4, '#e84b5a'); px(3, 4, '#e84b5a'); }
-  else if (kind === 'fear') { px(1, 0, '#45eaf0'); px(3, 0, '#45eaf0'); px(2, 2, '#d8d0c4'); px(1, 4, '#45eaf0'); px(3, 4, '#45eaf0'); }
-  else if (kind === 'faith') { px(2, 0, '#f6c992'); px(1, 1, '#f2b46a'); px(2, 1, '#fff2c0'); px(3, 1, '#f2b46a'); px(2, 2, '#f2b46a'); }
-  else if (kind === 'sick') { px(1, 1, '#9be070'); px(3, 1, '#6a8a48'); px(2, 3, '#9be070'); }
-  else if (kind === 'curse') { px(1, 0, '#8060a0'); px(3, 0, '#8060a0'); px(2, 2, '#c8a8d0'); px(2, 4, '#8060a0'); }
-  else { px(1, 1, '#e84b5a'); px(3, 1, '#e84b5a'); px(0, 2, '#e84b5a'); px(2, 2, '#e84b5a'); px(4, 2, '#e84b5a'); px(1, 3, '#e84b5a'); px(3, 3, '#e84b5a'); px(2, 4, '#e84b5a'); }
-  const t = Texture.from(c); t.source.scaleMode = 'nearest'; _pip.set(kind, t); return t;
+  const c = document.createElement('canvas'); c.width = 22; c.height = 22; const g = c.getContext('2d')!;
+  g.lineWidth = 2; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = '#1c1612'; g.fillStyle = '#c4543a';
+  if (kind === 'anger' || kind === 'love') { g.beginPath(); g.arc(11, 11, 5, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  else if (kind === 'fear') { g.strokeStyle = '#6d7a3c'; g.beginPath(); g.arc(11, 11, 6, 0, Math.PI * 2); g.stroke(); }
+  else if (kind === 'faith') { g.fillStyle = '#e2b15a'; g.beginPath(); g.arc(11, 11, 5, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  else if (kind === 'sick') { g.fillStyle = '#6d7a3c'; g.beginPath(); g.arc(11, 11, 5, 0, Math.PI * 2); g.fill(); }
+  else { g.fillStyle = '#1c1612'; g.beginPath(); g.arc(11, 11, 4, 0, Math.PI * 2); g.fill(); }
+  const t = Texture.from(c); t.source.scaleMode = 'linear'; _pip.set(kind, t); return t;
 }
 let _shadow: Texture | null = null;
 function shadowTexture() { if (_shadow) return _shadow; const c = document.createElement('canvas'); c.width = 64; c.height = 16; const g = c.getContext('2d')!;

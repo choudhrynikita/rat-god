@@ -8,14 +8,16 @@ import type { Terrain } from './terrain';
 import type { Camera2 } from './camera2';
 
 interface P { s: Sprite; x: number; y: number; vx: number; vy: number; life: number; max: number; g: number; drag: number; size: number; fade: boolean; collide: boolean; add: boolean; spin?: number }
-const DIRT = [0x38302d, 0x4d3d3d, 0x70473f, 0x9c6e4e], DUST = [0x907d78, 0x796765, 0x505b5c], GOLD = [0xf2b46a, 0xf6c992, 0xd5a063], CYAN = [0x45eaf0, 0x42c3ca, 0x489da2];
-const BLOOD = [0x670a1e, 0x3b041b, 0xaa494d], VIOLET = [0x864f4d, 0x5f4e61, 0xad6b7a, 0x793650], SICK = [0x8faa5a, 0x5f7a3a, 0x9be070], WATER = [0x489da2, 0x42c3ca, 0x23434c];
-let _glyphs: Texture[] | null = null;
-function glyphs() { if (_glyphs) return _glyphs; _glyphs = [];
-  const G = ['010111010', '101010101', '111101111', '110011110', '011110011', '100111001', '010101010', '111010111'];
-  for (const g of G) { const c = document.createElement('canvas'); c.width = 5; c.height = 5; const x = c.getContext('2d')!; x.fillStyle = '#f6c992';
-    for (let i = 0; i < 9; i++) if (g[i] === '1') x.fillRect(1 + (i % 3), 1 + Math.floor(i / 3), 1, 1); const t = Texture.from(c); t.source.scaleMode = 'nearest'; _glyphs.push(t); }
-  return _glyphs; }
+const DIRT = [0x6a5344, 0x5a4638, 0x8a6848, 0xc4a888], DUST = [0xc4b8a8, 0x8a8078, 0x6e6458], GOLD = [0xe2b15a, 0xf4efe4, 0xc9842a];
+const BLOOD = [0x8a3030, 0x5a2420, 0xc4543a], VIOLET = [0x8a6848, 0x6a5344, 0xc4a888], SICK = [0x6d7a3c, 0x5a6430, 0x8a9460], WATER = [0x6a6458, 0x8a8478, 0x5c564c];
+let _dot: Texture | null = null;
+function dotTex() {
+  if (_dot) return _dot; const S = 16; const c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d')!;
+  const gr = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  gr.addColorStop(0, 'rgba(28,22,18,0.95)'); gr.addColorStop(0.55, 'rgba(28,22,18,0.45)'); gr.addColorStop(1, 'rgba(28,22,18,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); g.fill();
+  _dot = Texture.from(c); _dot.source.scaleMode = 'linear'; return _dot;
+}
 
 export class Fx {
   readonly back = new Container({ label: 'fx-back' }); readonly front = new Container({ label: 'fx-front' }); readonly lights = new Container({ label: 'fx-lights' });
@@ -27,14 +29,14 @@ export class Fx {
   constructor(private terrain: Terrain, private cam: Camera2) {}
   initChambers(B: BurrowInit) { for (const s of this.chamberLights) s.destroy(); this.chamberLights = []; for (const c of B.chambers) this.addChamberLight(c); }
   addChamberLight(c: Chamber) {
-    const warm: Record<string, number> = { nest: 0xc48a62, cache: 0xd5a063, throne: 0xf2b46a, shrine: 0xf6c992, temple: 0xf6c992, workshop: 0x45eaf0, lab: 0x45eaf0, granary: 0xd5a063, nursery: 0xf2b46a, plaza: 0xe8a54b, market: 0xf2b46a, jail: 0x6070a0, barracks: 0xc46665, home: 0xf2b46a, infirmary: 0x9be070, latrine: 0x6a8a62, gallery: 0x8a7a68, midden: 0x7a6a48, archive: 0xc4a060, council: 0xf2b46a, slum: 0x6a5040 };
+    const warm: Record<string, number> = { nest: 0xe2b15a, cache: 0xc9842a, throne: 0xe2b15a, shrine: 0xf4efe4, temple: 0xe2b15a, workshop: 0xc9842a, lab: 0x8a6848, granary: 0xe2b15a, nursery: 0xf4efe4, plaza: 0xc9842a, market: 0xe2b15a, jail: 0x6a5344, barracks: 0xc4543a, home: 0xe2b15a, infirmary: 0x6d7a3c, latrine: 0x6a5344, gallery: 0xc4a888, midden: 0x6a5344, archive: 0xc9842a, council: 0xe2b15a, slum: 0x6a5344 };
     const col = warm[c.kind]; if (!col) return; const L = new Sprite(lightTexture()); L.anchor.set(0.5); L.blendMode = 'add'; L.tint = col;
     L.position.set(c.cx * PX, (c.cy - c.ry * 0.15) * PX); L.scale.set(Math.max(2.2, c.rx * PX / 36)); (L as any).base = 0.9; (L as any).ph = c.id; this.lights.addChild(L); this.chamberLights.push(L);
   }
   private spawn(o: Partial<P> & { x: number; y: number; col: number }) {
     if (this.ps.length >= this.budget) return; const s = this.free.pop() ?? new Sprite(Texture.WHITE);
     const p: P = { s, x: o.x, y: o.y, vx: o.vx ?? 0, vy: o.vy ?? 0, life: o.max ?? 800, max: o.max ?? 800, g: o.g ?? 0.0006, drag: o.drag ?? 0.998, size: o.size ?? 2, fade: o.fade ?? true, collide: o.collide ?? true, add: o.add ?? false, spin: o.spin };
-    s.texture = (o as any).tex ?? Texture.WHITE; s.tint = o.col; s.width = s.height = p.size; s.anchor.set(0.5); s.alpha = 1; s.rotation = 0; s.blendMode = p.add ? 'add' : 'normal';
+    s.texture = (o as any).tex ?? dotTex(); s.tint = o.col; s.width = s.height = p.size; s.anchor.set(0.5); s.alpha = 1; s.rotation = 0; s.blendMode = p.add ? 'add' : 'normal';
     (p.add ? this.front : this.back).addChild(s); this.ps.push(p);
   }
   burst(x: number, y: number, n: number, cols: number[], sp: number, o: Partial<P> = {}) { for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = sp * (0.3 + Math.random() * 0.7); this.spawn({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - sp * 0.4, col: cols[(Math.random() * cols.length) | 0], max: 500 + Math.random() * 700, ...o }); } }
@@ -86,12 +88,12 @@ export class Fx {
   }
   play(fx: string, x: number, y: number, hideGore = false) {
     switch (fx) {
-      case 'lightning': case 'smite': this.beam(x, y, 0xc8f0ff, 0x45eaf0, 520, true); this.burst(x, y, 30, CYAN, 0.25, { add: true, size: 2, g: 0.0004 }); this.burst(x, y, 20, DIRT, 0.15, { size: 3 }); this.flash(x, y, 0xc8f0ff, 7, 600); this.cam.shake(0.6); this.cam.freeze(90); break;
+      case 'lightning': case 'smite': this.beam(x, y, 0xf4efe4, 0xe2b15a, 520, true); this.burst(x, y, 30, GOLD, 0.25, { add: false, size: 4, g: 0.0004 }); this.burst(x, y, 20, DIRT, 0.15, { size: 4 }); this.flash(x, y, 0xf4efe4, 7, 600); this.cam.shake(0.6); this.cam.freeze(90); break;
       case 'punish': this.beam(x, y, 0xffd0d0, 0xe84b5a, 900, true); this.burst(x, y, 40, [0xe84b5a, 0xf2b46a, 0xffffff], 0.22, { add: true }); this.flash(x, y, 0xe84b5a, 8, 900); this.ring(x, y, 0xe84b5a, 900); this.cam.shake(0.7); this.cam.freeze(140); break;
       case 'defy': for (let i = 0; i < 40; i++) this.spawn({ x: x + (Math.random() - 0.5) * 16, y, vx: (Math.random() - 0.5) * 0.04, vy: -0.12 - Math.random() * 0.1, col: [0xe84b5a, 0xc46665, 0xf2b46a][i % 3], g: 0, add: true, max: 1600, collide: false }); this.flash(x, y - 20, 0xe84b5a, 4, 1400); this.cam.shake(0.25); break;
       case 'halo': case 'bless': this.ring(x, y - 24, 0xf6c992, 1200); this.rise(x, y, GOLD, 30); this.flash(x, y - 10, 0xf6c992, 4, 1500); break;
       case 'curse': this.swirl(x, y, VIOLET, 50); this.flash(x, y, 0x793650, 3, 1400); break;
-      case 'whisper': case 'dream': case 'omen': case 'foresee': for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; this.spawn({ x: x + Math.cos(a) * 18, y: y - 16 + Math.sin(a) * 10, vx: Math.cos(a + 1.6) * 0.03, vy: -0.015, col: fx === 'dream' ? 0xad6b7a : 0xf6c992, size: 5, g: 0, add: true, max: 1800, collide: false, tex: glyphs()[i % 8] } as any); } this.flash(x, y - 12, 0xad6b7a, 3, 1600); break;
+      case 'whisper': case 'dream': case 'omen': case 'foresee': for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; this.spawn({ x: x + Math.cos(a) * 18, y: y - 16 + Math.sin(a) * 10, vx: Math.cos(a + 1.6) * 0.03, vy: -0.015, col: fx === 'dream' ? 0xc4543a : 0xe2b15a, size: 8, g: 0, add: false, max: 1800, collide: false }); } this.flash(x, y - 12, 0xe2b15a, 3, 1600); break;
       case 'risen': case 'raise_dead': this.rise(x, y, SICK, 50); this.flash(x, y, 0x9be070, 5, 1600); this.cam.shake(0.2); break;
       case 'splash': case 'flood': this.burst(x, y, 60, WATER, 0.22, { g: 0.0012, size: 2 }); this.flash(x, y, 0x42c3ca, 4, 800); this.cam.shake(0.25); break;
       case 'miasma': case 'plague': case 'gas': this.swirl(x, y, SICK, 60); break;
@@ -99,11 +101,11 @@ export class Fx {
       case 'miracle': case 'harvest': this.rise(x, y, GOLD, 60); this.ring(x, y - 10, 0xf2b46a, 1400); this.flash(x, y, 0xf6c992, 9, 2000); break;
       case 'fire': case 'smoke': this.rise(x, y, [0xe84b5a, 0xf2b46a], 30); this.burst(x, y, 20, DUST, 0.05, { g: -0.0001, size: 4 }); this.flash(x, y, 0xf2b46a, 5, 1200); break;
       case 'blood': if (hideGore || this.gore < 1) { this.burst(x, y, 14, DUST, 0.08); break; } this.burst(x, y, 24 * this.gore, BLOOD, 0.18, { g: 0.0013, size: 2 }); this.cam.shake(0.15); break;
-      case 'discovery': case 'spark': case 'machine': this.burst(x, y - 14, 30, CYAN, 0.18, { add: true, g: 0.0007 }); this.flash(x, y - 10, 0x45eaf0, 4, 900); break;
+      case 'discovery': case 'spark': case 'machine': this.burst(x, y - 14, 30, GOLD, 0.18, { add: false, g: 0.0007, size: 5 }); this.flash(x, y - 10, 0xe2b15a, 4, 900); break;
       case 'love': for (let i = 0; i < 6; i++) this.spawn({ x: x + (Math.random() - 0.5) * 20, y: y - 20, vx: (Math.random() - 0.5) * 0.02, vy: -0.03, col: 0xe84b5a, size: 3, g: 0, max: 1600, collide: false }); break;
-      case 'fanfare': case 'crowd': case 'crown': this.burst(x, y - 30, 40, [0xe84b5a, 0xf2b46a, 0x45eaf0, 0xf6c992], 0.15, { g: 0.0004, size: 2 }); this.flash(x, y - 20, 0xf2b46a, 5, 1000); break;
-      case 'storm': this.beam(x, y, 0xc8f0ff, 0x45eaf0, 700, true); this.burst(x, y, 40, WATER, 0.2, { g: 0.001, size: 2 }); this.flash(x, y, 0xc8f0ff, 6, 800); this.cam.shake(0.45); break;
-      case 'sign': for (let i = 0; i < 10; i++) this.spawn({ x: x + (i - 5) * 3, y: y - 8, vx: 0, vy: -0.02, col: 0xf6c992, size: 4, g: 0, add: true, max: 2200, collide: false, tex: glyphs()[i % 8] } as any); this.flash(x, y - 6, 0xf2b46a, 3, 1600); break;
+      case 'fanfare': case 'crowd': case 'crown': this.burst(x, y - 30, 40, [0xc4543a, 0xe2b15a, 0xf4efe4, 0x6d7a3c], 0.15, { g: 0.0004, size: 4 }); this.flash(x, y - 20, 0xe2b15a, 5, 1000); break;
+      case 'storm': this.beam(x, y, 0xf4efe4, 0xe2b15a, 700, true); this.burst(x, y, 40, WATER, 0.2, { g: 0.001, size: 3 }); this.flash(x, y, 0xf4efe4, 6, 800); this.cam.shake(0.45); break;
+      case 'sign': for (let i = 0; i < 10; i++) this.spawn({ x: x + (i - 5) * 3, y: y - 8, vx: 0, vy: -0.02, col: 0xe2b15a, size: 7, g: 0, add: false, max: 2200, collide: false }); this.flash(x, y - 6, 0xe2b15a, 3, 1600); break;
       case 'riot': case 'strike': this.burst(x, y, 36, [0xe84b5a, 0xc46665, 0xf2b46a], 0.16, { size: 2 }); this.cam.shake(0.35); break;
       default: if (fx) this.burst(x, y, 12, GOLD, 0.08);
     }

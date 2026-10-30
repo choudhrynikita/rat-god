@@ -14,14 +14,14 @@ export class Sheets {
   open(title: string, body: string, bind?: (root: HTMLElement) => void, tabs?: { id: string; label: string; on: boolean }[], onTab?: (id: string) => void, kind = 'misc') {
     if (this.hud.blocking) return this.el ?? this.hud.el;
     this.close(); this.kind = kind;
-    const el = h(`<div class="h2-sheet panel" role="dialog" aria-label="${esc(title)}"><div class="hd"><h3>${title}</h3><button class="btn" data-close aria-label="Close">close</button></div>
-      ${tabs ? `<div class="h2-tabs">${tabs.map((t) => `<button class="btn${t.on ? ' on' : ''}" data-tab="${t.id}">${esc(t.label)}</button>`).join('')}</div>` : ''}<div class="sc">${body}</div></div>`);
+    const el = h(`<div class="h2-sheet panel" role="dialog" aria-label="${esc(title)}"><div class="hd"><h3>${title}</h3><button class="word" data-close aria-label="Close">shut</button></div>
+      ${tabs ? `<div class="h2-tabs">${tabs.map((t) => `<button class="word${t.on ? ' on' : ''}" data-tab="${t.id}">${esc(t.label)}</button>`).join('')}</div>` : ''}<div class="sc">${body}</div></div>`);
     (el.querySelector('[data-close]') as HTMLElement).onclick = () => this.close();
     el.querySelectorAll<HTMLElement>('[data-tab]').forEach((b) => b.onclick = () => onTab?.(b.dataset.tab!));
     el.querySelectorAll<HTMLElement>('[data-rat]').forEach((b) => b.onclick = () => { const id = Number(b.dataset.rat); this.hud.followRat(id); this.rat(id); });
     bind?.(el); this.hud.el.appendChild(el); this.el = el; return el;
   }
-  private ratLink(id: number) { return id > 0 ? `<button class="btn" data-rat="${id}" style="min-height:44px">${esc(this.hud.name(id))}</button>` : '—'; }
+  private ratLink(id: number) { return id > 0 ? `<button class="word" data-rat="${id}" style="min-height:44px">${esc(this.hud.name(id))}</button>` : '—'; }
   // ───────── a rat's life ─────────
   rat(id: number) { this.ratId = id; this.hud.sim.send({ t: 'inspect', id }); if (this.ratTab === 'story') this.hud.sim.send({ t: 'story', id }); this.renderRat(this.hud.detail?.id === id ? this.hud.detail : null); }
   refreshRat(d: RatDetail) {
@@ -32,7 +32,7 @@ export class Sheets {
   story(d: RatDetail) { this.storyCache.set(d.id, d); if (this.kind === 'rat' && d.id === this.ratId && this.ratTab === 'story') this.renderRat(d); }
   private renderRat(d: RatDetail | null) {
     this.ratAt = performance.now();
-    const hud = this.hud; const tabs = [['now', 'NOW'], ['story', 'LIFE STORY'], ['bonds', 'BONDS'], ['life', 'PLACE IN THE CITY'], ['ripples', 'YOUR HAND']].map(([id, label]) => ({ id, label, on: id === this.ratTab }));
+    const hud = this.hud; const tabs = [['now', 'now'], ['story', 'the life'], ['bonds', 'bonds'], ['life', 'place'], ['ripples', 'your hand']].map(([id, label]) => ({ id, label, on: id === this.ratTab }));
     const title = d ? `${esc(d.name)}${d.title ? ` · ${esc(d.title)}` : ''}` : esc(hud.name(this.ratId));
     let body = '<p class="h2-p">Listening…</p>';
     if (d) {
@@ -55,7 +55,7 @@ export class Sheets {
         <div class="h2-sec">Beliefs</div>${Object.entries(d.beliefs).map(([k, v]) => `<div class="h2-row"><span>${k.toUpperCase()}</span><span class="v">${v > 0.2 ? 'for' : v < -0.2 ? 'against' : 'unsure'}</span></div>`).join('')}`;
       else body = this.rippleList((d.ripples ?? []).map((id) => hud.ripples.get(id)).filter(Boolean) as never) || '<p class="h2-p">You have not touched this life. Yet.</p>';
     }
-    body += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn rust" data-bless>BLESS</button><button class="btn" data-curse>CURSE</button><button class="btn rust" data-act>ACT ON ${d ? esc(d.name.toUpperCase()) : 'THIS RAT'}</button><button class="btn" data-unfollow>STOP FOLLOWING</button></div>`;
+    body += `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px"><button class="word rust" data-bless>bless</button><button class="word" data-curse>curse</button><button class="word rust" data-act>act on ${d ? esc(d.name) : 'this one'}</button><button class="word" data-unfollow>let them go</button></div>`;
     const el = this.open(title, body, (root) => {
       root.querySelector<HTMLElement>('[data-bless]')!.onclick = () => { const id = this.ratId; this.close(); hud.god.begin('bless', { rat: id }); };
       root.querySelector<HTMLElement>('[data-curse]')!.onclick = () => { const id = this.ratId; this.close(); hud.god.begin('curse', { rat: id }); };
@@ -65,11 +65,11 @@ export class Sheets {
     const cv = el.querySelector('canvas'); if (cv && d) this.web(cv as HTMLCanvasElement, d);
   }
   private web(cv: HTMLCanvasElement, d: RatDetail) {
-    const g = cv.getContext('2d')!; const W = cv.width, H = cv.height; g.clearRect(0, 0, W, H); g.font = '22px VT323, monospace'; g.textAlign = 'center';
+    const g = cv.getContext('2d')!; const W = cv.width, H = cv.height; g.clearRect(0, 0, W, H); g.font = 'italic 22px Georgia, serif'; g.textAlign = 'center';
     const rs = d.relations.slice(0, 10); rs.forEach((r, i) => { const a = (i / Math.max(1, rs.length)) * Math.PI * 2 - Math.PI / 2; const x = W / 2 + Math.cos(a) * W * 0.36, y = H / 2 + Math.sin(a) * H * 0.36;
-      g.strokeStyle = r.aff >= 0 ? `rgba(242,180,106,${0.3 + Math.abs(r.aff) * 0.7})` : `rgba(232,75,90,${0.3 + Math.abs(r.aff) * 0.7})`; g.lineWidth = 1 + Math.abs(r.aff) * 6; g.beginPath(); g.moveTo(W / 2, H / 2); g.lineTo(x, y); g.stroke();
-      g.fillStyle = r.alive ? '#26373d' : '#14151a'; g.fillRect(x - 6, y - 6, 12, 12); g.fillStyle = r.alive ? '#d8b397' : '#907d78'; g.fillText(r.name, x, y + (y > H / 2 ? 26 : -12)); });
-    g.fillStyle = '#f2b46a'; g.fillRect(W / 2 - 9, H / 2 - 9, 18, 18); g.fillText(d.name, W / 2, H / 2 + 32);
+      g.strokeStyle = r.aff >= 0 ? `rgba(109,122,60,${0.35 + Math.abs(r.aff) * 0.6})` : `rgba(196,84,58,${0.35 + Math.abs(r.aff) * 0.6})`; g.lineWidth = 1 + Math.abs(r.aff) * 3; g.beginPath(); g.moveTo(W / 2, H / 2); g.lineTo(x, y); g.stroke();
+      g.fillStyle = r.alive ? '#1c1612' : '#c4b8a8'; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.fill(); g.fillStyle = '#1c1612'; g.fillText(r.name, x, y + (y > H / 2 ? 28 : -14)); });
+    g.fillStyle = '#c4543a'; g.beginPath(); g.arc(W / 2, H / 2, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#1c1612'; g.fillText(d.name, W / 2, H / 2 + 32);
   }
   rippleList(rs: { id: number; power: string; tick: number; text: string; open: boolean; chain: { seq: number; tick: number; text: string; depth: number }[] }[]) {
     return rs.map((r) => `<div class="h2-ripple"><div class="lbl2" style="color:var(--amberL)">${esc(r.power.replace(/_/g, ' '))} · day ${day(r.tick)}${r.open ? ' · still spreading' : ''}</div><p class="h2-p">${esc(clean(r.text))}</p>
@@ -78,8 +78,8 @@ export class Sheets {
   // ───────── the city ─────────
   society(tab = this.socTab) {
     this.socTab = tab; const s = this.hud.snap; if (!s) return;
-    const tabs = [['overview', 'OVERVIEW'], ['factions', 'FACTIONS'], ['faiths', 'FAITHS'], ['politics', 'PARTIES'], ['laws', 'LAWS'], ['castes', 'CASTES & HOMES'], ['tech', 'KNOWLEDGE'], ['justice', 'JUSTICE'], ['firms', 'FIRMS'], ['ripples', 'RIPPLES']].map(([id, label]) => ({ id, label, on: id === tab }));
-    this.open('THE CITY', this.socBody(tab, s), undefined, tabs, (id) => this.society(id), 'society');
+    const tabs = [['overview', 'overview'], ['factions', 'factions'], ['faiths', 'faiths'], ['politics', 'parties'], ['laws', 'laws'], ['castes', 'homes'], ['tech', 'knowledge'], ['justice', 'justice'], ['firms', 'firms'], ['ripples', 'echoes']].map(([id, label]) => ({ id, label, on: id === tab }));
+    this.open('the city', this.socBody(tab, s), undefined, tabs, (id) => this.society(id), 'society');
   }
   private socBody(tab: string, s: Snapshot2) {
     const st = s.stats, N = (id: number) => this.ratLink(id); const row = (k: string, v: string) => `<div class="h2-row"><span>${k}</span><span class="v">${v}</span></div>`;
@@ -133,9 +133,9 @@ export class Sheets {
   // ───────── inbox & logs ─────────
   omens(tab: 'omens' | 'notable' = 'omens') {
     const hud = this.hud; const tabs = [{ id: 'omens', label: `OMENS (${hud.omens.filter((o) => !o.read).length} new)`, on: tab === 'omens' }, { id: 'notable', label: 'NOTABLE', on: tab === 'notable' }];
-    const list = tab === 'omens' ? hud.omens.map((o, i) => `<div class="h2-row" style="align-items:center"><span style="${o.read ? 'color:var(--grey)' : ''}">${o.read ? '' : '✶ '}Day ${day(o.e.tick)}: ${esc(o.e.text)}</span><span style="display:flex;gap:4px"><button class="btn" data-see="${i}">SEE</button></span></div>`).join('') || '<p class="h2-p">No omens yet.</p>'
-      : hud.notable.map((e, i) => `<div class="h2-row" style="align-items:center"><span>Day ${day(e.tick)}: ${esc(e.text)}</span>${hud.canJump(e) ? `<button class="btn" data-go="${i}">GO</button>` : ''}</div>`).join('') || '<p class="h2-p">Nothing notable yet.</p>';
-    this.open('OMENS', list, (root) => {
+    const list = tab === 'omens' ? hud.omens.map((o, i) => `<div class="h2-row" style="align-items:center"><span style="${o.read ? 'color:var(--grey)' : ''}">day ${day(o.e.tick)}  ${esc(o.e.text)}</span><span><button class="word" data-see="${i}">see</button></span></div>`).join('') || '<p class="h2-p">No omens yet.</p>'
+      : hud.notable.map((e, i) => `<div class="h2-row" style="align-items:center"><span>day ${day(e.tick)}  ${esc(e.text)}</span>${hud.canJump(e) ? `<button class="word" data-go="${i}">there</button>` : ''}</div>`).join('') || '<p class="h2-p">Nothing notable yet.</p>';
+    this.open('omens', list, (root) => {
       root.querySelectorAll<HTMLElement>('[data-see]').forEach((b) => b.onclick = () => { const o = hud.omens[Number(b.dataset.see)]; o.read = true; hud.badge(); this.close(); hud.cinematic(o.e); });
       root.querySelectorAll<HTMLElement>('[data-go]').forEach((b) => b.onclick = () => { this.close(); hud.jump(hud.notable[Number(b.dataset.go)]); });
     }, tabs, (id) => this.omens(id as never), 'omens');
@@ -146,7 +146,7 @@ export class Sheets {
   // ───────── settings ─────────
   settings() {
     const hud = this.hud, P = hud.world.post; const c = { ...hud.consent };
-    const seg = (k: string, opts: [string, string][], cur: string) => `<span class="seg" data-k="${k}">${opts.map(([v, l]) => `<button class="btn${v === cur ? ' on' : ''}" data-v="${v}">${l}</button>`).join('')}</span>`;
+    const seg = (k: string, opts: [string, string][], cur: string) => `<span class="seg" data-k="${k}">${opts.map(([v, l]) => `<button class="word${v === cur ? ' on' : ''}" data-v="${v}">${l}</button>`).join('')}</span>`;
     const GROUPS: { id: string; label: string; keys: (keyof import('../../render/v2/post').PostToggles)[] }[] = [
       { id: 'glow', label: 'GLOW', keys: ['lighting', 'bloom', 'rim', 'haze'] },
       { id: 'depth', label: 'DEPTH', keys: ['fog', 'grade', 'vignette'] },
@@ -160,8 +160,8 @@ export class Sheets {
       <div class="h2-sec">Picture</div><div class="h2-tog"><span>Quality</span>${seg('tier', [['auto', 'AUTO'], ['high', 'HIGH'], ['mid', 'MID'], ['low', 'LOW']], P.auto ? 'auto' : P.tier)}</div>
       ${GROUPS.map((g) => `<div class="h2-tog"><span>${g.label}</span>${seg('grp:' + g.id, [['1', 'ON'], ['0', 'OFF']], g.keys.every((k) => P.toggles[k]) ? '1' : '0')}</div>`).join('')}
       <p class="h2-p" style="color:var(--grey)">Glow is light and bloom. Depth is fog and colour. Film is grain. Scan is the old tube.</p>
-      <div class="h2-sec">Game</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-chron>CHRONICLE</button><button class="btn red" data-new>NEW WORLD</button></div>`;
-    this.open('SETTINGS', body, (root) => {
+      <div class="h2-sec">Game</div><div style="display:flex;gap:14px;flex-wrap:wrap"><button class="word" data-chron>the chronicle</button><button class="word red" data-new>a new world</button></div>`;
+    this.open('the book', body, (root) => {
       root.querySelectorAll<HTMLElement>('.seg button').forEach((b) => b.onclick = () => { const k = (b.parentElement as HTMLElement).dataset.k!, v = b.dataset.v!;
         if (k === 'mature') { c.mature = v === '1'; if (!c.mature) { c.gore = 0; c.sexual = false; } } else if (k === 'gore') { c.gore = Number(v) as 0 | 1 | 2; if (c.gore) c.mature = true; } else if (k === 'sexual') { c.sexual = v === '1'; if (c.sexual) c.mature = true; }
         else if (k === 'tier') { if (v === 'auto') P.auto = true; else { P.auto = false; P.setTier(v as Tier); hud.world.onTier(v as Tier); } }
